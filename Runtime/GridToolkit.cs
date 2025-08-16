@@ -8,7 +8,7 @@ using UnityEngine;
 /// <summary>
 /// Utilitary API to help with operations on 2D grids such as tile extraction, raycasting, and pathfinding.
 /// </summary>
-namespace KevinCastejon.GridHelper
+namespace CasKev.GridToolkit
 {
     public enum DefaultMajorOrder
     {
@@ -21,7 +21,7 @@ namespace KevinCastejon.GridHelper
     /// <b>ROW_MAJOR_ORDER :</b> YX. First index is rows, second is columns<br/>
     /// <b>COLUMN_MAJOR_ORDER :</b> XY. First index is columns, second is rows
     /// \image html MajorOrderSchema.png height=200px
-    /// \sa KevinCastejon::GridHelper::GridGlobalSettings::DefaultMajorOrder<br/>
+    /// \sa KevinCastejon::GridToolkit::GridGlobalSettings::DefaultMajorOrder<br/>
     /// </summary>
     public enum MajorOrder
     {
@@ -512,7 +512,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="rectangleSize">The Vector2Int representing rectangle size</param>
         /// <param name="includeCenter">Include the center tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
         public static T[] GetTilesInARectangle<T>(T[,] map, T center, Vector2Int rectangleSize, bool includeCenter = true, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -529,7 +529,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="center">The center tile</param>
         /// <param name="rectangleSize">The Vector2Int representing rectangle size</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
         public static T[] GetTilesOnARectangleOutline<T>(T[,] map, T center, Vector2Int rectangleSize, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -548,7 +548,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="radius">The circle radius</param>
         /// <param name="includeCenter">Include the center tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
         public static T[] GetTilesInACircle<T>(T[,] map, T center, int radius, bool includeCenter = true, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -564,7 +564,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="center">The center tile</param>
         /// <param name="radius">The circle radius</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
         public static T[] GetTilesOnACircleOutline<T>(T[,] map, T center, int radius, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -583,7 +583,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
         public static T[] GetTilesInACone<T>(T[,] map, T start, T destinationTile, float openingAngle, bool includeStart = true, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -601,7 +601,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="directionAngle">The cone direction angle in degrees. 0 represents a direction pointing to the right in 2D coordinates</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
         public static T[] GetTilesInACone<T>(T[,] map, T start, int length, float openingAngle, float directionAngle, bool includeStart = true, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -619,7 +619,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="direction">The Vector2 representing the cone direction. Note that an 'empty' Vector2 (Vector2.zero) will be treated as Vector2.right</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
         public static T[] GetTilesInACone<T>(T[,] map, T start, int length, float openingAngle, Vector2 direction, bool includeStart = true, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -644,7 +644,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
         public static T[] GetTilesInACone<T>(T[,] map, T start, Vector2Int endPosition, float openingAngle, bool includeStart = true, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -665,7 +665,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
         public static T[] GetTilesOnALine<T>(T[,] map, T startTile, T destinationTile, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeDestination = true, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -685,7 +685,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
         public static T[] GetTilesOnALine<T>(T[,] map, T startTile, int length, float directionAngle, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeDestination = true, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -710,7 +710,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
         public static T[] GetTilesOnALine<T>(T[,] map, T startTile, int length, Vector2 direction, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeDestination = true, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -734,7 +734,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
         public static T[] GetTilesOnALine<T>(T[,] map, T startTile, Vector2Int endPosition, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeDestination = true, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -752,7 +752,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="neighbourDirectionAngle">The neighbour direction angle in degrees [0-360]. 0 represents a direction pointing to the right in 2D coordinates</param>
         /// <param name="neighbour">The neighbour of a tile</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>Returns true if the neighbour exists, false otherwise</returns>
         public static bool GetTileNeighbour<T>(T[,] map, T tile, float neighbourDirectionAngle, out T neighbour, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -767,7 +767,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="neighbourDirection">The direction from the tile to the desired neighbour</param>
         /// <param name="neighbour">The neighbour of a tile</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>Returns true if the neighbour exists, false otherwise</returns>
         public static bool GetTileNeighbour<T>(T[,] map, T tile, Vector2Int neighbourDirection, out T neighbour, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -793,7 +793,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="tile">A tile</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
         public static T[] GetTileNeighbours<T>(T[,] map, T tile, bool includeWalls, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -825,7 +825,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="tile">A tile</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
         public static T[] GetTileOrthogonalsNeighbours<T>(T[,] map, T tile, bool includeWalls, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -871,7 +871,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="tile">A tile</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
         public static T[] GetTileDiagonalsNeighbours<T>(T[,] map, T tile, bool includeWalls, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -920,7 +920,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="tile">A tile</param>
         /// <param name="center">The center tile of the rectangle</param>
         /// <param name="rectangleSize">The Vector2Int representing the rectangle size</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
         public static bool IsTileInARectangle<T>(T[,] map, T tile, T center, Vector2Int rectangleSize, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -934,7 +934,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="tile">A tile</param>
         /// <param name="center">The center tile of the rectangle</param>
         /// <param name="rectangleSize">The Vector2Int representing the rectangle size</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
         public static bool IsTileOnARectangleOutline<T>(T[,] map, T tile, T center, Vector2Int rectangleSize, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -949,7 +949,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="tile">A tile</param>
         /// <param name="center">The center tile of the rectangle</param>
         /// <param name="radius">The circle radius</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
         public static bool IsTileInACircle<T>(T[,] map, T tile, T center, int radius, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -963,7 +963,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="tile">A tile</param>
         /// <param name="center">The center tile of the rectangle</param>
         /// <param name="radius">The circle radius</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
         public static bool IsTileOnACircleOutline<T>(T[,] map, T tile, T center, int radius, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -979,7 +979,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="center">The center tile of the rectangle</param>
         /// <param name="destinationTile">The destination tile</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
         public static bool IsTileInACone<T>(T[,] map, T tile, T center, T destinationTile, float openingAngle, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -994,7 +994,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="center">The center tile of the rectangle</param>
         /// <param name="endPosition">The destination virtual coordinates (do not need to be into grid range)</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
         public static bool IsTileInACone<T>(T[,] map, T tile, T center, Vector2Int endPosition, float openingAngle, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -1012,7 +1012,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="length">The length of the cone</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="directionAngle">The cone direction angle in degrees. 0 represents a direction pointing to the right in 2D coordinates</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
         public static bool IsTileInACone<T>(T[,] map, T tile, T center, int length, float openingAngle, float directionAngle, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -1034,7 +1034,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="length">The length of the cone</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="direction">The Vector2 representing the cone direction. Note that an 'empty' Vector2 (Vector2.zero) will be treated as Vector2.right</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
         public static bool IsTileInACone<T>(T[,] map, T tile, T center, int length, float openingAngle, Vector2 direction, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -1059,7 +1059,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="destinationTile">The destination tile of the line</param>
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
         public static bool IsTileOnALine<T>(T[,] map, T tile, T start, T destinationTile, bool allowDiagonals = true, bool favorVertical = false, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -1076,7 +1076,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="directionAngle">The cone direction angle in degrees. 0 represents a direction pointing to the right in 2D coordinates</param>
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
         public static bool IsTileOnALine<T>(T[,] map, T tile, T start, int length, float directionAngle, bool allowDiagonals = true, bool favorVertical = false, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -1098,7 +1098,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="direction">The Vector2 representing the cone direction. Note that an 'empty' Vector2 (Vector2.zero) will be treated as Vector2.right</param>
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
         public static bool IsTileOnALine<T>(T[,] map, T tile, T start, int length, Vector2 direction, bool allowDiagonals = true, bool favorVertical = false, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -1119,7 +1119,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="endPosition">The line destination virtual coordinates (do not need to be into grid range)</param>
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
         public static bool IsTileOnALine<T>(T[,] map, T start, T tile, Vector2Int endPosition, bool allowDiagonals = true, bool favorVertical = false, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -1442,7 +1442,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="destinationTile">The destination tile</param>
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
         public static bool IsLineOfSightClear<T>(T[,] map, T startTile, T destinationTile, bool allowDiagonals = true, bool favorVertical = false, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -1459,7 +1459,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="directionAngle">The angle of the line from the start tile</param>
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
         public static bool IsLineOfSightClear<T>(T[,] map, T startTile, int length, float directionAngle, bool allowDiagonals = true, bool favorVertical = false, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -1476,7 +1476,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="direction">The direction of the line from the start tile</param>
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
         public static bool IsLineOfSightClear<T>(T[,] map, T startTile, int length, Vector2 direction, bool allowDiagonals = true, bool favorVertical = false, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -1492,7 +1492,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="endPosition">The destination virtual coordinates (do not need to be into grid range)</param>
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
         public static bool IsLineOfSightClear<T>(T[,] map, T startTile, Vector2Int endPosition, bool allowDiagonals = true, bool favorVertical = false, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -1508,7 +1508,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="startTile">The start tile</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="destinationTile">The destination tile</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
         public static bool IsConeOfVisionClear<T>(T[,] map, T startTile, float openingAngle, T destinationTile, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -1524,7 +1524,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="length">The length of the cone</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="directionAngle">The angle of the line from the start tile</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
         public static bool IsConeOfVisionClear<T>(T[,] map, T startTile, int length, float openingAngle, float directionAngle, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -1540,7 +1540,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="length">The length of the cone</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="direction">The direction of the line from the start tile</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
         public static bool IsConeOfVisionClear<T>(T[,] map, T startTile, int length, float openingAngle, Vector2 direction, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -1555,7 +1555,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="startTile">The start tile</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="endPosition">The destination virtual coordinates (do not need to be into grid range)</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
         public static bool IsConeOfVisionClear<T>(T[,] map, T startTile, float openingAngle, Vector2Int endPosition, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -1574,7 +1574,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
         public static T[] GetLineOfSight<T>(T[,] map, T startTile, T destinationTile, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true, bool includeDestination = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -1593,7 +1593,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
         public static T[] GetLineOfSight<T>(T[,] map, T startTile, int length, float directionAngle, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true, bool includeDestination = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -1617,7 +1617,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
         public static T[] GetLineOfSight<T>(T[,] map, T startTile, int length, Vector2 direction, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true, bool includeDestination = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -1640,7 +1640,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
         public static T[] GetLineOfSight<T>(T[,] map, T startTile, Vector2Int endPosition, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true, bool includeDestination = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -1660,7 +1660,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
         public static T[] GetLineOfSight<T>(T[,] map, out bool isClear, T startTile, T destinationTile, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true, bool includeDestination = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -1680,7 +1680,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
         public static T[] GetLineOfSight<T>(T[,] map, out bool isClear, T startTile, int length, float directionAngle, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true, bool includeDestination = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -1705,7 +1705,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
         public static T[] GetLineOfSight<T>(T[,] map, out bool isClear, T startTile, int length, Vector2 direction, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true, bool includeDestination = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -1729,7 +1729,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
         public static T[] GetLineOfSight<T>(T[,] map, out bool isClear, T startTile, Vector2Int endPosition, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true, bool includeDestination = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -1748,7 +1748,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="destinationTile">The destination tile at the end of the cone</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
         public static T[] GetConeOfVision<T>(T[,] map, T startTile, float openingAngle, T destinationTile, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -1772,7 +1772,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="directionAngle">The angle of the line from the start tile</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
         public static T[] GetConeOfVision<T>(T[,] map, T startTile, int length, float openingAngle, float directionAngle, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -1801,7 +1801,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="direction">The direction of the line from the start tile</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
         public static T[] GetConeOfVision<T>(T[,] map, T startTile, int length, float openingAngle, Vector2 direction, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -1826,7 +1826,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="endPosition">The destination virtual coordinates (do not need to be into grid range)</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
         public static T[] GetConeOfVision<T>(T[,] map, T startTile, float openingAngle, Vector2Int endPosition, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -1849,7 +1849,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="destinationTile">The destination tile at the end of the cone</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
         public static T[] GetConeOfVision<T>(T[,] map, out bool isClear, T startTile, float openingAngle, T destinationTile, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -1875,7 +1875,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="directionAngle">The angle of the line from the start tile</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
         public static T[] GetConeOfVision<T>(T[,] map, out bool isClear, T startTile, int length, float openingAngle, float directionAngle, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -1905,7 +1905,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="direction">The direction of the line from the start tile</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
         public static T[] GetConeOfVision<T>(T[,] map, out bool isClear, T startTile, int length, float openingAngle, Vector2 direction, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -1931,7 +1931,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="endPosition">The destination virtual coordinates (do not need to be into grid range)</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
         public static T[] GetConeOfVision<T>(T[,] map, out bool isClear, T startTile, float openingAngle, Vector2Int endPosition, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
@@ -1950,8 +1950,7 @@ namespace KevinCastejon.GridHelper
     /// This API offers several way of doing pathfinding.<br>
     /// You can calculate the path directly every time you need (with the **CalculatePath** method), but this can become heavy if you do it too frequently.<br>
     /// Instead, you can generate objects that will hold multiple paths data that can be reused later. There is two types of objects that you can generate:<br>
-    /// - **PathMap** - Will calculate and hold all the paths **to a specific tile from every accessible tiles**
-    /// - **PathGrid** - Will calculate and hold all the paths **between each tiles on the entire grid**
+    /// - **DirectionMap** - Will calculate and hold all the paths **to a specific tile from every accessible tiles**
     /// 
     /// *Note that, obviously, any path calculation is valid as long as the walkable state of the tiles remain unchanged*
     /// </summary>
@@ -2102,24 +2101,24 @@ namespace KevinCastejon.GridHelper
             }
         }
         /// <summary>
-        /// Generates asynchronously a PathMap object that will contain all the pre-calculated paths data between a target tile and all the accessible tiles from this target
+        /// Generates asynchronously a DirectionMap object that will contain all the pre-calculated paths data between a target tile and all the accessible tiles from this target
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="targetTile">The target tile for the paths calculation</param>
         /// <param name="maxDistance">Optional parameter limiting the maximum movement distance from the target tile. 0 means no limit and is the default value</param>
         /// <param name="pathfindingPolicy">The PathfindingPolicy object to use</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <param name="progress">An optional IProgress object to get the generation progression</param>
         /// <param name="cancelToken">An optional CancellationToken object to cancel the generation</param>
-        /// <returns>A PathMap object</returns>
-        public static Task<DirectionMap<T>> GeneratePathMapAsync<T>(T[,] grid, T targetTile, MajorOrder majorOrder = MajorOrder.DEFAULT, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : ITile
+        /// <returns>A DirectionMap object</returns>
+        public static Task<DirectionMap<T>> GenerateDirectionMapAsync<T>(T[,] grid, T targetTile, MajorOrder majorOrder = MajorOrder.DEFAULT, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : ITile
         {
             Task<DirectionMap<T>> task = Task.Run(() =>
             {
                 if (targetTile == null || !targetTile.IsWalkable)
                 {
-                    throw new Exception("Do not try to generate a PathMap with an unwalkable (or null) tile as the target");
+                    throw new Exception("Do not try to generate a DirectionMap with an unwalkable (or null) tile as the target");
                 }
                 int width = grid.GetLength(0);
                 int height = grid.GetLength(1);
@@ -2163,20 +2162,20 @@ namespace KevinCastejon.GridHelper
             return task;
         }
         /// <summary>
-        /// Generates a PathMap object that will contain all the pre-calculated paths data between a target tile and all the accessible tiles from this target
+        /// Generates a DirectionMap object that will contain all the pre-calculated paths data between a target tile and all the accessible tiles from this target
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
         /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="targetTile">The target tile for the paths calculation</param>
         /// <param name="maxDistance">Optional parameter limiting the maximum movement distance from the target tile. 0 means no limit and is the default value</param>
         /// <param name="pathfindingPolicy">The PathfindingPolicy object to use</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
-        /// <returns>A PathMap object</returns>
-        public static DirectionMap<T> GeneratePathMap<T>(T[,] grid, T targetTile, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
+        /// <returns>A DirectionMap object</returns>
+        public static DirectionMap<T> GenerateDirectionMap<T>(T[,] grid, T targetTile, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
             if (targetTile == null || !targetTile.IsWalkable)
             {
-                throw new Exception("Do not try to generate a PathMap with an unwalkable (or null) tile as the target");
+                throw new Exception("Do not try to generate a DirectionMap with an unwalkable (or null) tile as the target");
             }
             int width = grid.GetLength(0);
             int height = grid.GetLength(1);
@@ -2229,16 +2228,16 @@ namespace KevinCastejon.GridHelper
             _majorOrder = majorOrder;
         }
         /// <summary>
-        /// The tile that has been used as the target to generate this PathMap
+        /// The tile that has been used as the target to generate this DirectionMap
         /// </summary>
         public int Target { get => _target; }
         /// <summary>
-        /// The MajorOrder parameter value that has been used to generate this PathMap
+        /// The MajorOrder parameter value that has been used to generate this DirectionMap
         /// </summary>
         public MajorOrder MajorOrder { get => _majorOrder; }
 
         /// <summary>
-        /// Is the tile is accessible from the target into this this PathMap. Usefull to check if the tile is usable as a parameter for this PathMap's methods.
+        /// Is the tile is accessible from the target into this this DirectionMap. Usefull to check if the tile is usable as a parameter for this DirectionMap's methods.
         /// </summary>
         /// <param name="tile">The tile to check</param>
         /// <returns>A boolean value</returns>
@@ -2259,7 +2258,7 @@ namespace KevinCastejon.GridHelper
         {
             if (!IsTileAccessible(grid, tile))
             {
-                throw new Exception("Do not call PathMap method with an inaccessible tile");
+                throw new Exception("Do not call DirectionMap method with an inaccessible tile");
             }
             Vector2Int nextTileDirection = GridUtils.NextNodeDirectionToVector2Int(GridUtils.GetTileOnFlatGrid(new(grid.GetLength(0), grid.GetLength(1)), _directionMap, tile.X, tile.Y, _majorOrder));
             Vector2Int nextTileIndices = new(tile.X + nextTileDirection.x, tile.Y + nextTileDirection.y);
@@ -2274,7 +2273,7 @@ namespace KevinCastejon.GridHelper
         {
             if (!IsTileAccessible(grid, tile))
             {
-                throw new Exception("Do not call PathMap method with an inaccessible tile");
+                throw new Exception("Do not call DirectionMap method with an inaccessible tile");
             }
             Vector2Int nextTileDirection = GridUtils.NextNodeDirectionToVector2Int(GridUtils.GetTileOnFlatGrid(new Vector2Int(grid.GetLength(0), grid.GetLength(1)), _directionMap, tile.X, tile.Y, _majorOrder));
             return nextTileDirection;
@@ -2290,7 +2289,7 @@ namespace KevinCastejon.GridHelper
         {
             if (!IsTileAccessible(grid, startTile))
             {
-                throw new Exception("Do not call PathMap method with an inaccessible tile");
+                throw new Exception("Do not call DirectionMap method with an inaccessible tile");
             }
 
             Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _target, _majorOrder);
@@ -2555,7 +2554,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="map">A two-dimensional array</param>
         /// <param name="x">Horizontal coordinate to clamp</param>
         /// <param name="y">Vertical coordinate to clamp</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A Vector2Int representing the clamped coordinates</returns>
         public static Vector2Int ClampCoordsIntoGrid<T>(T[,] map, int x, int y, MajorOrder majorOrder)
         {
@@ -2568,7 +2567,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="map">A two-dimensional array</param>
         /// <param name="x">Horizontal coordinate to check</param>
         /// <param name="y">Vertical coordinate to check</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
         public static bool AreCoordsIntoGrid<T>(T[,] map, int x, int y, MajorOrder majorOrder)
         {
@@ -2581,7 +2580,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="map">A two-dimensional array</param>
         /// <param name="x">Horizontal coordinate of the tile</param>
         /// <param name="y">Vertical coordinate of the tile</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A tile</returns>
         public static T GetTile<T>(T[,] map, int x, int y, MajorOrder majorOrder)
         {
@@ -2602,7 +2601,7 @@ namespace KevinCastejon.GridHelper
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (no need to implement the ITile interface)</typeparam>
         /// <param name="map">A two-dimensional array</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>The horizontal length of a grid</returns>
         public static int GetHorizontalLength<T>(T[,] map, MajorOrder majorOrder)
         {
@@ -2622,7 +2621,7 @@ namespace KevinCastejon.GridHelper
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (no need to implement the ITile interface)</typeparam>
         /// <param name="map">A two-dimensional array</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>The vertical length of a grid</returns>
         public static int GetVerticalLength<T>(T[,] map, MajorOrder majorOrder)
         {
