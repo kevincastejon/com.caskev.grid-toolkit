@@ -1,0 +1,20 @@
+{
+  "name": "com.caskev.unity-grid-toolkit",
+  "version": "0.0.1",
+  "displayName": "Unity Grid Toolkit",
+  "description": "Utilitary API to proceed operations on abstract grids such as tile extraction, raycasting, and pathfinding.",
+  "keywords": [
+    "grid",
+    "bidimensional",
+    "matrix",
+    "extraction",
+    "raycasting",
+    "pathfinding"
+  ],
+  "documentationUrl": "https://kevincastejon.fr/Documentations/Unity-Grid-Toolkit/",
+  "author": {
+    "name": "Kevin Castejon",
+    "email": "kevincastejon@gmail.com",
+    "url": "https://www.kevincastejon.fr"
+  }
+}
