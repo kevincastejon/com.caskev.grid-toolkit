@@ -12,6 +12,18 @@
     "pathfinding"
   ],
   "documentationUrl": "https://kevincastejon.fr/Documentations/Unity-Grid-Toolkit/",
+  "samples": [
+    {
+      "displayName": "Shared Assets",
+      "description": "Contains required assets and scripts in order to use any other sample from this package. Import it prior to any other sample.",
+      "path": "Samples~/Shared Assets"
+    },
+    {
+      "displayName": "API Playground",
+      "description": "Explore the API through a comprehensive UI",
+      "path": "Samples~/API Playground"
+    }
+  ],
   "author": {
     "name": "Kevin Castejon",
     "email": "kevincastejon@gmail.com",
