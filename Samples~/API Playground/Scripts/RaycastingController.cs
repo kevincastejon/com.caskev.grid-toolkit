@@ -22,6 +22,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
         [SerializeField] private Slider _lengthSlider;
         [SerializeField] private Slider _directionSlider;
         [SerializeField] private Slider _angleSlider;
+        [SerializeField] private TextMeshProUGUI _hoveredTileLabel;
         [SerializeField] private bool _allowDiagonals = true;
         [SerializeField] private bool _favorVertical = false;
         [SerializeField] private int _length = 5;
@@ -102,6 +103,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
         }
         private void Update()
         {
+            _hoveredTileLabel.text = _grid.ClampedHoveredTile == null ? "" : ("X:" + _grid.ClampedHoveredTile.X + " Y:" + _grid.ClampedHoveredTile.Y);
             if ((_grid.JustEnteredTile && Input.GetMouseButton(0)) || (Input.GetMouseButtonDown(0) && _grid.HoveredTile != null && _grid.HoveredTile != _centerTile))
             {
                 if (!_walling)
