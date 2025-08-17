@@ -1,0 +1,232 @@
+# **<u>GridToolkit</u>**
+
+Utilitary API to proceed operations on abstract grids such as tile extraction, raycasting, and pathfinding.
+
+---
+# **Usage**
+
+All you need to use this API is a bi-dimensional array of tiles.
+
+What is a *tile* ? Any object (custom class, struct, component, ...) that implements the very light **ITile** interface of this library (**ITile3D** for the 3D API). This interface requires three properties getters:
+- *bool* **IsWalkable** . Must return if the tile can be walk/see throught (for pathfinding/raycasting)
+- *int* **X** . Must return the horizontal position of the tile into the grid
+- *int* **Y** . Must return the vertical position of the tile into the grid
+
+This API is using a namespace so you have to add a using instruction to the scripts that will need this library:
+```cs
+using KevinCastejon.GridToolkit;
+```
+
+---
+---
+# **API**
+---
+---
+## **MajorOrder**
+
+When working with two-dimensional arrays there is two ways of storing tiles, first rows then lines or the opposite.<br>
+This is called the **Major Order**, you can specify it on the last parameter of each method that uses a grid.<br>
+
+
+**<u>DEFAULT</u>** : Refers to the global setting **DefaultMajorOrder** value.<br>
+**<u>ROW_MAJOR_ORDER</u>** : YX. First index is rows, second is columns.<br>
+**<u>COLUMN_MAJOR_ORDER</u>** : XY. First index is columns, second is rows.<br>
+
+It can be counter intuitive as the row index actually indicates the vertical position of the tile in the grid, and the column index indicates the horizontal position of the tile in the grid.<br>
+
+Note that, in **C#**, the conventional major order is **ROW_MAJOR_ORDER**, and so is the default value for this library until you explicitely specify it.<br>
+
+![MajorOrderSchema](Documentation/MajorOrderSchema.png)
+
+---
+---
+## - **<u>Extraction</u>**
+---
+Allows you to extract tiles on a grid.<br>
+Provides shape extraction (rectangles, circles, cones and lines) and neighbors extraction with a lot of parameters.
+
+---
+You can extract tiles from shapes.
+
+- **GetTilesInARectangle**
+```cs
+YourCustomTileType[] tiles = Extraction.GetTilesInARectangle(grid, centerTile, rectangleSize);
+```
+- **GetTilesInACircle**
+```cs
+YourCustomTileType[] tiles = Extraction.GetTilesInACircle(grid, centerTile, radius);
+```
+- **GetTilesInACone**
+```cs
+YourCustomTileType[] tiles = Extraction.GetTilesInACone(grid, startTile, length, openingAngle, direction);
+```
+- **GetTilesOnALine**
+```cs
+YourCustomTileType[] tiles = Extraction.GetTilesOnALine(grid, startTile, length, direction);
+```
+
+---
+You can extract neighbors of a tile (if existing).
+
+- **GetTileNeighbour**
+```cs
+YourCustomTileType upperNeighbour = Extraction.GetTileNeighbour(grid, tile, Vector2Int.up);
+```
+- **GetTileNeighbours**
+```cs
+YourCustomTileType[] neighbours = Extraction.GetTileNeighbours(grid, tile);
+```
+- **GetTileOrthogonalsNeighbours**
+```cs
+YourCustomTileType[] orthogonalNeighbours = Extraction.GetTileOrthogonalsNeighbours(grid, tile);
+```
+- **GetTileDiagonalsNeighbours**
+```cs
+YourCustomTileType[] diagonalsNeighbours = Extraction.GetTileDiagonalsNeighbours(grid, tile);
+```
+
+---
+Each extraction method has a variant to check if a specific tile would be extracted
+
+- **IsTileInARectangle**
+```cs
+bool isTileInARectangle = Extraction3D.IsTileInARectangle(grid, tile, centerTile, rectangleSize);
+```
+- **IsTileInACircle**
+```cs
+bool isTileInACircle = Extraction3D.IsTileInACircle(grid, tile, centerTile, radius);
+```
+- **IsTileInACone**
+```cs
+bool isTileInACone = Extraction.IsTileInACone(grid, tile, centerTile, length, openingAngle, direction);
+```
+- **IsTilesOnALine**
+```cs
+bool isTilesOnALine = Extraction.IsTilesOnALine(grid, tile, centerTile, length, direction);
+```
+- **IsTileNeighbor**
+```cs
+bool isTileRightNeighbor = Extraction.IsTileNeighbor(tile, neighbor, Vector2Int.right);
+```
+- **IsTileOrthogonalNeighbor**
+```cs
+bool isTileOrthogonalNeighbor = Extraction.IsTileOrthogonalNeighbor(tile, neighbor);
+```
+- **IsTileDiagonalNeighbor**
+```cs
+bool isTileDiagonalNeighbor = Extraction.IsTileDiagonalNeighbor(tile, neighbor);
+```
+- **IsTileAnyNeighbor**
+```cs
+bool isTileNeighbor = Extraction.IsTileAnyNeighbor(tile, neighbor);
+```
+
+---
+## - **<u>Raycasting</u>**
+---
+Allows you to cast lines of sight and cones of vision on a grid
+
+---
+You can get the **line of sight** from a tile (a line that "stops" at the first encountered unwalkable tile).<br>
+Many signatures are available to specify the length and direction of the line.
+
+- **GetLineOfSight**
+```cs
+YourCustomTileType[] lineOfSight = Raycasting.GetLineOfSight(grid, startTile, destinationTile);
+```
+---
+You can get the **cone of vision** from a tile.<br>
+Many signatures are available to specify the length and direction of the cone.
+
+- **GetConeOfVision**
+```cs
+YourCustomTileType[] coneOfVision = Raycasting.GetConeOfVision(grid, startTile, openingAngle, destinationTile);
+```
+---
+You can check if a line of sight or a cone of vision is clear (no non-walkable tile encountered)
+
+- **IsLineOfSightClear**
+```cs
+bool isLineClear = Raycasting.IsLineOfSightClear(grid, startTile, destinationTile);
+```
+- **IsConeOfVisionClear**
+```cs
+bool isConeClear = Raycasting.IsConeOfVisionClear(grid, startTile, destinationTile);
+```
+
+---
+## - **<u>Pathfinding</u>**
+---
+Allows you to calculate paths between tiles.<br>
+This API offers a method which generates and returns a direction map. A direction map can be seen as a "layer" on top of the user grid that indicates, for each accessible tile, the direction to the next tile, ultimately leading to the target tile.<br>
+A direction map holds all the paths to a target tile from all the accessible tiles on the grid.<br>
+Storing this DirectionMap object allows you to reconstruct paths between tiles without having to recalculate them every time, which can be costly in terms of performance.<br>
+
+*Note that, obviously, any path calculation is valid as long as the user grid, and walkable states of the tiles, remains unchanged*
+
+---
+
+### **<u>DirectionMap</u>**
+
+You can generate a **DirectionMap** object that holds pre-calculated paths data.<br>
+This way of doing pathfinding is useful for some usages (like Tower Defenses and more) because it calculates once all the paths between one tile, called the "**target**", and all the accessible tiles from it. (The **DirectionMap** generation uses **Dijkstra** algorithm).
+
+To generate the **DirectionMap** object, use the **GenerateDirectionMap** method that needs the *grid* and the *target* tile from which to calculate the paths, as parameters.
+
+```cs
+DirectionMap<YourCustomTileType> directionMap = Pathfinding.GenerateDirectionMap(grid, targetTile);
+```
+
+Once the **DirectionMap** object is generated, you can use its several and almost "*cost free*" methods and properties.
+
+---
+
+You can retrieve the tile that has been used as the target to generate this **DirectionMap**
+
+- **Target**
+```cs
+YourCustomTileType tile = directionMap.Target;
+```
+
+You can retrieve the **majorOrder** parameter value that has been used to generate this **DirectionMap**
+
+- **MajorOrder**
+```cs
+MajorOrder majorOrder = directionMap.MajorOrder;
+```
+---
+
+You can get all the tiles on the path from a tile to the target.
+
+- **GetPathToTarget**
+```cs
+YourCustomTileType[] tiles = directionMap.GetPathToTarget(startTile);
+```
+
+Or you can get all the tiles on the path from the target to a tile.
+
+- **GetPathFromTarget**
+```cs
+YourCustomTileType[] tiles = directionMap.GetPathFromTarget(destinationTile);
+```
+
+You can know if a tile is accessible from the target tile. This is useful before calling the following **DirectionMap** methods that only takes an accessible tile as parameter.
+
+- **IsTileAccessible**
+```cs
+bool isTileAccessible = directionMap.IsTileAccessible(tile);
+```
+
+You can get the next tile on the path between the target and a tile.
+
+- **GetNextTileFromTile**
+```cs
+YourCustomTileType nextTile = directionMap.GetNextTileFromTile(tile);
+```
+
+You can get the next tile direction on the path between the target and a tile (in 2D grid coordinates).
+
+- **GetNextTileDirectionFromTile**
+```cs
+NextTileDirection nextTileDirection = directionMap.GetNextTileDirectionFromTile(tile);
+```

@@ -21,7 +21,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
         [SerializeField] private TextMeshProUGUI _progressWindow;
         [SerializeField] private TextMeshProUGUI _hoveredTileLabel;
         [SerializeField] private GridController _grid;
-        private DirectionMap<Tile> _pathMap;
+        private DirectionMap<Tile> _directionMap;
         private List<Transform> _arrows = new();
         private Tile _targetTile;
         private Tile _startTile;
@@ -30,52 +30,18 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
         private System.Threading.CancellationTokenSource _cts = new();
         private void OnEnable()
         {
-            if (_pathMap != null)
+            if (_directionMap != null)
             {
-                for (int i = 0; i < _pathMap._directionMap.Length; i++)
-                {
-                    NextNodeDirection nextDirection = _pathMap._directionMap[i];
-                    Transform arrow = Instantiate(_arrowPrefab);
-                    _arrows.Add(arrow);
-                    Vector2Int pos = GridUtils.GetCoordinatesFromFlatIndex(new(_grid.Map.GetLength(0), _grid.Map.GetLength(1)), i, MajorOrder.ROW_MAJOR_ORDER);
-                    arrow.position = new(pos.x, pos.y);
-                    float angle = 0f;
-                    bool hasNoDirection = false;
-                    switch (nextDirection)
-                    {
-                        case NextNodeDirection.RIGHT: angle = 0f; break;
-                        case NextNodeDirection.UP: angle = 90f; break;
-                        case NextNodeDirection.LEFT: angle = 180f; break;
-                        case NextNodeDirection.DOWN: angle = -90f; break;
-                        case NextNodeDirection.UP_RIGHT: angle = 45f; break;
-                        case NextNodeDirection.UP_LEFT: angle = 135f; break;
-                        case NextNodeDirection.DOWN_LEFT: angle = -135f; break;
-                        case NextNodeDirection.DOWN_RIGHT: angle = -45f; break;
-                        case NextNodeDirection.NONE: break;
-                        case NextNodeDirection.SELF: default: hasNoDirection = true; break;
-                    }
-                    Quaternion rot = Quaternion.Euler(0f, 0f, angle);
-                    if (hasNoDirection)
-                    {
-                        arrow.gameObject.SetActive(false);
-                    }
-                    else
-                    {
-                        arrow.rotation = rot;
-                    }
-                }
+                GenerateArrowsFromDirectionMap();
             }
         }
         private void OnDisable()
         {
-            foreach (Transform arrow in _arrows)
+            DestroyArrows();
+            if (_cts != null)
             {
-                if (arrow)
-                {
-                    Destroy(arrow.gameObject);
-                }
+                _cts.Cancel();
             }
-            _arrows.Clear();
         }
         private void Start()
         {
@@ -120,55 +86,74 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
         }
         private void GenerateDirectionMap()
         {
-            _pathMap = Pathfinding.GenerateDirectionMap(_grid.Map, _targetTile);
-            foreach (Transform arrow in _arrows)
-            {
-                Destroy(arrow.gameObject);
-            }
-            _arrows.Clear();
-            for (int i = 0; i < _pathMap._directionMap.Length; i++)
-            {
-                NextNodeDirection nextDirection = _pathMap._directionMap[i];
-                Transform arrow = Instantiate(_arrowPrefab);
-                _arrows.Add(arrow);
-                Vector2Int pos = GridUtils.GetCoordinatesFromFlatIndex(new(_grid.Map.GetLength(0), _grid.Map.GetLength(1)), i, MajorOrder.ROW_MAJOR_ORDER);
-                arrow.position = new(pos.x, pos.y);
-                float angle = 0f;
-                bool hasNoDirection = false;
-                switch (nextDirection)
-                {
-                    case NextNodeDirection.RIGHT: angle = 0f; break;
-                    case NextNodeDirection.UP: angle = 90f; break;
-                    case NextNodeDirection.LEFT: angle = 180f; break;
-                    case NextNodeDirection.DOWN: angle = -90f; break;
-                    case NextNodeDirection.UP_RIGHT: angle = 45f; break;
-                    case NextNodeDirection.UP_LEFT: angle = 135f; break;
-                    case NextNodeDirection.DOWN_LEFT: angle = -135f; break;
-                    case NextNodeDirection.DOWN_RIGHT: angle = -45f; break;
-                    case NextNodeDirection.NONE: break;
-                    case NextNodeDirection.SELF: default: hasNoDirection = true; break;
-                }
-                Quaternion rot = Quaternion.Euler(0f, 0f, angle);
-                if (hasNoDirection)
-                {
-                    arrow.gameObject.SetActive(false);
-                }
-                else
-                {
-                    arrow.rotation = rot;
-                }
-            }
-            bool isAccessible = _pathMap.IsTileAccessible(_grid.Map, _startTile);
+            _directionMap = Pathfinding.GenerateDirectionMap(_grid.Map, _targetTile);
+            DestroyArrows();
+            GenerateArrowsFromDirectionMap();
+            bool isAccessible = _directionMap.IsTileAccessible(_grid.Map, _startTile);
             Tile[] path = new Tile[0];
             if (isAccessible)
             {
-                path = _pathMap.GetPathToTarget(_grid.Map, _startTile, false, false);
+                path = _directionMap.GetPathToTarget(_grid.Map, _startTile, false, false);
             }
             _grid.Refresh(_targetTile, null, path, _startTile);
         }
+
+        private void DestroyArrows()
+        {
+            foreach (Transform arrow in _arrows)
+            {
+                if (arrow != null)
+                {
+                    Destroy(arrow.gameObject);
+                }
+            }
+            _arrows.Clear();
+        }
+
+        private void GenerateArrowsFromDirectionMap()
+        {
+            for (int i = 0; i < _grid.Map.GetLength(0); i++)
+            {
+                for (int j = 0; j < _grid.Map.GetLength(1); j++)
+                {
+                    Transform arrow = Instantiate(_arrowPrefab);
+                    _arrows.Add(arrow);
+                    arrow.position = new(j, i);
+                    float angle = 0f;
+                    bool hasDirection = _directionMap.IsTileAccessible(_grid.Map, _grid.Map[i, j]);
+                    if (hasDirection)
+                    {
+                        NextTileDirection nextDirection = _directionMap.GetNextTileDirectionFromTile(_grid.Map, _grid.Map[i, j]);
+                        switch (nextDirection)
+                        {
+                            case NextTileDirection.RIGHT: angle = 0f; break;
+                            case NextTileDirection.UP: angle = 90f; break;
+                            case NextTileDirection.LEFT: angle = 180f; break;
+                            case NextTileDirection.DOWN: angle = -90f; break;
+                            case NextTileDirection.UP_RIGHT: angle = 45f; break;
+                            case NextTileDirection.UP_LEFT: angle = 135f; break;
+                            case NextTileDirection.DOWN_LEFT: angle = -135f; break;
+                            case NextTileDirection.DOWN_RIGHT: angle = -45f; break;
+                            case NextTileDirection.NONE: break;
+                            case NextTileDirection.SELF: default: hasDirection = false; break;
+                        }
+                    }
+                    Quaternion rot = Quaternion.Euler(0f, 0f, angle);
+                    if (hasDirection)
+                    {
+                        arrow.rotation = rot;
+                    }
+                    else
+                    {
+                        arrow.gameObject.SetActive(false);
+                    }
+                }
+            }
+        }
+
         private void GetPathFromDirectionMap()
         {
-            _grid.Refresh(null, null, _pathMap.IsTileAccessible(_grid.Map, _startTile) ? _pathMap.GetPathToTarget(_grid.Map, _startTile, false, false) : new Tile[0], _startTile);
+            _grid.Refresh(null, null, _directionMap.IsTileAccessible(_grid.Map, _startTile) ? _directionMap.GetPathToTarget(_grid.Map, _startTile, false, false) : new Tile[0], _startTile);
         }
         private void OnApplicationQuit()
         {

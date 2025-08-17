@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 /// <summary>
-/// Utilitary API to help with operations on 2D grids such as tile extraction, raycasting, and pathfinding.
+/// Utilitary API to proceed operations on abstract grids such as tile extraction, raycasting, and pathfinding.
 /// </summary>
 namespace CasKev.GridToolkit
 {
@@ -29,7 +29,7 @@ namespace CasKev.GridToolkit
         ROW_MAJOR_ORDER,
         COLUMN_MAJOR_ORDER
     }
-    public enum NextNodeDirection : byte
+    public enum NextTileDirection : byte
     {
         NONE,
         SELF,
@@ -2054,6 +2054,31 @@ namespace CasKev.GridToolkit
             }
             return false;
         }
+        private static void GetTileOrthographicNeighbours<T>(ref List<T> nodes, T[,] map, int x, int y, MajorOrder majorOrder) where T : ITile
+        {
+            T nei;
+
+            bool leftWalkable = GetLeftNeighbour(map, x, y, out nei, majorOrder);
+            if (leftWalkable)
+            {
+                nodes.Add(nei);
+            }
+            bool rightWalkable = GetRightNeighbour(map, x, y, out nei, majorOrder);
+            if (rightWalkable)
+            {
+                nodes.Add(nei);
+            }
+            bool bottomWalkable = GetBottomNeighbour(map, x, y, out nei, majorOrder);
+            if (bottomWalkable)
+            {
+                nodes.Add(nei);
+            }
+            bool topWalkable = GetTopNeighbour(map, x, y, out nei, majorOrder);
+            if (topWalkable)
+            {
+                nodes.Add(nei);
+            }
+        }
         private static void GetTileNeighbours<T>(ref List<T> nodes, T[,] map, int x, int y, MajorOrder majorOrder) where T : ITile
         {
             T nei;
@@ -2104,10 +2129,8 @@ namespace CasKev.GridToolkit
         /// Generates asynchronously a DirectionMap object that will contain all the pre-calculated paths data between a target tile and all the accessible tiles from this target
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="targetTile">The target tile for the paths calculation</param>
-        /// <param name="maxDistance">Optional parameter limiting the maximum movement distance from the target tile. 0 means no limit and is the default value</param>
-        /// <param name="pathfindingPolicy">The PathfindingPolicy object to use</param>
         /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <param name="progress">An optional IProgress object to get the generation progression</param>
         /// <param name="cancelToken">An optional CancellationToken object to cancel the generation</param>
@@ -2124,11 +2147,11 @@ namespace CasKev.GridToolkit
                 int height = grid.GetLength(1);
                 Vector2Int gridDimensions = new Vector2Int(width, height);
                 int totalSize = width * height;
-                NextNodeDirection[] directionMap = new NextNodeDirection[totalSize];
+                NextTileDirection[] directionMap = new NextTileDirection[totalSize];
                 bool[] visited = new bool[totalSize];
                 int targetIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, targetTile.X, targetTile.Y, majorOrder);
                 visited[targetIndex] = true;
-                directionMap[targetIndex] = NextNodeDirection.SELF;
+                directionMap[targetIndex] = NextTileDirection.SELF;
                 Queue<T> frontier = new Queue<T>();
                 frontier.Enqueue(targetTile);
                 List<T> neighbourgs = new();
@@ -2143,7 +2166,7 @@ namespace CasKev.GridToolkit
                     }
                     progress?.Report((float)visitedCount / totalSize);
                     current = frontier.Dequeue();
-                    GetTileNeighbours(ref neighbourgs, grid, current.X, current.Y, majorOrder);
+                    GetTileOrthographicNeighbours(ref neighbourgs, grid, current.X, current.Y, majorOrder);
                     foreach (T neiTile in neighbourgs)
                     {
                         neighborIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, neiTile.X, neiTile.Y, majorOrder);
@@ -2167,8 +2190,6 @@ namespace CasKev.GridToolkit
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
         /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="targetTile">The target tile for the paths calculation</param>
-        /// <param name="maxDistance">Optional parameter limiting the maximum movement distance from the target tile. 0 means no limit and is the default value</param>
-        /// <param name="pathfindingPolicy">The PathfindingPolicy object to use</param>
         /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A DirectionMap object</returns>
         public static DirectionMap<T> GenerateDirectionMap<T>(T[,] grid, T targetTile, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
@@ -2181,11 +2202,11 @@ namespace CasKev.GridToolkit
             int height = grid.GetLength(1);
             Vector2Int gridDimensions = new Vector2Int(width, height);
             int totalSize = width * height;
-            NextNodeDirection[] directionMap = new NextNodeDirection[totalSize];
+            NextTileDirection[] directionMap = new NextTileDirection[totalSize];
             bool[] visited = new bool[totalSize];
             int targetIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, targetTile.X, targetTile.Y, majorOrder);
             visited[targetIndex] = true;
-            directionMap[targetIndex] = NextNodeDirection.SELF;
+            directionMap[targetIndex] = NextTileDirection.SELF;
             Queue<T> frontier = new Queue<T>();
             frontier.Enqueue(targetTile);
             List<T> neighbourgs = new();
@@ -2194,7 +2215,7 @@ namespace CasKev.GridToolkit
             while (frontier.Count > 0)
             {
                 current = frontier.Dequeue();
-                GetTileNeighbours(ref neighbourgs, grid, current.X, current.Y, majorOrder);
+                GetTileOrthographicNeighbours(ref neighbourgs, grid, current.X, current.Y, majorOrder);
                 foreach (T neiTile in neighbourgs)
                 {
                     neighborIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, neiTile.X, neiTile.Y, majorOrder);
@@ -2217,11 +2238,11 @@ namespace CasKev.GridToolkit
     /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
     public class DirectionMap<T> where T : ITile
     {
-        public readonly NextNodeDirection[] _directionMap;
+        private readonly NextTileDirection[] _directionMap;
         private readonly int _target;
         private readonly MajorOrder _majorOrder;
 
-        internal DirectionMap(NextNodeDirection[] directionMap, int target, MajorOrder majorOrder)
+        internal DirectionMap(NextTileDirection[] directionMap, int target, MajorOrder majorOrder)
         {
             _directionMap = directionMap;
             _target = target;
@@ -2247,7 +2268,7 @@ namespace CasKev.GridToolkit
             {
                 return false;
             }
-            return _directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y, _majorOrder)] != NextNodeDirection.NONE;
+            return _directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y, _majorOrder)] != NextTileDirection.NONE;
         }
         /// <summary>
         /// Get the next tile on the path between a tile and the target.
@@ -2267,14 +2288,13 @@ namespace CasKev.GridToolkit
         /// </summary>
         /// <param name="tile">The tile</param>
         /// <returns>A Vector2Int direction</returns>
-        public Vector2Int GetNextTileDirectionFromTile(T[,] grid, T tile)
+        public NextTileDirection GetNextTileDirectionFromTile(T[,] grid, T tile)
         {
             if (!IsTileAccessible(grid, tile))
             {
                 throw new Exception("Do not call DirectionMap method with an inaccessible tile");
             }
-            Vector2Int nextTileDirection = GridUtils.NextNodeDirectionToVector2Int(_directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y, _majorOrder)]);
-            return nextTileDirection;
+            return _directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y, _majorOrder)];
         }
         /// <summary>
         /// Get all the tiles on the path from a tile to the target.
@@ -2320,8 +2340,18 @@ namespace CasKev.GridToolkit
         /// <returns>An array of tiles</returns>
         public T[] GetPathFromTarget(T[,] grid, T destinationTile, bool includeDestination = true, bool includeTarget = true)
         {
-            return GetPathToTarget(grid, destinationTile, includeDestination, includeTarget).Reverse().ToArray();
+            T[] path = GetPathToTarget(grid, destinationTile, includeDestination, includeTarget);
+            T[] reversedPath = new T[path.Length];
+            for (int i = 0; i < path.Length; i++)
+            {
+                reversedPath[i] = path[path.Length - 1 - i];
+            }
+            return reversedPath;
         }
+        /// <summary>
+        /// Returns the Directionmap serialized as a byte array.
+        /// </summary>
+        /// <returns>A byte array representing the serialized DirectionMap</returns>
         public byte[] ToByteArray()
         {
             int bytesCount = sizeof(byte) + sizeof(int) + sizeof(int) + sizeof(byte) * _directionMap.Length;
@@ -2340,6 +2370,12 @@ namespace CasKev.GridToolkit
             }
             return bytes;
         }
+        /// <summary>
+        /// Returns the Directionmap serialized as a byte array.
+        /// </summary>
+        /// <param name="progress">An optional IProgress object to get the serialization progression</param>
+        /// <param name="cancelToken">An optional CancellationToken object to cancel the serialization</param>
+        /// <returns>A byte array representing the serialized DirectionMap</returns>
         public Task<byte[]> ToByteArrayAsync(IProgress<float> progress = null, CancellationToken cancelToken = default)
         {
             Task<byte[]> task = Task.Run(() =>
@@ -2367,6 +2403,12 @@ namespace CasKev.GridToolkit
             });
             return task;
         }
+        /// <summary>
+        /// Returns a DirectionMap from a byte array that has been serialized with the ToByteArray method.
+        /// </summary>
+        /// <param name="grid">The user grid</param>
+        /// <param name="bytes">The serialized byte array</param>
+        /// <returns>The deserialized DirectionMap</returns>
         public static DirectionMap<T> FromByteArray(T[,] grid, byte[] bytes)
         {
             if (grid == null)
@@ -2380,14 +2422,22 @@ namespace CasKev.GridToolkit
             byteIndex += sizeof(int);
             int count = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
             byteIndex += sizeof(int);
-            NextNodeDirection[] directionMap = new NextNodeDirection[count];
+            NextTileDirection[] directionMap = new NextTileDirection[count];
             for (int i = 0; i < count; i++)
             {
-                directionMap[i] = (NextNodeDirection)bytes[byteIndex];
+                directionMap[i] = (NextTileDirection)bytes[byteIndex];
                 byteIndex++;
             }
             return new DirectionMap<T>(directionMap, target, majorOrder);
         }
+        /// <summary>
+        /// Returns a DirectionMap from a byte array that has been serialized with the ToByteArray method.
+        /// </summary>
+        /// <param name="grid">The user grid</param>
+        /// <param name="bytes">The serialized byte array</param>
+        /// <param name="progress">An optional IProgress object to get the deserialization progression</param>
+        /// <param name="cancelToken">An optional CancellationToken object to cancel the deserialization</param>
+        /// <returns>The deserialized DirectionMap</returns>
         public static DirectionMap<T> FromByteArrayAsync(T[,] grid, byte[] bytes, IProgress<float> progress = null, CancellationToken cancelToken = default)
         {
             if (grid == null)
@@ -2401,7 +2451,7 @@ namespace CasKev.GridToolkit
             byteIndex += sizeof(int);
             int count = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
             byteIndex += sizeof(int);
-            NextNodeDirection[] directionMap = new NextNodeDirection[count];
+            NextTileDirection[] directionMap = new NextTileDirection[count];
             for (int i = 0; i < count; i++)
             {
                 if (cancelToken.IsCancellationRequested)
@@ -2409,7 +2459,7 @@ namespace CasKev.GridToolkit
                     return null;
                 }
                 progress.Report((float)i / count);
-                directionMap[i] = (NextNodeDirection)bytes[byteIndex];
+                directionMap[i] = (NextTileDirection)bytes[byteIndex];
                 byteIndex++;
             }
             return new DirectionMap<T>(directionMap, target, majorOrder);
@@ -2427,76 +2477,76 @@ namespace CasKev.GridToolkit
     /// </summary>
     public static class GridUtils
     {
-        internal static NextNodeDirection GetDirectionTo(ITile tileA, ITile tileB)
+        internal static NextTileDirection GetDirectionTo(ITile tileA, ITile tileB)
         {
             int dx = tileB.X - tileA.X;
             int dy = tileB.Y - tileA.Y;
 
-            if (dx == 0 && dy == 0) return NextNodeDirection.SELF;
-            if (dx == 0 && dy == -1) return NextNodeDirection.DOWN;
-            if (dx == 0 && dy == 1) return NextNodeDirection.UP;
-            if (dx == -1 && dy == 0) return NextNodeDirection.LEFT;
-            if (dx == 1 && dy == 0) return NextNodeDirection.RIGHT;
-            if (dx == -1 && dy == -1) return NextNodeDirection.DOWN_LEFT;
-            if (dx == 1 && dy == -1) return NextNodeDirection.DOWN_RIGHT;
-            if (dx == -1 && dy == 1) return NextNodeDirection.UP_LEFT;
-            if (dx == 1 && dy == 1) return NextNodeDirection.UP_RIGHT;
+            if (dx == 0 && dy == 0) return NextTileDirection.SELF;
+            if (dx == 0 && dy == -1) return NextTileDirection.DOWN;
+            if (dx == 0 && dy == 1) return NextTileDirection.UP;
+            if (dx == -1 && dy == 0) return NextTileDirection.LEFT;
+            if (dx == 1 && dy == 0) return NextTileDirection.RIGHT;
+            if (dx == -1 && dy == -1) return NextTileDirection.DOWN_LEFT;
+            if (dx == 1 && dy == -1) return NextTileDirection.DOWN_RIGHT;
+            if (dx == -1 && dy == 1) return NextTileDirection.UP_LEFT;
+            if (dx == 1 && dy == 1) return NextTileDirection.UP_RIGHT;
 
-            return NextNodeDirection.NONE;
+            return NextTileDirection.NONE;
         }
-        internal static NextNodeDirection Vector2IntToNextNodeDirection(Vector2Int dir)
+        internal static NextTileDirection Vector2IntToNextNodeDirection(Vector2Int dir)
         {
             switch (dir)
             {
                 case Vector2Int v when v == Vector2Int.zero:
-                    return NextNodeDirection.SELF;
+                    return NextTileDirection.SELF;
                 case Vector2Int v when v == Vector2Int.up:
-                    return NextNodeDirection.UP;
+                    return NextTileDirection.UP;
                 case Vector2Int v when v == Vector2Int.down:
-                    return NextNodeDirection.DOWN;
+                    return NextTileDirection.DOWN;
                 case Vector2Int v when v == Vector2Int.left:
-                    return NextNodeDirection.LEFT;
+                    return NextTileDirection.LEFT;
                 case Vector2Int v when v == Vector2Int.right:
-                    return NextNodeDirection.RIGHT;
+                    return NextTileDirection.RIGHT;
                 case Vector2Int v when v == new Vector2Int(-1, 1):
-                    return NextNodeDirection.UP_LEFT;
+                    return NextTileDirection.UP_LEFT;
                 case Vector2Int v when v == new Vector2Int(1, 1):
-                    return NextNodeDirection.UP_RIGHT;
+                    return NextTileDirection.UP_RIGHT;
                 case Vector2Int v when v == new Vector2Int(-1, -1):
-                    return NextNodeDirection.DOWN_LEFT;
+                    return NextTileDirection.DOWN_LEFT;
                 case Vector2Int v when v == new Vector2Int(1, -1):
-                    return NextNodeDirection.DOWN_RIGHT;
+                    return NextTileDirection.DOWN_RIGHT;
                 default:
-                    return NextNodeDirection.NONE;
+                    return NextTileDirection.NONE;
             }
         }
-        internal static Vector2Int NextNodeDirectionToVector2Int(NextNodeDirection dir)
+        internal static Vector2Int NextNodeDirectionToVector2Int(NextTileDirection dir)
         {
             switch (dir)
             {
-                case NextNodeDirection.LEFT:
+                case NextTileDirection.LEFT:
                     return Vector2Int.left;
-                case NextNodeDirection.RIGHT:
+                case NextTileDirection.RIGHT:
                     return Vector2Int.right;
-                case NextNodeDirection.DOWN:
+                case NextTileDirection.DOWN:
                     return Vector2Int.down;
-                case NextNodeDirection.UP:
+                case NextTileDirection.UP:
                     return Vector2Int.up;
-                case NextNodeDirection.UP_LEFT:
+                case NextTileDirection.UP_LEFT:
                     return new(-1, 1);
-                case NextNodeDirection.UP_RIGHT:
+                case NextTileDirection.UP_RIGHT:
                     return new(1, 1);
-                case NextNodeDirection.DOWN_LEFT:
+                case NextTileDirection.DOWN_LEFT:
                     return new(-1, -1);
-                case NextNodeDirection.DOWN_RIGHT:
+                case NextTileDirection.DOWN_RIGHT:
                     return new(1, -1);
-                case NextNodeDirection.NONE:
-                case NextNodeDirection.SELF:
+                case NextTileDirection.NONE:
+                case NextTileDirection.SELF:
                 default:
                     return Vector2Int.zero;
             }
         }
-        public static Vector2Int GetCoordinatesFromFlatIndex(Vector2Int gridDimensions, int flatIndex, MajorOrder order)
+        internal static Vector2Int GetCoordinatesFromFlatIndex(Vector2Int gridDimensions, int flatIndex, MajorOrder order)
         {
             DefaultMajorOrder majorOrder = ResolveMajorOrder(order);
 
@@ -2513,7 +2563,7 @@ namespace CasKev.GridToolkit
                 return new Vector2Int(x, y);
             }
         }
-        public static int GetFlatIndexFromCoordinates(Vector2Int gridDimensions, int x, int y, MajorOrder order)
+        internal static int GetFlatIndexFromCoordinates(Vector2Int gridDimensions, int x, int y, MajorOrder order)
         {
             DefaultMajorOrder majorOrder = ResolveMajorOrder(order);
             if (majorOrder == DefaultMajorOrder.ROW_MAJOR_ORDER)
@@ -2524,11 +2574,6 @@ namespace CasKev.GridToolkit
             {
                 return x * gridDimensions.x + y;
             }
-        }
-        public static T GetTileOnFlatGrid<T>(Vector2Int gridDimensions, T[] map, int x, int y, MajorOrder majorOrder)
-        {
-            int flatIndex = GetFlatIndexFromCoordinates(gridDimensions, x, y, majorOrder);
-            return map[flatIndex];
         }
         internal static DefaultMajorOrder ResolveMajorOrder(MajorOrder majorOrder)
         {
@@ -2593,7 +2638,6 @@ namespace CasKev.GridToolkit
                 return map[x, y];
             }
         }
-
         /// <summary>
         /// Returns the horizontal length of a grid
         /// </summary>

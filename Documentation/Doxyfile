@@ -1,0 +1,33 @@
+# --- Entrée / Langage ---
+PROJECT_NAME           = "Unity Grid Toolkit"
+PROJECT_BRIEF          = "Utilitary API to proceed operations on abstract grids such as tile extraction, raycasting, and pathfinding."
+OUTPUT_DIRECTORY       = docs
+INPUT                  = Runtime Editor Samples~ README.md
+FILE_PATTERNS          = *.cs *.md
+RECURSIVE              = YES
+
+# C# => utiliser l'optimisation Java/C# de Doxygen
+OPTIMIZE_OUTPUT_JAVA   = YES
+EXTRACT_ALL            = NO
+EXTRACT_PRIVATE        = NO
+EXTRACT_STATIC         = YES
+EXTRACT_LOCAL_CLASSES  = YES
+EXTRACT_LOCAL_METHODS  = YES
+
+# --- HTML ---
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+GENERATE_TREEVIEW      = YES
+FULL_PATH_NAMES        = NO
+USE_MDFILE_AS_MAINPAGE = README.md
+
+# --- Graphs (facultatif mais utile) ---
+HAVE_DOT               = YES
+CALL_GRAPH             = NO
+CALLER_GRAPH           = NO
+CLASS_DIAGRAMS         = YES
+DOT_IMAGE_FORMAT       = svg
+
+# --- Divers ---
+WARN_IF_UNDOCUMENTED   = YES
+QUIET                  = YES
