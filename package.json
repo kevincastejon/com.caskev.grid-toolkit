@@ -11,6 +11,8 @@
     "raycasting",
     "pathfinding"
   ],
+  "documentationUrl": "https://kevincastejon.github.io/com.caskev.unity-grid-toolkit/index.html",
+  "changelogUrl": "https://github.com/kevincastejon/com.caskev.unity-grid-toolkit/blob/main/CHANGELOG.md",
   "samples": [
     {
       "displayName": "Shared Assets",
