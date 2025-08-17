@@ -31,3 +31,6 @@ DOT_IMAGE_FORMAT       = svg
 # --- Divers ---
 WARN_IF_UNDOCUMENTED   = YES
 QUIET                  = YES
+MARKDOWN_SUPPORT       = YES
+EXTENSION_MAPPING      = md=markdown
+TOC_INCLUDE_HEADINGS   = 2
