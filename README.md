@@ -1,9 +1,9 @@
-# **<u>GridToolkit</u>**
+# GridToolkit
 
 Utilitary API to proceed operations on abstract grids such as tile extraction, raycasting, and pathfinding.
 
 ---
-# **Usage**
+## Usage
 
 All you need to use this API is a bi-dimensional array of tiles.
 
@@ -19,30 +19,30 @@ using KevinCastejon.GridToolkit;
 
 ---
 ---
-# **API**
+## API
 ---
 ---
-## **MajorOrder**
+### MajorOrder
 
-When working with two-dimensional arrays there is two ways of storing tiles, first rows then lines or the opposite.<br>
-This is called the **Major Order**, you can specify it on the last parameter of each method that uses a grid.<br>
+When working with two-dimensional arrays there is two ways of storing tiles, first rows then lines or the opposite.  
+This is called the **Major Order**, you can specify it on the last parameter of each method that uses a grid.  
 
 
-**<u>DEFAULT</u>** : Refers to the global setting **DefaultMajorOrder** value.<br>
-**<u>ROW_MAJOR_ORDER</u>** : YX. First index is rows, second is columns.<br>
-**<u>COLUMN_MAJOR_ORDER</u>** : XY. First index is columns, second is rows.<br>
+**DEFAULT** : Refers to the global setting **DefaultMajorOrder** value.  
+**ROW_MAJOR_ORDER** : YX. First index is rows, second is columns.  
+**COLUMN_MAJOR_ORDER** : XY. First index is columns, second is rows.  
 
-It can be counter intuitive as the row index actually indicates the vertical position of the tile in the grid, and the column index indicates the horizontal position of the tile in the grid.<br>
+It can be counter intuitive as the row index actually indicates the vertical position of the tile in the grid, and the column index indicates the horizontal position of the tile in the grid.  
 
-Note that, in **C#**, the conventional major order is **ROW_MAJOR_ORDER**, and so is the default value for this library until you explicitely specify it.<br>
+Note that, in **C#**, the conventional major order is **ROW_MAJOR_ORDER**, and so is the default value for this library until you explicitely specify it.  
 
 ![MajorOrderSchema](Documentation/MajorOrderSchema.png)
 
 ---
 ---
-## - **<u>Extraction</u>**
+### - **Extraction**
 ---
-Allows you to extract tiles on a grid.<br>
+Allows you to extract tiles on a grid.  
 Provides shape extraction (rectangles, circles, cones and lines) and neighbors extraction with a lot of parameters.
 
 ---
@@ -122,12 +122,12 @@ bool isTileNeighbor = Extraction.IsTileAnyNeighbor(tile, neighbor);
 ```
 
 ---
-## - **<u>Raycasting</u>**
+### - **Raycasting**
 ---
 Allows you to cast lines of sight and cones of vision on a grid
 
 ---
-You can get the **line of sight** from a tile (a line that "stops" at the first encountered unwalkable tile).<br>
+You can get the **line of sight** from a tile (a line that "stops" at the first encountered unwalkable tile).  
 Many signatures are available to specify the length and direction of the line.
 
 - **GetLineOfSight**
@@ -135,7 +135,7 @@ Many signatures are available to specify the length and direction of the line.
 YourCustomTileType[] lineOfSight = Raycasting.GetLineOfSight(grid, startTile, destinationTile);
 ```
 ---
-You can get the **cone of vision** from a tile.<br>
+You can get the **cone of vision** from a tile.  
 Many signatures are available to specify the length and direction of the cone.
 
 - **GetConeOfVision**
@@ -155,20 +155,20 @@ bool isConeClear = Raycasting.IsConeOfVisionClear(grid, startTile, destinationTi
 ```
 
 ---
-## - **<u>Pathfinding</u>**
+### - **Pathfinding**
 ---
-Allows you to calculate paths between tiles.<br>
-This API offers a method which generates and returns a direction map. A direction map can be seen as a "layer" on top of the user grid that indicates, for each accessible tile, the direction to the next tile, ultimately leading to the target tile.<br>
-A direction map holds all the paths to a target tile from all the accessible tiles on the grid.<br>
-Storing this DirectionMap object allows you to reconstruct paths between tiles without having to recalculate them every time, which can be costly in terms of performance.<br>
+Allows you to calculate paths between tiles.  
+This API offers a method which generates and returns a direction map. A direction map can be seen as a "layer" on top of the user grid that indicates, for each accessible tile, the direction to the next tile, ultimately leading to the target tile.  
+A direction map holds all the paths to a target tile from all the accessible tiles on the grid.  
+Storing this DirectionMap object allows you to reconstruct paths between tiles without having to recalculate them every time, which can be costly in terms of performance.  
 
 *Note that, obviously, any path calculation is valid as long as the user grid, and walkable states of the tiles, remains unchanged*
 
 ---
 
-### **<u>DirectionMap</u>**
+#### DirectionMap
 
-You can generate a **DirectionMap** object that holds pre-calculated paths data.<br>
+You can generate a **DirectionMap** object that holds pre-calculated paths data.  
 This way of doing pathfinding is useful for some usages (like Tower Defenses and more) because it calculates once all the paths between one tile, called the "**target**", and all the accessible tiles from it. (The **DirectionMap** generation uses **Dijkstra** algorithm).
 
 To generate the **DirectionMap** object, use the **GenerateDirectionMap** method that needs the *grid* and the *target* tile from which to calculate the paths, as parameters.
