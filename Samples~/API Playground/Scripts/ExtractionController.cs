@@ -226,7 +226,6 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
         private void Start()
         {
             _centerTile = _grid.CenterTile;
-            Debug.Log(_centerTile.X+" "+_centerTile.Y);
             Extract();
         }
         private void Update()
