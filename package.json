@@ -21,7 +21,7 @@
     },
     {
       "displayName": "API Playground",
-      "description": "Explore the API through a comprehensive UI",
+      "description": "Install the 'Shared Assets' sample prior to this one. Explore the API through a comprehensive UI",
       "path": "Samples~/API Playground"
     }
   ],
