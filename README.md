@@ -24,7 +24,7 @@ using KevinCastejon.GridToolkit;
 ## API
 
 ---
-### MajorOrder
+#### MajorOrder
 
 When working with two-dimensional arrays there is two ways of storing tiles, first rows then lines or the opposite.  
 This is called the **Major Order**, you can specify it on the last parameter of each method that uses a grid.  
@@ -42,7 +42,7 @@ Note that, in **C#**, the conventional major order is **ROW_MAJOR_ORDER**, and s
 
 ---
 
-### - Extraction
+### Extraction
 
 ---
 Allows you to extract tiles on a grid.  
@@ -126,7 +126,7 @@ bool isTileNeighbor = Extraction.IsTileAnyNeighbor(tile, neighbor);
 
 ---
 
-### - Raycasting
+### Raycasting
 
 ---
 Allows you to cast lines of sight and cones of vision on a grid
@@ -161,7 +161,7 @@ bool isConeClear = Raycasting.IsConeOfVisionClear(grid, startTile, destinationTi
 
 ---
 
-### - Pathfinding
+### Pathfinding
 
 ---
 Allows you to calculate paths between tiles.  
