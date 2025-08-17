@@ -181,7 +181,7 @@ This way of doing pathfinding is useful for some usages (like Tower Defenses and
 To generate the **DirectionMap** object, use the **GenerateDirectionMap** method that needs the *grid* and the *target* tile from which to calculate the paths, as parameters.
 
 ```cs
-DirectionMap<YourCustomTileType> directionMap = Pathfinding.GenerateDirectionMap(grid, targetTile);
+DirectionMap directionMap = Pathfinding.GenerateDirectionMap(grid, targetTile);
 ```
 
 Once the **DirectionMap** object is generated, you can use its several and almost "*cost free*" methods and properties.
@@ -236,4 +236,18 @@ You can get the next tile direction on the path between the target and a tile (i
 - **GetNextTileDirectionFromTile**
 ```cs
 NextTileDirection nextTileDirection = directionMap.GetNextTileDirectionFromTile(grid, tile);
+```
+
+You can serialize the generated **DirectionMap** to a byte array. Usefull for path baking in edit time.
+
+- **ToByteArray**
+```cs
+byte[] serializedDirectionMap = directionMap.ToByteArray();
+```
+
+You can deserialize a byte array to a **DirectionMap**. Usefull for loading baked paths at runtime.
+
+- **FromByteArray**
+```cs
+DirectionMap directionMap = DirectionMap.FromByteArray(grid, serializedDirectionMap);
 ```

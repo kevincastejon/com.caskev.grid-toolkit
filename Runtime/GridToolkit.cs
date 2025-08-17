@@ -2140,9 +2140,9 @@ namespace CasKev.GridToolkit
         /// <param name="progress">An optional IProgress object to get the generation progression</param>
         /// <param name="cancelToken">An optional CancellationToken object to cancel the generation</param>
         /// <returns>A DirectionMap object</returns>
-        public static Task<DirectionMap<T>> GenerateDirectionMapAsync<T>(T[,] grid, T targetTile, MajorOrder majorOrder = MajorOrder.DEFAULT, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : ITile
+        public static Task<DirectionMap> GenerateDirectionMapAsync<T>(T[,] grid, T targetTile, MajorOrder majorOrder = MajorOrder.DEFAULT, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : ITile
         {
-            Task<DirectionMap<T>> task = Task.Run(() =>
+            Task<DirectionMap> task = Task.Run(() =>
             {
                 if (targetTile == null || !targetTile.IsWalkable)
                 {
@@ -2185,7 +2185,7 @@ namespace CasKev.GridToolkit
                     }
                     neighbourgs.Clear();
                 }
-                return new DirectionMap<T>(directionMap, targetIndex, majorOrder);
+                return new DirectionMap(directionMap, targetIndex, majorOrder);
             });
             return task;
         }
@@ -2197,7 +2197,7 @@ namespace CasKev.GridToolkit
         /// <param name="targetTile">The target tile for the paths calculation</param>
         /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A DirectionMap object</returns>
-        public static DirectionMap<T> GenerateDirectionMap<T>(T[,] grid, T targetTile, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static DirectionMap GenerateDirectionMap<T>(T[,] grid, T targetTile, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
             if (targetTile == null || !targetTile.IsWalkable)
             {
@@ -2233,7 +2233,7 @@ namespace CasKev.GridToolkit
                 }
                 neighbourgs.Clear();
             }
-            return new DirectionMap<T>(directionMap, targetIndex, majorOrder);
+            return new DirectionMap(directionMap, targetIndex, majorOrder);
         }
     }
 
@@ -2244,7 +2244,7 @@ namespace CasKev.GridToolkit
     /// <i>Note that, obviously, any path calculation is valid as long as the user grid, and walkable states of the tiles, remains unchanged</i>
     /// </summary>
     /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-    public class DirectionMap<T> where T : ITile
+    public class DirectionMap
     {
         private readonly NextTileDirection[] _directionMap;
         private readonly int _target;
@@ -2266,7 +2266,7 @@ namespace CasKev.GridToolkit
         /// </summary>
         /// <param name="tile">The tile to check</param>
         /// <returns>A boolean value</returns>
-        public bool IsTileAccessible(T[,] grid, T tile)
+        public bool IsTileAccessible<T>(T[,] grid, T tile) where T : ITile
         {
             if (tile == null)
             {
@@ -2279,7 +2279,7 @@ namespace CasKev.GridToolkit
         /// </summary>
         /// <param name="grid">A two-dimensional array of tiles</param>
         /// <returns></returns>
-        public T GetTargetTile(T[,] grid)
+        public T GetTargetTile<T>(T[,] grid) where T : ITile
         {
             Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _target, _majorOrder);
             return GridUtils.GetTile(grid, targetCoords.x, targetCoords.y, _majorOrder);
@@ -2290,7 +2290,7 @@ namespace CasKev.GridToolkit
         /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="tile">A tile</param>
         /// <returns>A tile object</returns>
-        public T GetNextTileFromTile(T[,] grid, T tile)
+        public T GetNextTileFromTile<T>(T[,] grid, T tile) where T : ITile
         {
             if (!IsTileAccessible(grid, tile))
             {
@@ -2304,7 +2304,7 @@ namespace CasKev.GridToolkit
         /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="tile">The tile</param>
         /// <returns>A Vector2Int direction</returns>
-        public NextTileDirection GetNextTileDirectionFromTile(T[,] grid, T tile)
+        public NextTileDirection GetNextTileDirectionFromTile<T>(T[,] grid, T tile) where T : ITile
         {
             if (!IsTileAccessible(grid, tile))
             {
@@ -2320,7 +2320,7 @@ namespace CasKev.GridToolkit
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeTarget">Include the target tile into the resulting array or not</param>
         /// <returns>An array of tiles</returns>
-        public T[] GetPathToTarget(T[,] grid, T startTile, bool includeStart = true, bool includeTarget = true)
+        public T[] GetPathToTarget<T>(T[,] grid, T startTile, bool includeStart = true, bool includeTarget = true) where T : ITile
         {
             if (!IsTileAccessible(grid, startTile))
             {
@@ -2356,7 +2356,7 @@ namespace CasKev.GridToolkit
         /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
         /// <param name="includeTarget">Include the target tile into the resulting array or not</param>
         /// <returns>An array of tiles</returns>
-        public T[] GetPathFromTarget(T[,] grid, T destinationTile, bool includeDestination = true, bool includeTarget = true)
+        public T[] GetPathFromTarget<T>(T[,] grid, T destinationTile, bool includeDestination = true, bool includeTarget = true) where T : ITile
         {
             T[] path = GetPathToTarget(grid, destinationTile, includeDestination, includeTarget);
             T[] reversedPath = new T[path.Length];
@@ -2427,7 +2427,7 @@ namespace CasKev.GridToolkit
         /// <param name="grid">The user grid</param>
         /// <param name="bytes">The serialized byte array</param>
         /// <returns>The deserialized DirectionMap</returns>
-        public static DirectionMap<T> FromByteArray(T[,] grid, byte[] bytes)
+        public static DirectionMap FromByteArray<T>(T[,] grid, byte[] bytes)
         {
             if (grid == null)
             {
@@ -2446,7 +2446,7 @@ namespace CasKev.GridToolkit
                 directionMap[i] = (NextTileDirection)bytes[byteIndex];
                 byteIndex++;
             }
-            return new DirectionMap<T>(directionMap, target, majorOrder);
+            return new DirectionMap(directionMap, target, majorOrder);
         }
         /// <summary>
         /// Returns a DirectionMap from a byte array that has been serialized with the ToByteArray method.
@@ -2456,7 +2456,7 @@ namespace CasKev.GridToolkit
         /// <param name="progress">An optional IProgress object to get the deserialization progression</param>
         /// <param name="cancelToken">An optional CancellationToken object to cancel the deserialization</param>
         /// <returns>The deserialized DirectionMap</returns>
-        public static DirectionMap<T> FromByteArrayAsync(T[,] grid, byte[] bytes, IProgress<float> progress = null, CancellationToken cancelToken = default)
+        public static DirectionMap FromByteArrayAsync<T>(T[,] grid, byte[] bytes, IProgress<float> progress = null, CancellationToken cancelToken = default)
         {
             if (grid == null)
             {
@@ -2480,9 +2480,9 @@ namespace CasKev.GridToolkit
                 directionMap[i] = (NextTileDirection)bytes[byteIndex];
                 byteIndex++;
             }
-            return new DirectionMap<T>(directionMap, target, majorOrder);
+            return new DirectionMap(directionMap, target, majorOrder);
         }
-        private T GetNextTile(T[,] grid, T tile)
+        private T GetNextTile<T>(T[,] grid, T tile) where T : ITile
         {
             Vector2Int nextTileDirection = GridUtils.NextNodeDirectionToVector2Int(_directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y, _majorOrder)]);
             Vector2Int nextTileCoords = new(tile.X + nextTileDirection.x, tile.Y + nextTileDirection.y);

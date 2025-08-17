@@ -6,6 +6,7 @@
 
 ### Changed
 - Removed int Target property on DirectionMap.
+- Generic type constraints optimized on DirectionMap.
 
 ### Fixed
 - Some cs doc comments issues.
