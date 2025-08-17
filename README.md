@@ -20,7 +20,9 @@ using KevinCastejon.GridToolkit;
 ```
 
 ---
+
 ## API
+
 ---
 ### MajorOrder
 
@@ -39,7 +41,9 @@ Note that, in **C#**, the conventional major order is **ROW_MAJOR_ORDER**, and s
 ![MajorOrderSchema](Documentation/MajorOrderSchema.png)
 
 ---
+
 ### - Extraction
+
 ---
 Allows you to extract tiles on a grid.  
 Provides shape extraction (rectangles, circles, cones and lines) and neighbors extraction with a lot of parameters.
@@ -121,7 +125,9 @@ bool isTileNeighbor = Extraction.IsTileAnyNeighbor(tile, neighbor);
 ```
 
 ---
+
 ### - Raycasting
+
 ---
 Allows you to cast lines of sight and cones of vision on a grid
 
@@ -154,7 +160,9 @@ bool isConeClear = Raycasting.IsConeOfVisionClear(grid, startTile, destinationTi
 ```
 
 ---
+
 ### - Pathfinding
+
 ---
 Allows you to calculate paths between tiles.  
 This API offers a method which generates and returns a direction map. A direction map can be seen as a "layer" on top of the user grid that indicates, for each accessible tile, the direction to the next tile, ultimately leading to the target tile.  
