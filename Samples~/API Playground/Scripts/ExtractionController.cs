@@ -41,6 +41,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
         [SerializeField] private Slider _angleSlider;
         [SerializeField] private Slider _rectangleSizeXSlider;
         [SerializeField] private Slider _rectangleSizeYSlider;
+        [SerializeField] private TextMeshProUGUI _hoveredTileLabel;
         [SerializeField] private bool _allowDiagonals = true;
         [SerializeField] private bool _favorVertical = false;
         [SerializeField][Min(0)] private int _radius = 5;
@@ -225,10 +226,12 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
         private void Start()
         {
             _centerTile = _grid.CenterTile;
+            Debug.Log(_centerTile.X+" "+_centerTile.Y);
             Extract();
         }
         private void Update()
         {
+            _hoveredTileLabel.text = _grid.ClampedHoveredTile == null ? "" : ("X:" + _grid.ClampedHoveredTile.X + " Y:" + _grid.ClampedHoveredTile.Y);
             if ((_grid.JustEnteredClampedTile && Input.GetMouseButton(1)) || (Input.GetMouseButtonDown(1) && _grid.ClampedHoveredTile != _centerTile))
             {
                 _centerTile = _grid.ClampedHoveredTile;

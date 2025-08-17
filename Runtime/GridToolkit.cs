@@ -29,7 +29,7 @@ namespace CasKev.GridToolkit
         ROW_MAJOR_ORDER,
         COLUMN_MAJOR_ORDER
     }
-    internal enum NextNodeDirection : byte
+    public enum NextNodeDirection : byte
     {
         NONE,
         SELF,
@@ -1970,7 +1970,7 @@ namespace CasKev.GridToolkit
         {
             if (GetTile(map, x - 1, y, out nei, majorOrder))
             {
-                if (nei != null && !nei.IsWalkable)
+                if (nei != null && nei.IsWalkable)
                 {
                     return true;
                 }
@@ -1981,7 +1981,7 @@ namespace CasKev.GridToolkit
         {
             if (GetTile(map, x + 1, y, out nei, majorOrder))
             {
-                if (nei != null && !nei.IsWalkable)
+                if (nei != null && nei.IsWalkable)
                 {
                     return true;
                 }
@@ -1992,7 +1992,7 @@ namespace CasKev.GridToolkit
         {
             if (GetTile(map, x, y - 1, out nei, majorOrder))
             {
-                if (nei != null && !nei.IsWalkable)
+                if (nei != null && nei.IsWalkable)
                 {
                     return true;
                 }
@@ -2003,7 +2003,7 @@ namespace CasKev.GridToolkit
         {
             if (GetTile(map, x, y + 1, out nei, majorOrder))
             {
-                if (nei != null && !nei.IsWalkable)
+                if (nei != null && nei.IsWalkable)
                 {
                     return true;
                 }
@@ -2014,7 +2014,7 @@ namespace CasKev.GridToolkit
         {
             if (GetTile(map, x - 1, y - 1, out nei, majorOrder))
             {
-                if (nei != null && !nei.IsWalkable)
+                if (nei != null && nei.IsWalkable)
                 {
                     return true;
                 }
@@ -2025,7 +2025,7 @@ namespace CasKev.GridToolkit
         {
             if (GetTile(map, x - 1, y + 1, out nei, majorOrder))
             {
-                if (nei != null && !nei.IsWalkable)
+                if (nei != null && nei.IsWalkable)
                 {
                     return true;
                 }
@@ -2036,7 +2036,7 @@ namespace CasKev.GridToolkit
         {
             if (GetTile(map, x + 1, y - 1, out nei, majorOrder))
             {
-                if (nei != null && !nei.IsWalkable)
+                if (nei != null && nei.IsWalkable)
                 {
                     return true;
                 }
@@ -2047,7 +2047,7 @@ namespace CasKev.GridToolkit
         {
             if (GetTile(map, x + 1, y + 1, out nei, majorOrder))
             {
-                if (nei != null && !nei.IsWalkable)
+                if (nei != null && nei.IsWalkable)
                 {
                     return true;
                 }
@@ -2122,11 +2122,11 @@ namespace CasKev.GridToolkit
                 }
                 int width = grid.GetLength(0);
                 int height = grid.GetLength(1);
-                Vector2Int gridSize = new Vector2Int(width, height);
+                Vector2Int gridDimensions = new Vector2Int(width, height);
                 int totalSize = width * height;
                 NextNodeDirection[] directionMap = new NextNodeDirection[totalSize];
                 bool[] visited = new bool[totalSize];
-                int targetIndex = GridUtils.GetFlatIndexFromCoordinates(gridSize, targetTile.X, targetTile.Y, majorOrder);
+                int targetIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, targetTile.X, targetTile.Y, majorOrder);
                 visited[targetIndex] = true;
                 directionMap[targetIndex] = NextNodeDirection.SELF;
                 Queue<T> frontier = new Queue<T>();
@@ -2146,7 +2146,7 @@ namespace CasKev.GridToolkit
                     GetTileNeighbours(ref neighbourgs, grid, current.X, current.Y, majorOrder);
                     foreach (T neiTile in neighbourgs)
                     {
-                        neighborIndex = GridUtils.GetFlatIndexFromCoordinates(gridSize, neiTile.X, neiTile.Y, majorOrder);
+                        neighborIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, neiTile.X, neiTile.Y, majorOrder);
                         if (!visited[neighborIndex])
                         {
                             visitedCount++;
@@ -2179,11 +2179,11 @@ namespace CasKev.GridToolkit
             }
             int width = grid.GetLength(0);
             int height = grid.GetLength(1);
-            Vector2Int gridSize = new Vector2Int(width, height);
+            Vector2Int gridDimensions = new Vector2Int(width, height);
             int totalSize = width * height;
             NextNodeDirection[] directionMap = new NextNodeDirection[totalSize];
             bool[] visited = new bool[totalSize];
-            int targetIndex = GridUtils.GetFlatIndexFromCoordinates(gridSize, targetTile.X, targetTile.Y, majorOrder);
+            int targetIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, targetTile.X, targetTile.Y, majorOrder);
             visited[targetIndex] = true;
             directionMap[targetIndex] = NextNodeDirection.SELF;
             Queue<T> frontier = new Queue<T>();
@@ -2197,7 +2197,7 @@ namespace CasKev.GridToolkit
                 GetTileNeighbours(ref neighbourgs, grid, current.X, current.Y, majorOrder);
                 foreach (T neiTile in neighbourgs)
                 {
-                    neighborIndex = GridUtils.GetFlatIndexFromCoordinates(gridSize, neiTile.X, neiTile.Y, majorOrder);
+                    neighborIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, neiTile.X, neiTile.Y, majorOrder);
                     if (!visited[neighborIndex])
                     {
                         visited[neighborIndex] = true;
@@ -2217,7 +2217,7 @@ namespace CasKev.GridToolkit
     /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
     public class DirectionMap<T> where T : ITile
     {
-        private readonly NextNodeDirection[] _directionMap;
+        public readonly NextNodeDirection[] _directionMap;
         private readonly int _target;
         private readonly MajorOrder _majorOrder;
 
@@ -2247,10 +2247,10 @@ namespace CasKev.GridToolkit
             {
                 return false;
             }
-            return GridUtils.GetTileOnFlatGrid(new(grid.GetLength(0), grid.GetLength(1)), _directionMap, tile.X, tile.Y, _majorOrder) != NextNodeDirection.NONE;
+            return _directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y, _majorOrder)] != NextNodeDirection.NONE;
         }
         /// <summary>
-        /// Get the next tile on the path between the target and a tile.
+        /// Get the next tile on the path between a tile and the target.
         /// </summary>
         /// <param name="tile">A tile</param>
         /// <returns>A tile object</returns>
@@ -2260,9 +2260,7 @@ namespace CasKev.GridToolkit
             {
                 throw new Exception("Do not call DirectionMap method with an inaccessible tile");
             }
-            Vector2Int nextTileDirection = GridUtils.NextNodeDirectionToVector2Int(GridUtils.GetTileOnFlatGrid(new(grid.GetLength(0), grid.GetLength(1)), _directionMap, tile.X, tile.Y, _majorOrder));
-            Vector2Int nextTileIndices = new(tile.X + nextTileDirection.x, tile.Y + nextTileDirection.y);
-            return GridUtils.GetTile(grid, nextTileIndices.x, nextTileIndices.y, _majorOrder);
+            return GetNextTile(grid, tile);
         }
         /// <summary>
         /// Get the next tile on the path between the target and a tile.
@@ -2275,7 +2273,7 @@ namespace CasKev.GridToolkit
             {
                 throw new Exception("Do not call DirectionMap method with an inaccessible tile");
             }
-            Vector2Int nextTileDirection = GridUtils.NextNodeDirectionToVector2Int(GridUtils.GetTileOnFlatGrid(new Vector2Int(grid.GetLength(0), grid.GetLength(1)), _directionMap, tile.X, tile.Y, _majorOrder));
+            Vector2Int nextTileDirection = GridUtils.NextNodeDirectionToVector2Int(_directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y, _majorOrder)]);
             return nextTileDirection;
         }
         /// <summary>
@@ -2418,7 +2416,7 @@ namespace CasKev.GridToolkit
         }
         private T GetNextTile(T[,] grid, T tile)
         {
-            Vector2Int nextTileDirection = GridUtils.NextNodeDirectionToVector2Int(GridUtils.GetTileOnFlatGrid(new(grid.GetLength(0), grid.GetLength(1)), _directionMap, tile.X, tile.Y, _majorOrder));
+            Vector2Int nextTileDirection = GridUtils.NextNodeDirectionToVector2Int(_directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y, _majorOrder)]);
             Vector2Int nextTileCoords = new(tile.X + nextTileDirection.x, tile.Y + nextTileDirection.y);
             return GridUtils.GetTile(grid, nextTileCoords.x, nextTileCoords.y, _majorOrder);
         }
@@ -2498,38 +2496,38 @@ namespace CasKev.GridToolkit
                     return Vector2Int.zero;
             }
         }
-        internal static Vector2Int GetCoordinatesFromFlatIndex(Vector2Int gridSize, int flatIndex, MajorOrder order)
+        public static Vector2Int GetCoordinatesFromFlatIndex(Vector2Int gridDimensions, int flatIndex, MajorOrder order)
         {
             DefaultMajorOrder majorOrder = ResolveMajorOrder(order);
 
             if (majorOrder == DefaultMajorOrder.ROW_MAJOR_ORDER)
             {
-                int y = flatIndex / gridSize.y;
-                int x = flatIndex % gridSize.y;
+                int y = flatIndex / gridDimensions.y;
+                int x = flatIndex % gridDimensions.y;
                 return new Vector2Int(x, y);
             }
             else // COLUMN_MAJOR_ORDER
             {
-                int x = flatIndex / gridSize.x;
-                int y = flatIndex % gridSize.x;
+                int x = flatIndex / gridDimensions.x;
+                int y = flatIndex % gridDimensions.x;
                 return new Vector2Int(x, y);
             }
         }
-        internal static int GetFlatIndexFromCoordinates(Vector2Int gridSize, int x, int y, MajorOrder order)
+        public static int GetFlatIndexFromCoordinates(Vector2Int gridDimensions, int x, int y, MajorOrder order)
         {
             DefaultMajorOrder majorOrder = ResolveMajorOrder(order);
             if (majorOrder == DefaultMajorOrder.ROW_MAJOR_ORDER)
             {
-                return y * gridSize.y + x;
+                return y * gridDimensions.y + x;
             }
             else
             {
-                return x * gridSize.x + y;
+                return x * gridDimensions.x + y;
             }
         }
-        internal static T GetTileOnFlatGrid<T>(Vector2Int gridSize, T[] map, int x, int y, MajorOrder majorOrder)
+        public static T GetTileOnFlatGrid<T>(Vector2Int gridDimensions, T[] map, int x, int y, MajorOrder majorOrder)
         {
-            int flatIndex = GetFlatIndexFromCoordinates(gridSize, x, y, majorOrder);
+            int flatIndex = GetFlatIndexFromCoordinates(gridDimensions, x, y, majorOrder);
             return map[flatIndex];
         }
         internal static DefaultMajorOrder ResolveMajorOrder(MajorOrder majorOrder)

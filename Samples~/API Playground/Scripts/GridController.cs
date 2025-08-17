@@ -44,7 +44,6 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
             _camera = Camera.main;
             _tileMap = GetComponent<Tilemap>();
             _map = new Tile[_tileMap.size.y, _tileMap.size.x];
-            Debug.Log(_tileMap.size);
             for (int y = 0; y < _tileMap.size.y; y++)
             {
                 for (int x = 0; x < _tileMap.size.x; x++)
