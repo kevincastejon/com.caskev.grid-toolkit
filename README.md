@@ -176,7 +176,7 @@ Storing this DirectionMap object allows you to reconstruct paths between tiles w
 #### DirectionMap
 
 You can generate a **DirectionMap** object that holds pre-calculated paths data.  
-This way of doing pathfinding is useful for some usages (like Tower Defenses and more) because it calculates once all the paths between one tile, called the "**target**", and all the accessible tiles from it. (The **DirectionMap** generation uses **Dijkstra** algorithm).
+This way of doing pathfinding is useful for some usages (like Tower Defenses and more) because it calculates once all the paths between one tile, called the "**target**", and all the accessible tiles from it.
 
 To generate the **DirectionMap** object, use the **GenerateDirectionMap** method that needs the *grid* and the *target* tile from which to calculate the paths, as parameters.
 
@@ -188,13 +188,6 @@ Once the **DirectionMap** object is generated, you can use its several and almos
 
 ---
 
-You can retrieve the tile that has been used as the target to generate this **DirectionMap**
-
-- **Target**
-```cs
-YourCustomTileType tile = directionMap.Target;
-```
-
 You can retrieve the **majorOrder** parameter value that has been used to generate this **DirectionMap**
 
 - **MajorOrder**
@@ -203,37 +196,44 @@ MajorOrder majorOrder = directionMap.MajorOrder;
 ```
 ---
 
+You can retrieve the tile that has been used as the target to generate this **DirectionMap**.
+
+- **GetTarget**
+```cs
+YourCustomTileType targetTile = directionMap.GetTarget(grid);
+```
+
 You can get all the tiles on the path from a tile to the target.
 
 - **GetPathToTarget**
 ```cs
-YourCustomTileType[] tiles = directionMap.GetPathToTarget(startTile);
+YourCustomTileType[] tiles = directionMap.GetPathToTarget(grid, startTile);
 ```
 
 Or you can get all the tiles on the path from the target to a tile.
 
 - **GetPathFromTarget**
 ```cs
-YourCustomTileType[] tiles = directionMap.GetPathFromTarget(destinationTile);
+YourCustomTileType[] tiles = directionMap.GetPathFromTarget(grid, destinationTile);
 ```
 
 You can know if a tile is accessible from the target tile. This is useful before calling the following **DirectionMap** methods that only takes an accessible tile as parameter.
 
 - **IsTileAccessible**
 ```cs
-bool isTileAccessible = directionMap.IsTileAccessible(tile);
+bool isTileAccessible = directionMap.IsTileAccessible(grid, tile);
 ```
 
 You can get the next tile on the path between the target and a tile.
 
 - **GetNextTileFromTile**
 ```cs
-YourCustomTileType nextTile = directionMap.GetNextTileFromTile(tile);
+YourCustomTileType nextTile = directionMap.GetNextTileFromTile(grid, tile);
 ```
 
-You can get the next tile direction on the path between the target and a tile (in 2D grid coordinates).
+You can get the next tile direction on the path between the target and a tile (in 2D grid coordinates). NextTileDirection is an enum representing the eight possible directions.
 
 - **GetNextTileDirectionFromTile**
 ```cs
-NextTileDirection nextTileDirection = directionMap.GetNextTileDirectionFromTile(tile);
+NextTileDirection nextTileDirection = directionMap.GetNextTileDirectionFromTile(grid, tile);
 ```

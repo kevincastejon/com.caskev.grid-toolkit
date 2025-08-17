@@ -1,10 +1,18 @@
+using Codice.Client.BaseCommands;
+using Codice.Client.Common;
+using Palmmedia.ReportGenerator.Core;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Unity.VisualScripting.YamlDotNet.Core.Tokens;
 using UnityEngine;
+using static Codice.Client.Common.EventTracking.TrackFeatureUseEvent.Features.DesktopGUI.Filters;
+using static UnityEditor.VersionControl.Asset;
+using static UnityEngine.GraphicsBuffer;
+using static UnityEngine.UIElements.UxmlAttributeDescription;
 /// <summary>
 /// Utilitary API to proceed operations on abstract grids such as tile extraction, raycasting, and pathfinding.
 /// </summary>
@@ -1946,13 +1954,10 @@ namespace CasKev.GridToolkit
     }
 
     /// <summary>
-    /// Allows you to calculate paths between tiles.<br>
-    /// This API offers several way of doing pathfinding.<br>
-    /// You can calculate the path directly every time you need (with the **CalculatePath** method), but this can become heavy if you do it too frequently.<br>
-    /// Instead, you can generate objects that will hold multiple paths data that can be reused later. There is two types of objects that you can generate:<br>
-    /// - **DirectionMap** - Will calculate and hold all the paths **to a specific tile from every accessible tiles**
-    /// 
-    /// *Note that, obviously, any path calculation is valid as long as the walkable state of the tiles remain unchanged*
+    /// Allows you to calculate paths between tiles.  
+    /// This API offers a method which generates and returns a direction map.A direction map can be seen as a "layer" on top of the user grid that indicates, for each accessible tile, the direction to the next tile, ultimately leading to the target tile.  
+    /// A direction map holds all the paths to a target tile from all the accessible tiles on the grid.
+    /// Storing this DirectionMap object allows you to reconstruct paths between tiles without having to recalculate them every time, which can be costly in terms of performance.
     /// </summary>
     public class Pathfinding
     {
@@ -2233,7 +2238,10 @@ namespace CasKev.GridToolkit
     }
 
     /// <summary>
-    /// An object containing all the pre-calculated paths data between a target tile and all the accessible tiles from this target.
+    /// You can generate a DirectionMap object that holds pre-calculated paths data.
+    /// This way of doing pathfinding is useful for some usages(like Tower Defenses and more) because it calculates once all the paths between one tile, called the "target", and all the accessible tiles from it.
+    /// To generate the DirectionMap object, use the GenerateDirectionMap method that needs the* grid* and the target tile from which to calculate the paths, as parameters.
+    /// <i>Note that, obviously, any path calculation is valid as long as the user grid, and walkable states of the tiles, remains unchanged</i>
     /// </summary>
     /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
     public class DirectionMap<T> where T : ITile
@@ -2248,10 +2256,6 @@ namespace CasKev.GridToolkit
             _target = target;
             _majorOrder = majorOrder;
         }
-        /// <summary>
-        /// The tile that has been used as the target to generate this DirectionMap
-        /// </summary>
-        public int Target { get => _target; }
         /// <summary>
         /// The MajorOrder parameter value that has been used to generate this DirectionMap
         /// </summary>
@@ -2271,8 +2275,19 @@ namespace CasKev.GridToolkit
             return _directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y, _majorOrder)] != NextTileDirection.NONE;
         }
         /// <summary>
+        /// Returns the tile that has been used as the target to generate this DirectionMap
+        /// </summary>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <returns></returns>
+        public T GetTargetTile(T[,] grid)
+        {
+            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _target, _majorOrder);
+            return GridUtils.GetTile(grid, targetCoords.x, targetCoords.y, _majorOrder);
+        }
+        /// <summary>
         /// Get the next tile on the path between a tile and the target.
         /// </summary>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="tile">A tile</param>
         /// <returns>A tile object</returns>
         public T GetNextTileFromTile(T[,] grid, T tile)
@@ -2286,6 +2301,7 @@ namespace CasKev.GridToolkit
         /// <summary>
         /// Get the next tile on the path between the target and a tile.
         /// </summary>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="tile">The tile</param>
         /// <returns>A Vector2Int direction</returns>
         public NextTileDirection GetNextTileDirectionFromTile(T[,] grid, T tile)
@@ -2299,6 +2315,7 @@ namespace CasKev.GridToolkit
         /// <summary>
         /// Get all the tiles on the path from a tile to the target.
         /// </summary>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeTarget">Include the target tile into the resulting array or not</param>
@@ -2334,6 +2351,7 @@ namespace CasKev.GridToolkit
         /// <summary>
         /// Get all the tiles on the path from the target to a tile.
         /// </summary>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="destinationTile">The destination tile</param>
         /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
         /// <param name="includeTarget">Include the target tile into the resulting array or not</param>
@@ -2593,89 +2611,89 @@ namespace CasKev.GridToolkit
         /// <summary>
         /// Return clamped coordinates into the grid
         /// </summary>
-        /// <typeparam name="T">The user-defined type representing a tile (no need to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array</param>
+        /// <typeparam name="T">Any type</typeparam>
+        /// <param name="grid">A two-dimensional array</param>
         /// <param name="x">Horizontal coordinate to clamp</param>
         /// <param name="y">Vertical coordinate to clamp</param>
         /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A Vector2Int representing the clamped coordinates</returns>
-        public static Vector2Int ClampCoordsIntoGrid<T>(T[,] map, int x, int y, MajorOrder majorOrder)
+        public static Vector2Int ClampCoordsIntoGrid<T>(T[,] grid, int x, int y, MajorOrder majorOrder)
         {
-            return new Vector2Int(Mathf.Clamp(x, 0, GetHorizontalLength(map, majorOrder) - 1), Mathf.Clamp(y, 0, GetVerticalLength(map, majorOrder) - 1));
+            return new Vector2Int(Mathf.Clamp(x, 0, GetHorizontalLength(grid, majorOrder) - 1), Mathf.Clamp(y, 0, GetVerticalLength(grid, majorOrder) - 1));
         }
         /// <summary>
         /// Check if specific coordinates are into the grid range
         /// </summary>
-        /// <typeparam name="T">The user-defined type representing a tile (no need to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array</param>
+        /// <typeparam name="T">Any type</typeparam>
+        /// <param name="grid">A two-dimensional array</param>
         /// <param name="x">Horizontal coordinate to check</param>
         /// <param name="y">Vertical coordinate to check</param>
         /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
-        public static bool AreCoordsIntoGrid<T>(T[,] map, int x, int y, MajorOrder majorOrder)
+        public static bool AreCoordsIntoGrid<T>(T[,] grid, int x, int y, MajorOrder majorOrder)
         {
-            return x >= 0 && x < GetHorizontalLength(map, majorOrder) && y >= 0 && y < GetVerticalLength(map, majorOrder);
+            return x >= 0 && x < GetHorizontalLength(grid, majorOrder) && y >= 0 && y < GetVerticalLength(grid, majorOrder);
         }
         /// <summary>
         /// Returns a tile with automatic handling of the majorOrder
         /// </summary>
-        /// <typeparam name="T">The user-defined type representing a tile (no need to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array</param>
+        /// <typeparam name="T">Any type</typeparam>
+        /// <param name="grid">A two-dimensional array</param>
         /// <param name="x">Horizontal coordinate of the tile</param>
         /// <param name="y">Vertical coordinate of the tile</param>
         /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A tile</returns>
-        public static T GetTile<T>(T[,] map, int x, int y, MajorOrder majorOrder)
+        public static T GetTile<T>(T[,] grid, int x, int y, MajorOrder majorOrder)
         {
             DefaultMajorOrder resolvedMajorOrder = ResolveMajorOrder(majorOrder);
 
             if (resolvedMajorOrder == DefaultMajorOrder.ROW_MAJOR_ORDER)
             {
-                return map[y, x];
+                return grid[y, x];
             }
             else
             {
-                return map[x, y];
+                return grid[x, y];
             }
         }
         /// <summary>
         /// Returns the horizontal length of a grid
         /// </summary>
-        /// <typeparam name="T">The user-defined type representing a tile (no need to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array</param>
+        /// <typeparam name="T">Any type</typeparam>
+        /// <param name="grid">A two-dimensional array</param>
         /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>The horizontal length of a grid</returns>
-        public static int GetHorizontalLength<T>(T[,] map, MajorOrder majorOrder)
+        public static int GetHorizontalLength<T>(T[,] grid, MajorOrder majorOrder)
         {
             DefaultMajorOrder resolvedMajorOrder = ResolveMajorOrder(majorOrder);
 
             if (resolvedMajorOrder == DefaultMajorOrder.ROW_MAJOR_ORDER)
             {
-                return map.GetLength(1);
+                return grid.GetLength(1);
             }
             else
             {
-                return map.GetLength(0);
+                return grid.GetLength(0);
             }
         }
         /// <summary>
         /// Returns the vertical length of a grid
         /// </summary>
-        /// <typeparam name="T">The user-defined type representing a tile (no need to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array</param>
+        /// <typeparam name="T">Any type</typeparam>
+        /// <param name="grid">A two-dimensional array</param>
         /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>The vertical length of a grid</returns>
-        public static int GetVerticalLength<T>(T[,] map, MajorOrder majorOrder)
+        public static int GetVerticalLength<T>(T[,] grid, MajorOrder majorOrder)
         {
             DefaultMajorOrder resolvedMajorOrder = ResolveMajorOrder(majorOrder);
 
             if (resolvedMajorOrder == DefaultMajorOrder.ROW_MAJOR_ORDER)
             {
-                return map.GetLength(0);
+                return grid.GetLength(0);
             }
             else
             {
-                return map.GetLength(1);
+                return grid.GetLength(1);
             }
         }
     }
