@@ -1,0 +1,63 @@
+using System;
+using UnityEngine;
+using Caskev.GridToolkit;
+
+namespace GridToolkitTests
+{
+    public class TestTile : ITile
+    {
+        public bool IsWalkable { get; set; }
+        public int X { get; }
+        public int Y { get; }
+        public TestTile(int x, int y, bool walkable = true) { X = x; Y = y; IsWalkable = walkable; }
+        public override string ToString() => $"({X},{Y}) W:{IsWalkable}";
+    }
+
+    public static class GridFactory
+    {
+        public static TestTile[,] Build(int w, int h, MajorOrder order, Func<int, int, bool> walkable = null)
+        {
+            walkable ??= ((x, y) => true);
+
+            if (order == MajorOrder.ROW_MAJOR_ORDER)
+            {
+                var g = new TestTile[h, w];
+                for (int y = 0; y < h; y++) for (int x = 0; x < w; x++) g[y, x] = new TestTile(x, y, walkable(x, y));
+                return g;
+            }
+            else
+            {
+                var g = new TestTile[w, h];
+                for (int x = 0; x < w; x++) for (int y = 0; y < h; y++) g[x, y] = new TestTile(x, y, walkable(x, y));
+                return g;
+            }
+        }
+        public static TestTile[,] Build(bool[][] grid, MajorOrder order)
+        {
+            if (order == MajorOrder.ROW_MAJOR_ORDER)
+            {
+                var g = new TestTile[grid.Length, grid[0].Length];
+                for (int i = 0; i < g.GetLength(0); i++)
+                {
+                    for (int j = 0; j < g.GetLength(1); j++)
+                    {
+                        g[i, j] = new TestTile(j, i, grid[i][j]);
+                    }
+                }
+                return g;
+            }
+            else
+            {
+                var g = new TestTile[grid.Length, grid[0].Length];
+                for (int i = 0; i < g.GetLength(0); i++)
+                {
+                    for (int j = 0; j < g.GetLength(1); j++)
+                    {
+                        g[i, j] = new TestTile(i, j, grid[i][j]);
+                    }
+                }
+                return g;
+            }
+        }
+    }
+}

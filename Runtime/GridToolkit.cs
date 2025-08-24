@@ -1,22 +1,14 @@
-using Codice.Client.BaseCommands;
-using Codice.Client.Common;
-using Palmmedia.ReportGenerator.Core;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Unity.VisualScripting.YamlDotNet.Core.Tokens;
 using UnityEngine;
-using static Codice.Client.Common.EventTracking.TrackFeatureUseEvent.Features.DesktopGUI.Filters;
-using static UnityEditor.VersionControl.Asset;
-using static UnityEngine.GraphicsBuffer;
-using static UnityEngine.UIElements.UxmlAttributeDescription;
 /// <summary>
 /// Utilitary API to proceed operations on abstract grids such as tile extraction, raycasting, and pathfinding.
 /// </summary>
-namespace CasKev.GridToolkit
+namespace Caskev.GridToolkit
 {
     public enum DefaultMajorOrder
     {
@@ -517,16 +509,16 @@ namespace CasKev.GridToolkit
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="center">The center tile</param>
-        /// <param name="rectangleSize">The Vector2Int representing rectangle size</param>
+        /// <param name="rectangleExtends">The Vector2Int representing the extends of the rectangle from the center</param>
         /// <param name="includeCenter">Include the center tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default true</param>
         /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesInARectangle<T>(T[,] map, T center, Vector2Int rectangleSize, bool includeCenter = true, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetTilesInARectangle<T>(T[,] map, T center, Vector2Int rectangleExtends, bool includeCenter = true, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
-            rectangleSize.x = rectangleSize.x < 1 ? 1 : rectangleSize.x;
-            rectangleSize.y = rectangleSize.y < 1 ? 1 : rectangleSize.y;
-            return ExtractRectangle(map, center, rectangleSize, includeCenter, includeWalls, majorOrder);
+            rectangleExtends.x = rectangleExtends.x < 1 ? 1 : rectangleExtends.x;
+            rectangleExtends.y = rectangleExtends.y < 1 ? 1 : rectangleExtends.y;
+            return ExtractRectangle(map, center, rectangleExtends, includeCenter, includeWalls, majorOrder);
         }
         /// <summary>
         /// Get tiles on a rectangle outline around a tile.<br/>
@@ -535,15 +527,15 @@ namespace CasKev.GridToolkit
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="center">The center tile</param>
-        /// <param name="rectangleSize">The Vector2Int representing rectangle size</param>
+        /// <param name="rectangleExtends">The Vector2Int representing the extends of the rectangle from the center</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default true</param>
         /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesOnARectangleOutline<T>(T[,] map, T center, Vector2Int rectangleSize, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetTilesOnARectangleOutline<T>(T[,] map, T center, Vector2Int rectangleExtends, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
-            rectangleSize.x = rectangleSize.x < 1 ? 1 : rectangleSize.x;
-            rectangleSize.y = rectangleSize.y < 1 ? 1 : rectangleSize.y;
-            return ExtractRectangleOutline(map, center, rectangleSize, includeWalls, majorOrder);
+            rectangleExtends.x = rectangleExtends.x < 1 ? 1 : rectangleExtends.x;
+            rectangleExtends.y = rectangleExtends.y < 1 ? 1 : rectangleExtends.y;
+            return ExtractRectangleOutline(map, center, rectangleExtends, includeWalls, majorOrder);
         }
 
         /// <summary>
@@ -927,12 +919,12 @@ namespace CasKev.GridToolkit
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="tile">A tile</param>
         /// <param name="center">The center tile of the rectangle</param>
-        /// <param name="rectangleSize">The Vector2Int representing the rectangle size</param>
+        /// <param name="rectangleExtends">The Vector2Int representing the extends of the rectangle from the center</param>
         /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileInARectangle<T>(T[,] map, T tile, T center, Vector2Int rectangleSize, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static bool IsTileInARectangle<T>(T[,] map, T tile, T center, Vector2Int rectangleExtends, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
-            return IsInARectangle(map, tile, center, rectangleSize, majorOrder);
+            return IsInARectangle(map, tile, center, rectangleExtends, majorOrder);
         }
         /// <summary>
         /// Is this tile on a rectangle outline or not.
@@ -941,12 +933,12 @@ namespace CasKev.GridToolkit
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="tile">A tile</param>
         /// <param name="center">The center tile of the rectangle</param>
-        /// <param name="rectangleSize">The Vector2Int representing the rectangle size</param>
+        /// <param name="rectangleExtends">The Vector2Int representing the extends of the rectangle from the center</param>
         /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileOnARectangleOutline<T>(T[,] map, T tile, T center, Vector2Int rectangleSize, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static bool IsTileOnARectangleOutline<T>(T[,] map, T tile, T center, Vector2Int rectangleExtends, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
-            return IsOnRectangleOutline(map, tile, center, rectangleSize, majorOrder);
+            return IsOnRectangleOutline(map, tile, center, rectangleExtends, majorOrder);
         }
 
         /// <summary>
@@ -2456,31 +2448,35 @@ namespace CasKev.GridToolkit
         /// <param name="progress">An optional IProgress object to get the deserialization progression</param>
         /// <param name="cancelToken">An optional CancellationToken object to cancel the deserialization</param>
         /// <returns>The deserialized DirectionMap</returns>
-        public static DirectionMap FromByteArrayAsync<T>(T[,] grid, byte[] bytes, IProgress<float> progress = null, CancellationToken cancelToken = default)
+        public static Task<DirectionMap> FromByteArrayAsync<T>(T[,] grid, byte[] bytes, IProgress<float> progress = null, CancellationToken cancelToken = default)
         {
-            if (grid == null)
+            Task<DirectionMap> task = Task.Run(() =>
             {
-                throw new ArgumentException("The grid cannot be null");
-            }
-            int byteIndex = 0;
-            MajorOrder majorOrder = (MajorOrder)bytes[0];
-            byteIndex++;
-            int target = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
-            byteIndex += sizeof(int);
-            int count = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
-            byteIndex += sizeof(int);
-            NextTileDirection[] directionMap = new NextTileDirection[count];
-            for (int i = 0; i < count; i++)
-            {
-                if (cancelToken.IsCancellationRequested)
+                if (grid == null)
                 {
-                    return null;
+                    throw new ArgumentException("The grid cannot be null");
                 }
-                progress.Report((float)i / count);
-                directionMap[i] = (NextTileDirection)bytes[byteIndex];
+                int byteIndex = 0;
+                MajorOrder majorOrder = (MajorOrder)bytes[0];
                 byteIndex++;
-            }
-            return new DirectionMap(directionMap, target, majorOrder);
+                int target = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
+                byteIndex += sizeof(int);
+                int count = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
+                byteIndex += sizeof(int);
+                NextTileDirection[] directionMap = new NextTileDirection[count];
+                for (int i = 0; i < count; i++)
+                {
+                    if (cancelToken.IsCancellationRequested)
+                    {
+                        return null;
+                    }
+                    progress.Report((float)i / count);
+                    directionMap[i] = (NextTileDirection)bytes[byteIndex];
+                    byteIndex++;
+                }
+                return new DirectionMap(directionMap, target, majorOrder);
+            });
+            return task;
         }
         private T GetNextTile<T>(T[,] grid, T tile) where T : ITile
         {
