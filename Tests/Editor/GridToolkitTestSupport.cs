@@ -32,28 +32,28 @@ namespace GridToolkitTests
                 return g;
             }
         }
-        public static TestTile[,] Build(bool[][] grid, MajorOrder order)
+        public static TestTile[,] Build(bool[,] grid, MajorOrder order)
         {
             if (order == MajorOrder.ROW_MAJOR_ORDER)
             {
-                var g = new TestTile[grid.Length, grid[0].Length];
+                var g = new TestTile[grid.GetLength(0), grid.GetLength(1)];
                 for (int i = 0; i < g.GetLength(0); i++)
                 {
                     for (int j = 0; j < g.GetLength(1); j++)
                     {
-                        g[i, j] = new TestTile(j, i, grid[i][j]);
+                        g[i, j] = new TestTile(j, i, grid[i,j]);
                     }
                 }
                 return g;
             }
             else
             {
-                var g = new TestTile[grid.Length, grid[0].Length];
+                var g = new TestTile[grid.GetLength(1), grid.GetLength(0)];
                 for (int i = 0; i < g.GetLength(0); i++)
                 {
                     for (int j = 0; j < g.GetLength(1); j++)
                     {
-                        g[i, j] = new TestTile(i, j, grid[i][j]);
+                        g[i, j] = new TestTile(i, j, grid[j,i]);
                     }
                 }
                 return g;
