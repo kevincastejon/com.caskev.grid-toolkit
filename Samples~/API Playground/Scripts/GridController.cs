@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using CasKev.GridToolkit;
+using Caskev.GridToolkit;
 
 namespace GridToolkitWorkingProject.Demos.APIPlayground
 {
@@ -76,7 +76,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
                 _clampedHoveredTile = null;
                 return;
             }
-            Vector2Int mouseWorldPos = Vector2Int.RoundToInt(_camera.ScreenToWorldPoint(Input.mousePosition));
+            Vector2Int mouseWorldPos = (Vector2Int)_tileMap.WorldToCell(_camera.ScreenToWorldPoint(Input.mousePosition));
             Vector2Int clampedMouseWorldPos = new Vector2Int(Mathf.Clamp(mouseWorldPos.x, 0, _tileMap.size.x - 1), Mathf.Clamp(mouseWorldPos.y, 0, _tileMap.size.y - 1));
             if (mouseWorldPos.x >= 0 && mouseWorldPos.x < _tileMap.size.x && mouseWorldPos.y >= 0 && mouseWorldPos.y < _tileMap.size.y)
             {
@@ -171,7 +171,21 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
         }
         private void ClearCenter()
         {
-            _tileMap.SetColor(new Vector3Int(_centerTile.X, _centerTile.Y), _floorColor);
+            if (_highlightedTiles != null && _highlightedTiles.Contains(_centerTile))
+            {
+                _tileMap.SetColor(new Vector3Int(_centerTile.X, _centerTile.Y), _highlightedColor);
+            }
+            else
+            {
+                if (_centerTile.IsWalkable)
+                {
+                    _tileMap.SetColor(new Vector3Int(_centerTile.X, _centerTile.Y), _floorColor);
+                }
+                else
+                {
+                    _tileMap.SetColor(new Vector3Int(_centerTile.X, _centerTile.Y), _wallColor);
+                }
+            }
         }
         private void ClearStart()
         {
@@ -181,7 +195,14 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
             }
             else
             {
-                _tileMap.SetColor(new Vector3Int(_startTile.X, _startTile.Y), _floorColor);
+                if (_startTile.IsWalkable)
+                {
+                    _tileMap.SetColor(new Vector3Int(_startTile.X, _startTile.Y), _floorColor);
+                }
+                else
+                {
+                    _tileMap.SetColor(new Vector3Int(_startTile.X, _startTile.Y), _wallColor);
+                }
             }
         }
         private void ClearHighlightedTiles()

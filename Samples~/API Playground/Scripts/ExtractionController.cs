@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using CasKev.GridToolkit;
+using Caskev.GridToolkit;
 
 namespace GridToolkitWorkingProject.Demos.APIPlayground
 {
@@ -53,7 +53,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
         private DemoType _demoType;
         private Tile _centerTile;
         private Tile _ledTile;
-        
+
         private void SetCurrentDemoType(DemoType value)
         {
             if (_demoType == value)
@@ -308,7 +308,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
                     _lineLED.color = Extraction.IsTileOnALine(_grid.Map, _ledTile, _centerTile, _radius, _direction, _allowDiagonals, _favorVertical) ? Color.green : Color.red;
                     break;
                 case DemoType.NEIGHBOR:
-                    _neiLED.color = Extraction.IsTileNeighbor(_ledTile, _centerTile, _direction) ? Color.green : Color.red;
+                    _neiLED.color = Extraction.IsTileNeighbor(_ledTile, _centerTile, _direction, false) ? Color.green : Color.red;
                     break;
                 case DemoType.NEIGHBORS_ORTHO:
                     _neiOrthoLED.color = Extraction.IsTileOrthogonalNeighbor(_ledTile, _centerTile) ? Color.green : Color.red;
@@ -325,7 +325,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
         }
         private void ExtractCircle()
         {
-            _grid.Refresh(_centerTile, Extraction.GetTilesInACircle(_grid.Map, _centerTile, _radius, false));
+            _grid.Refresh(_centerTile, Extraction.GetTilesInACircle(_grid.Map, _centerTile, _radius, false, false));
         }
         private void ExtractCircleOutline()
         {
@@ -345,14 +345,12 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
         }
         private void ExtractLine()
         {
-            _grid.Refresh(_centerTile, Extraction.GetTilesOnALine(_grid.Map, _centerTile, _radius, _direction, _allowDiagonals, _favorVertical, false));
+            _grid.Refresh(_centerTile, Extraction.GetTilesOnALine(_grid.Map, _centerTile, _radius, _direction, _allowDiagonals, _favorVertical, false, false/*, false*/));
         }
         private void ExtractNeighbor()
         {
-            if (Extraction.GetTileNeighbour(_grid.Map, _centerTile, _direction, out Tile neighbor))
-            {
-                _grid.Refresh(_centerTile, new Tile[] { neighbor });
-            }
+            Extraction.GetTileNeighbour(_grid.Map, _centerTile, _direction, out Tile neighbor, false);
+            _grid.Refresh(_centerTile, new Tile[] { neighbor });
         }
         private void ExtractOrthoNeighbors()
         {

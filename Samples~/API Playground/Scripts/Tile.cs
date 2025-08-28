@@ -1,4 +1,4 @@
-﻿using CasKev.GridToolkit;
+﻿using Caskev.GridToolkit;
 
 namespace GridToolkitWorkingProject.Demos.APIPlayground
 {

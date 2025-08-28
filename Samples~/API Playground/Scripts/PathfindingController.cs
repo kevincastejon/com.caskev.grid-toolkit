@@ -1,4 +1,4 @@
-using CasKev.GridToolkit;
+using Caskev.GridToolkit;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -21,7 +21,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
         [SerializeField] private TextMeshProUGUI _progressWindow;
         [SerializeField] private TextMeshProUGUI _hoveredTileLabel;
         [SerializeField] private GridController _grid;
-        private DirectionMap<Tile> _directionMap;
+        private DirectionMap _directionMap;
         private List<Transform> _arrows = new();
         private Tile _targetTile;
         private Tile _startTile;
