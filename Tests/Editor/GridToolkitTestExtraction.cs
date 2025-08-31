@@ -1379,7 +1379,7 @@ namespace GridToolkitTests
         }
         [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
         [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void IsTileOnALine__NoDiagonals_FavorHorizontal(MajorOrder majorOrder)
+        public void IsTileOnALine_NoDiagonals_FavorHorizontal(MajorOrder majorOrder)
         {
             int coordX = 10;
             int coordY = 11;
@@ -1395,7 +1395,7 @@ namespace GridToolkitTests
         }
         [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
         [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void IsTileOnALine__NoDiagonals_FavorVertical(MajorOrder majorOrder)
+        public void IsTileOnALine_NoDiagonals_FavorVertical(MajorOrder majorOrder)
         {
             int coordX = 10;
             int coordY = 11;
