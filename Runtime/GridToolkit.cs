@@ -156,17 +156,8 @@ namespace Caskev.GridToolkit
             int F_M = 1 - radius;
             int d_e = 3;
             int d_ne = -(radius << 1) + 5;
-            T[] firstLineMirror = GetLineMirrors(map, center, x, y, openingAngle, direction, includeCenter, includeWalls, majorOrder);
-            Dictionary<T, bool> addedDico = new();
-            List<T> points = new List<T>();
-            for (int i = 0; i < firstLineMirror.Length; i++)
-            {
-                if (!addedDico.ContainsKey(firstLineMirror[i]))
-                {
-                    points.Add(firstLineMirror[i]);
-                    addedDico.Add(firstLineMirror[i], true);
-                }
-            }
+            HashSet<T> points = new();
+            GetLineMirrors(map, center, ref points, x, y, openingAngle, direction, includeCenter, includeWalls, majorOrder);
             while (x < -y)
             {
                 if (F_M <= 0)
@@ -182,15 +173,7 @@ namespace Caskev.GridToolkit
                 d_e += 2;
                 d_ne += 2;
                 x += 1;
-                T[] mirrorLine = GetLineMirrors(map, center, x, y, openingAngle, direction, includeCenter, includeWalls, majorOrder);
-                for (int i = 0; i < mirrorLine.Length; i++)
-                {
-                    if (!addedDico.ContainsKey(mirrorLine[i]))
-                    {
-                        points.Add(mirrorLine[i]);
-                        addedDico.Add(mirrorLine[i], true);
-                    }
-                }
+                GetLineMirrors(map, center, ref points, x, y, openingAngle, direction, includeCenter, includeWalls, majorOrder);
             }
             return points.ToArray();
         }
@@ -202,15 +185,10 @@ namespace Caskev.GridToolkit
             int d_e = 3;
             int d_ne = -(radius << 1) + 5;
             T[] firstLineMirror = GetTileMirrors(map, center, x, y, openingAngle, direction, includeWalls, majorOrder);
-            Dictionary<T, bool> addedDico = new();
-            List<T> points = new List<T>();
+            HashSet<T> points = new();
             for (int i = 0; i < firstLineMirror.Length; i++)
             {
-                if (!addedDico.ContainsKey(firstLineMirror[i]))
-                {
-                    points.Add(firstLineMirror[i]);
-                    addedDico.Add(firstLineMirror[i], true);
-                }
+                points.Add(firstLineMirror[i]);
             }
             while (x < -y)
             {
@@ -230,11 +208,7 @@ namespace Caskev.GridToolkit
                 T[] mirrorLine = GetTileMirrors(map, center, x, y, openingAngle, direction, includeWalls, majorOrder);
                 for (int i = 0; i < mirrorLine.Length; i++)
                 {
-                    if (!addedDico.ContainsKey(mirrorLine[i]))
-                    {
-                        points.Add(mirrorLine[i]);
-                        addedDico.Add(mirrorLine[i], true);
-                    }
+                    points.Add(mirrorLine[i]);
                 }
             }
             return points.ToArray();
@@ -308,9 +282,8 @@ namespace Caskev.GridToolkit
             }
             return neis.ToArray();
         }
-        private static T[] GetLineMirrors<T>(T[,] map, T centerTile, int x, int y, float openingAngle, Vector2 direction, bool includeCenter, bool includeWalls, MajorOrder majorOrder) where T : ITile
+        private static void GetLineMirrors<T>(T[,] map, T centerTile, ref HashSet<T> tiles, int x, int y, float openingAngle, Vector2 direction, bool includeCenter, bool includeWalls, MajorOrder majorOrder) where T : ITile
         {
-            List<T> neis = new List<T>();
             Vector2Int posLeft = GridUtils.ClampCoordsIntoGrid(map, x >= 0 ? centerTile.X - x : centerTile.X + x, centerTile.Y + y, majorOrder);
             Vector2Int posRight = GridUtils.ClampCoordsIntoGrid(map, x >= 0 ? centerTile.X + x : centerTile.X - x, centerTile.Y + y, majorOrder);
             for (int i = posLeft.x; i <= posRight.x; i++)
@@ -318,7 +291,7 @@ namespace Caskev.GridToolkit
                 T nei = GridUtils.GetTile(map, i, posLeft.y, majorOrder);
                 if ((includeWalls || nei.IsWalkable) && (includeCenter || !GridUtils.TileEquals(nei, centerTile)) && IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction))
                 {
-                    neis.Add(nei);
+                    tiles.Add(nei);
                 }
             }
             posLeft = GridUtils.ClampCoordsIntoGrid(map, x >= 0 ? centerTile.X - x : centerTile.X + x, centerTile.Y - y, majorOrder);
@@ -328,7 +301,7 @@ namespace Caskev.GridToolkit
                 T nei = GridUtils.GetTile(map, i, posLeft.y, majorOrder);
                 if ((includeWalls || nei.IsWalkable) && (includeCenter || !GridUtils.TileEquals(nei, centerTile)) && IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction))
                 {
-                    neis.Add(nei);
+                    tiles.Add(nei);
                 }
             }
             posLeft = GridUtils.ClampCoordsIntoGrid(map, y >= 0 ? centerTile.X - y : centerTile.X + y, centerTile.Y + x, majorOrder);
@@ -338,7 +311,7 @@ namespace Caskev.GridToolkit
                 T nei = GridUtils.GetTile(map, i, posLeft.y, majorOrder);
                 if ((includeWalls || nei.IsWalkable) && (includeCenter || !GridUtils.TileEquals(nei, centerTile)) && IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction))
                 {
-                    neis.Add(nei);
+                    tiles.Add(nei);
                 }
             }
             posLeft = GridUtils.ClampCoordsIntoGrid(map, y >= 0 ? centerTile.X - y : centerTile.X + y, centerTile.Y - x, majorOrder);
@@ -348,10 +321,9 @@ namespace Caskev.GridToolkit
                 T nei = GridUtils.GetTile(map, i, posLeft.y, majorOrder);
                 if ((includeWalls || nei.IsWalkable) && (includeCenter || !GridUtils.TileEquals(nei, centerTile)) && IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction))
                 {
-                    neis.Add(nei);
+                    tiles.Add(nei);
                 }
             }
-            return neis.ToArray();
         }
         private static bool IsInARectangle<T>(T[,] map, T tile, T center, Vector2Int rectangleSize, MajorOrder majorOrder) where T : ITile
         {
