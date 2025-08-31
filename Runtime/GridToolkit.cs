@@ -1449,7 +1449,7 @@ namespace Caskev.GridToolkit
             Vector2Int nei = new Vector2Int(centerTile.X + x, centerTile.Y + y);
             if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
             {
-                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), false, false, includeStart, true, true, out lineClear, majorOrder, ref resultList);
+                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, majorOrder, ref resultList);
             }
             if (!lineClear)
             {
@@ -1458,7 +1458,7 @@ namespace Caskev.GridToolkit
             nei = new Vector2Int(centerTile.X - x, centerTile.Y + y);
             if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
             {
-                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), false, false, includeStart, true, true, out lineClear, majorOrder, ref resultList);
+                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, majorOrder, ref resultList);
             }
             if (!lineClear)
             {
@@ -1467,7 +1467,7 @@ namespace Caskev.GridToolkit
             nei = new Vector2Int(centerTile.X + x, centerTile.Y - y);
             if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
             {
-                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), false, false, includeStart, true, true, out lineClear, majorOrder, ref resultList);
+                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, majorOrder, ref resultList);
                 if (!lineClear)
                 {
                     isClear = false;
@@ -1476,7 +1476,7 @@ namespace Caskev.GridToolkit
             nei = new Vector2Int(centerTile.X - x, centerTile.Y - y);
             if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
             {
-                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), false, false, includeStart, true, true, out lineClear, majorOrder, ref resultList);
+                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, majorOrder, ref resultList);
                 if (!lineClear)
                 {
                     isClear = false;
@@ -1485,7 +1485,7 @@ namespace Caskev.GridToolkit
             nei = new Vector2Int(centerTile.X + y, centerTile.Y + x);
             if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
             {
-                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), false, false, includeStart, true, true, out lineClear, majorOrder, ref resultList);
+                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, majorOrder, ref resultList);
                 if (!lineClear)
                 {
                     isClear = false;
@@ -1494,7 +1494,7 @@ namespace Caskev.GridToolkit
             nei = new Vector2Int(centerTile.X - y, centerTile.Y + x);
             if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
             {
-                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), false, false, includeStart, true, true, out lineClear, majorOrder, ref resultList);
+                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, majorOrder, ref resultList);
                 if (!lineClear)
                 {
                     isClear = false;
@@ -1503,7 +1503,7 @@ namespace Caskev.GridToolkit
             nei = new Vector2Int(centerTile.X + y, centerTile.Y - x);
             if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
             {
-                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), false, false, includeStart, true, true, out lineClear, majorOrder, ref resultList);
+                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, majorOrder, ref resultList);
                 if (!lineClear)
                 {
                     isClear = false;
@@ -1512,7 +1512,7 @@ namespace Caskev.GridToolkit
             nei = new Vector2Int(centerTile.X - y, centerTile.Y - x);
             if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
             {
-                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), false, false, includeStart, true, true, out lineClear, majorOrder, ref resultList);
+                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, majorOrder, ref resultList);
                 if (!lineClear)
                 {
                     isClear = false;
