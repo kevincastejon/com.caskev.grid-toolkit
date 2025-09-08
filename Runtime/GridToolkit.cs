@@ -2292,7 +2292,7 @@ namespace Caskev.GridToolkit
     /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
     public class DirectionMap
     {
-        private readonly NextTileDirection[] _directionMap;
+        internal readonly NextTileDirection[] _directionMap;
         private readonly int _target;
         private readonly MajorOrder _majorOrder;
 

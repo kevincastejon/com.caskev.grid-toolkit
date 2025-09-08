@@ -1,7 +1,8 @@
-using System.Threading;
-using System.Threading.Tasks;
+﻿using Caskev.GridToolkit;
 using NUnit.Framework;
-using Caskev.GridToolkit;
+using System.Collections.Generic;
+using UnityEngine;
+
 
 namespace GridToolkitTests
 {
@@ -9,7 +10,7 @@ namespace GridToolkitTests
     {
         TestTile[,] _gridRowMajorOrder;
         TestTile[,] _gridColMajorOrder;
-
+        Dictionary<char, NextTileDirection> _dirs = new() { { '0', NextTileDirection.NONE }, { '.', NextTileDirection.SELF }, { '↑', NextTileDirection.DOWN }, { '↓', NextTileDirection.UP }, { '←', NextTileDirection.LEFT }, { '→', NextTileDirection.RIGHT }, { '↖', NextTileDirection.DOWN_LEFT }, { '↗', NextTileDirection.DOWN_RIGHT }, { '↙', NextTileDirection.UP_LEFT }, { '↘', NextTileDirection.UP_RIGHT } };
         [SetUp]
         public void Setup()
         {
@@ -39,61 +40,99 @@ namespace GridToolkitTests
             _gridRowMajorOrder = GridFactory.Build(map, MajorOrder.ROW_MAJOR_ORDER);
             _gridColMajorOrder = GridFactory.Build(map, MajorOrder.COLUMN_MAJOR_ORDER);
         }
-
-        //[Test]
-        //public void GenerateDirectionMap_Sync_Covers_Basics()
+        [Test]
+        public void GenerateDirectionMap()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile[,] grid = _gridRowMajorOrder;
+            DirectionMap dirMap = Pathfinding.GenerateDirectionMap(grid, GridUtils.GetTile(grid, targetX, targetY, MajorOrder.ROW_MAJOR_ORDER), MajorOrder.ROW_MAJOR_ORDER);
+            NextTileDirection[] expectedDirMap = new NextTileDirection[20 * 25]
+            {
+                _dirs['↓'] , _dirs['0'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['0'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'],
+                _dirs['↓'] , _dirs['0'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['←'] , _dirs['←'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['0'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'],
+                _dirs['↓'] , _dirs['0'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['0'] , _dirs['0'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['0'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'],
+                _dirs['↓'] , _dirs['0'] , _dirs['→'] , _dirs['→'] , _dirs['→'] , _dirs['→'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['0'] , _dirs['0'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['0'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'],
+                _dirs['↓'] , _dirs['0'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['0'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['0'] , _dirs['0'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['0'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'],
+                _dirs['↓'] , _dirs['0'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['0'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'],
+                _dirs['↓'] , _dirs['0'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['0'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'],
+                _dirs['↓'] , _dirs['0'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['0'] , _dirs['→'] , _dirs['→'] , _dirs['→'] , _dirs['↓'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'],
+                _dirs['↓'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['↓'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['↑'] , _dirs['↑'],
+                _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['0'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['0'] , _dirs['↑'] , _dirs['↑'],
+                _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['0'] , _dirs['→'] , _dirs['.'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['0'] , _dirs['↑'] , _dirs['↑'],
+                _dirs['→'] , _dirs['→'] , _dirs['↓'] , _dirs['↓'] , _dirs['0'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['↑'] , _dirs['0'] , _dirs['↑'] , _dirs['↑'],
+                _dirs['0'] , _dirs['0'] , _dirs['↓'] , _dirs['↓'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['↑'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['0'] , _dirs['→'] , _dirs['→'] , _dirs['→'] , _dirs['↑'] , _dirs['0'] , _dirs['↑'] , _dirs['↑'],
+                _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['0'] , _dirs['↑'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['0'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['0'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['0'] , _dirs['↑'] , _dirs['↑'],
+                _dirs['↓'] , _dirs['↓'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['0'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['0'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['0'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['0'] , _dirs['↓'] , _dirs['↓'],
+                _dirs['↓'] , _dirs['↓'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['0'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['0'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['0'] , _dirs['↓'] , _dirs['↓'],
+                _dirs['→'] , _dirs['→'] , _dirs['→'] , _dirs['→'] , _dirs['→'] , _dirs['→'] , _dirs['→'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['0'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['↓'] , _dirs['↓'],
+                _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['0'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'] , _dirs['←'],
+                _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['0'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'],
+                _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['0'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'],
+            };
+            for (int i = 0; i < dirMap._directionMap.Length; i++)
+            {
+                NextTileDirection actualDir = dirMap._directionMap[i];
+                Assert.AreEqual(expectedDirMap[i], actualDir, $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), i, MajorOrder.ROW_MAJOR_ORDER)} should be {expectedDirMap[i]} but got {actualDir}");
+            }
+        }
+        [Test]
+        public void GenerateDirectionMapColumnMajorOrder()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile[,] grid = _gridColMajorOrder;
+            DirectionMap dirMap = Pathfinding.GenerateDirectionMap(grid, GridUtils.GetTile(grid, targetX, targetY, MajorOrder.COLUMN_MAJOR_ORDER), MajorOrder.COLUMN_MAJOR_ORDER);
+            NextTileDirection[] expectedDirMap = new NextTileDirection[25 * 20]
+            {
+                _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['→'] , _dirs['0'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['→'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] ,
+                _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['→'] , _dirs['→'] , _dirs['→'] , _dirs['→'] , _dirs['0'] , _dirs['0'] , _dirs['↓'] , _dirs['↓'] , _dirs['→'] , _dirs['0'] , _dirs['↓'] , _dirs['←'] , _dirs['←'] , _dirs['→'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] ,
+                _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['→'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['←'] , _dirs['0'] , _dirs['→'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] ,
+                _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['→'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['←'] , _dirs['0'] , _dirs['→'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] ,
+                _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['→'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['↓'] , _dirs['←'] , _dirs['0'] , _dirs['→'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] ,
+                _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['→'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['0'] , _dirs['0'] , _dirs['↓'] , _dirs['→'] , _dirs['↑'] , _dirs['0'] , _dirs['0'] , _dirs['←'] , _dirs['0'] , _dirs['→'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] ,
+                _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['→'] , _dirs['0'] , _dirs['↓'] , _dirs['.'] , _dirs['↑'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['→'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] ,
+                _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['→'] , _dirs['0'] , _dirs['↓'] , _dirs['←'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] ,
+                _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['→'] , _dirs['0'] , _dirs['↓'] , _dirs['←'] , _dirs['↑'] , _dirs['0'] , _dirs['0'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] ,
+                _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['←'] , _dirs['↑'] , _dirs['0'] , _dirs['0'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] ,
+                _dirs['↓'] , _dirs['←'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['↓'] , _dirs['←'] , _dirs['0'] , _dirs['↓'] , _dirs['←'] , _dirs['↑'] , _dirs['0'] , _dirs['0'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] ,
+                _dirs['↓'] , _dirs['←'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['0'] , _dirs['↓'] , _dirs['←'] , _dirs['0'] , _dirs['↓'] , _dirs['←'] , _dirs['↑'] , _dirs['0'] , _dirs['0'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] ,
+                _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['←'] , _dirs['0'] , _dirs['↓'] , _dirs['←'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] ,
+                _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['←'] , _dirs['0'] , _dirs['↓'] , _dirs['←'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] ,
+                _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['←'] , _dirs['0'] , _dirs['↓'] , _dirs['←'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] ,
+                _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['←'] , _dirs['0'] , _dirs['↓'] , _dirs['←'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] ,
+                _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['→'] , _dirs['←'] , _dirs['0'] , _dirs['↓'] , _dirs['←'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] ,
+                _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['→'] , _dirs['→'] , _dirs['←'] , _dirs['0'] , _dirs['↓'] , _dirs['←'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] ,
+                _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['→'] , _dirs['↑'] , _dirs['↑'] , _dirs['←'] , _dirs['0'] , _dirs['↓'] , _dirs['←'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] ,
+                _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['→'] , _dirs['↑'] , _dirs['↑'] , _dirs['←'] , _dirs['0'] , _dirs['↓'] , _dirs['←'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] ,
+                _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['→'] , _dirs['↑'] , _dirs['↑'] , _dirs['←'] , _dirs['0'] , _dirs['↓'] , _dirs['←'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] ,
+                _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['→'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['←'] , _dirs['0'] , _dirs['↓'] , _dirs['←'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] ,
+                _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['→'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['←'] , _dirs['0'] , _dirs['↓'] , _dirs['←'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] ,
+                _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['→'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['←'] , _dirs['0'] , _dirs['↓'] , _dirs['←'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] ,
+                _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['→'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['←'] , _dirs['0'] , _dirs['↓'] , _dirs['←'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] , _dirs['↑'] ,
+            };
+            for (int i = 0; i < dirMap._directionMap.Length; i++)
+            {
+                NextTileDirection actualDir = dirMap._directionMap[i];
+                Assert.AreEqual(expectedDirMap[i], actualDir, $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(1), grid.GetLength(0)), i, MajorOrder.COLUMN_MAJOR_ORDER)} should be {expectedDirMap[i]} but got {actualDir}");
+            }
+        }
+        //[TestCase(MajorOrder.ROW_MAJOR_ORDER)]
+        //[TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
+        //public void GetTargetTile(MajorOrder majorOrder)
         //{
-        //    var target = GridUtils.GetTile(rm, 4, 4, MajorOrder.ROW_MAJOR_ORDER);
-        //    var dm = Pathfinding.GenerateDirectionMap(rm, target, MajorOrder.ROW_MAJOR_ORDER);
-        //    var start = GridUtils.GetTile(rm, 0, 0, MajorOrder.ROW_MAJOR_ORDER);
-        //    Assert.IsTrue(dm.IsTileAccessible(rm, target));
-        //    var backTarget = dm.GetTargetTile(rm);
-        //    Assert.IsTrue(GridUtils.TileEquals(target, backTarget));
-        //    var nextFromStart = dm.GetNextTileFromTile(rm, start);
-        //    var dirFromStart = dm.GetNextTileDirectionFromTile(rm, start);
-        //    Assert.IsNotNull(nextFromStart);
-        //    Assert.AreNotEqual(NextTileDirection.NONE, dirFromStart);
-        //    var toPath = dm.GetPathToTarget(rm, start, includeStart: true, includeTarget: true);
-        //    var fromPath = dm.GetPathFromTarget(rm, start, includeDestination: true, includeTarget: true);
-        //    Assert.IsTrue(toPath.Length >= 1);
-        //    Assert.AreEqual(toPath.Length, fromPath.Length);
-        //}
-
-        //[Test]
-        //public async Task GenerateDirectionMap_Async_And_Serialization_SyncAsync()
-        //{
-        //    var target = GridUtils.GetTile(rm, 4, 4, MajorOrder.ROW_MAJOR_ORDER);
-        //    float lastProgress = 0f;
-        //    var progress = new System.Progress<float>(p => lastProgress = p);
-        //    using var cts = new CancellationTokenSource();
-        //    var dm = await Pathfinding.GenerateDirectionMapAsync(rm, target, MajorOrder.ROW_MAJOR_ORDER, progress, cts.Token);
-        //    Assert.GreaterOrEqual(lastProgress, 0f);
-        //    var bytes = dm.ToByteArray();
-        //    Assert.IsNotNull(bytes);
-        //    var bytesAsync = await dm.ToByteArrayAsync(progress, cts.Token);
-        //    Assert.IsNotNull(bytesAsync);
-        //    Assert.Greater(bytesAsync.Length, 0);
-        //    var dm2 = DirectionMap.FromByteArray(rm, bytes);
-        //    var dm3 = await DirectionMap.FromByteArrayAsync(rm, bytesAsync, progress, cts.Token);
-        //    var start = GridUtils.GetTile(rm, 0, 0, MajorOrder.ROW_MAJOR_ORDER);
-        //    var p2 = dm2.GetPathToTarget(rm, start, includeStart: true, includeTarget: true);
-        //    var p3 = dm3.GetPathToTarget(rm, start, includeStart: true, includeTarget: true);
-        //    Assert.AreEqual(p2.Length, p3.Length);
-        //}
-
-        //[Test]
-        //public void DirectionMap_Accessibility_Inaccessible_Start_When_WalledOff()
-        //{
-        //    var walled = GridFactory.Build(3, 3, MajorOrder.ROW_MAJOR_ORDER, (x, y) =>
-        //    {
-        //        if ((x, y) is (0, 1) or (1, 0) or (1, 1)) return false;
-        //        return true;
-        //    });
-        //    var target = GridUtils.GetTile(walled, 2, 2, MajorOrder.ROW_MAJOR_ORDER);
-        //    var dm = Pathfinding.GenerateDirectionMap(walled, target, MajorOrder.ROW_MAJOR_ORDER);
-        //    var start = GridUtils.GetTile(walled, 0, 0, MajorOrder.ROW_MAJOR_ORDER);
-        //    Assert.IsFalse(dm.IsTileAccessible(walled, start));
-        //    Assert.IsTrue(dm.IsTileAccessible(walled, target));
+        //    int targetX = 6;
+        //    int targetY = 10;
+        //    int startX = 2;
+        //    int startY = 10;
+        //    TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
+        //    DirectionMap dirMap = Pathfinding.GenerateDirectionMap(grid, GridUtils.GetTile(grid, targetX, targetY, majorOrder), majorOrder);
+        //    //TestTile returnedTarget = dirMap.GetTargetTile(grid);
+        //    //Assert.IsTrue(GridUtils.TileEquals(target, returnedTarget), $"Target is [{targetX}, {targetY}] but returned tile is {returnedTarget.X}, {returnedTarget.Y}");
         //}
     }
 }
