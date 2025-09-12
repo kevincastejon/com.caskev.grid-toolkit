@@ -1,11 +1,27 @@
 # Changelog
 
+## [0.1.0] - 2025-09-12
+### Added
+- Full API unit tests.
+
+### Removed
+- All major order related structs, methods and parameter. Now only row major order is supported.
+
+### Changed
+- Optimize extraction and raycasting methods using circular algorithm (as circle and cones extraction and casting).
+
+### Fixed
+- Cone casting methods that was returning different result from cone extracting methods.
+- Line algorythm returning same tiles multiple times in resulting array.
+- Missing "includeWalls" parameter on some extraction methods.
+- Direction angle not being calculated correctly on some methods.
+
 ## [0.0.3] - 2025-08-17
 ### Added
 - Add GetTarget method on DirectionMap.
 
 ### Changed
-- Removed int Target property on DirectionMap.
+- Remove int Target property on DirectionMap.
 - Generic type constraints optimized on DirectionMap.
 
 ### Fixed

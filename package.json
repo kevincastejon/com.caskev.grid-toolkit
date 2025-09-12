@@ -1,6 +1,6 @@
 {
   "name": "com.caskev.unity-grid-toolkit",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "displayName": "Unity Grid Toolkit",
   "description": "Utilitary API to proceed operations on abstract grids such as tile extraction, raycasting, and pathfinding.",
   "keywords": [
