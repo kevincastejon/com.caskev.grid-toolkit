@@ -159,7 +159,7 @@ bool isConeClear = Raycasting.IsConeOfVisionClear(grid, startTile, destinationTi
 Allows you to calculate paths between tiles.  
 This API offers a method which generates and returns a direction map. A direction map can be seen as a "layer" on top of the user grid that indicates, for each accessible tile, the direction to the next tile, ultimately leading to the target tile.  
 A direction map holds all the paths to a target tile from all the accessible tiles on the grid.  
-Storing this DirectionMap object allows you to reconstruct paths between tiles without having to recalculate them every time, which can be costly in terms of performance.  
+Storing this DirectionMap object allows you to reconstruct paths between tiles without having to recalculate them every time, which would be costly in terms of performance.  
 
 *Note that, obviously, any path calculation is valid as long as the user grid, and walkable states of the tiles, remains unchanged*
 
