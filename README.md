@@ -7,7 +7,7 @@ Utilitary API to proceed operations on abstract grids such as tile extraction, r
 ---
 ## Usage
 
-All you need to use this API is a bi-dimensional array of tiles.
+All you need to use this API is a bi-dimensional array of tiles ordered in row major order (see below).
 
 What is a *tile* ? Any object (custom class, struct, component, ...) that implements the very light **ITile** interface of this library (**ITile3D** for the 3D API). This interface requires three properties getters:
 - *bool* **IsWalkable** . Must return if the tile can be walk/see throught (for pathfinding/raycasting)
@@ -20,25 +20,17 @@ using KevinCastejon.GridToolkit;
 ```
 
 ---
-
-## API
-
----
 #### MajorOrder
 
 When working with two-dimensional arrays there is two ways of storing tiles, first rows then lines or the opposite.  
-This is called the **Major Order**, you can specify it on the last parameter of each method that uses a grid.  
+This is called the **Major Order**. The most common major order used in C languages (and the one used in this library) is the row major order, meaning that the first index of the array represents the row index and the second index represents the column index.
 
+It can be counter intuitive as the row index actually indicates the vertical position of the tile in the grid, and the column index indicates the horizontal position of the tile in the grid.
+For more information you can refer to this [Wikipedia article](https://en.wikipedia.org/wiki/Row-_and_column-major_order).
 
-**DEFAULT** : Refers to the global setting **DefaultMajorOrder** value.  
-**ROW_MAJOR_ORDER** : YX. First index is rows, second is columns.  
-**COLUMN_MAJOR_ORDER** : XY. First index is columns, second is rows.  
+---
 
-It can be counter intuitive as the row index actually indicates the vertical position of the tile in the grid, and the column index indicates the horizontal position of the tile in the grid.  
-
-Note that, in **C#**, the conventional major order is **ROW_MAJOR_ORDER**, and so is the default value for this library until you explicitely specify it.  
-
-![MajorOrderSchema](Documentation/MajorOrderSchema.png)
+## API
 
 ---
 
@@ -186,14 +178,6 @@ DirectionMap directionMap = Pathfinding.GenerateDirectionMap(grid, targetTile);
 
 Once the **DirectionMap** object is generated, you can use its several and almost "*cost free*" methods and properties.
 
----
-
-You can retrieve the **majorOrder** parameter value that has been used to generate this **DirectionMap**
-
-- **MajorOrder**
-```cs
-MajorOrder majorOrder = directionMap.MajorOrder;
-```
 ---
 
 You can retrieve the tile that has been used as the target to generate this **DirectionMap**.

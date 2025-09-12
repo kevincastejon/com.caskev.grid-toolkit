@@ -10,25 +10,6 @@ using UnityEngine;
 /// </summary>
 namespace Caskev.GridToolkit
 {
-    public enum DefaultMajorOrder
-    {
-        ROW_MAJOR_ORDER,
-        COLUMN_MAJOR_ORDER
-    }
-    /// <summary>
-    /// Major order rule. A 2D grid has two ways of storing tiles, first rows then lines or the opposite.<br/>
-    /// <b>DEFAULT :</b> Refers to the global setting <b>DefaultMajorOrder</b> value<br/>
-    /// <b>ROW_MAJOR_ORDER :</b> YX. First index is rows, second is columns<br/>
-    /// <b>COLUMN_MAJOR_ORDER :</b> XY. First index is columns, second is rows
-    /// \image html MajorOrderSchema.png height=200px
-    /// \sa KevinCastejon::GridToolkit::GridGlobalSettings::DefaultMajorOrder<br/>
-    /// </summary>
-    public enum MajorOrder
-    {
-        DEFAULT,
-        ROW_MAJOR_ORDER,
-        COLUMN_MAJOR_ORDER
-    }
     public enum NextTileDirection : byte
     {
         NONE,
@@ -70,32 +51,20 @@ namespace Caskev.GridToolkit
         }
     }
     /// <summary>
-    /// Defines globals settings of the API
-    /// </summary>
-    public static class GridGlobalSettings
-    {
-        private static DefaultMajorOrder _defaultMajorOrder = DefaultMajorOrder.ROW_MAJOR_ORDER;
-
-        /// <summary>
-        /// The major order to use when the MajorOrder.DEFAULT is passed as a parameter. Default is ROW_MAJOR_ORDER.
-        /// </summary>
-        public static DefaultMajorOrder DefaultMajorOrder { get => _defaultMajorOrder; set => _defaultMajorOrder = value; }
-    }
-    /// <summary>
     /// Allows you to extract tiles on a grid.<br>Provides shape extraction (rectangles, circles, cones and lines) and neighbors extraction with a lot of parameters.
     /// </summary>
     public class Extraction
     {
-        private static T[] ExtractRectangle<T>(T[,] map, T center, Vector2Int rectangleSize, bool includeCenter, bool includeWalls, MajorOrder majorOrder) where T : ITile
+        private static T[] ExtractRectangle<T>(T[,] map, T center, Vector2Int rectangleSize, bool includeCenter, bool includeWalls) where T : ITile
         {
-            Vector2Int min = GridUtils.ClampCoordsIntoGrid(map, center.X + -rectangleSize.x, center.Y - rectangleSize.y, majorOrder);
-            Vector2Int max = GridUtils.ClampCoordsIntoGrid(map, center.X + rectangleSize.x, center.Y + rectangleSize.y, majorOrder);
+            Vector2Int min = GridUtils.ClampCoordsIntoGrid(map, center.X + -rectangleSize.x, center.Y - rectangleSize.y);
+            Vector2Int max = GridUtils.ClampCoordsIntoGrid(map, center.X + rectangleSize.x, center.Y + rectangleSize.y);
             List<T> list = new();
             for (int i = min.y; i <= max.y; i++)
             {
                 for (int j = min.x; j <= max.x; j++)
                 {
-                    T tile = GridUtils.GetTile(map, j, i, majorOrder);
+                    T tile = GridUtils.GetTile(map, j, i);
                     if (tile != null && (includeWalls || tile.IsWalkable) && (includeCenter || !GridUtils.TileEquals(tile, center)))
                     {
                         list.Add(tile);
@@ -104,24 +73,24 @@ namespace Caskev.GridToolkit
             }
             return list.ToArray();
         }
-        private static T[] ExtractRectangleOutline<T>(T[,] grid, T center, Vector2Int rectangleSize, bool includeWalls, MajorOrder majorOrder) where T : ITile
+        private static T[] ExtractRectangleOutline<T>(T[,] grid, T center, Vector2Int rectangleSize, bool includeWalls) where T : ITile
         {
             Vector2Int min = new(center.X - rectangleSize.x, center.Y - rectangleSize.y);
             Vector2Int max = new(center.X + rectangleSize.x, center.Y + rectangleSize.y);
             List<T> list = new();
             for (int j = min.x; j <= max.x; j++)
             {
-                if (GridUtils.AreCoordsIntoGrid(grid, j, min.y, majorOrder))
+                if (GridUtils.AreCoordsIntoGrid(grid, j, min.y))
                 {
-                    T bottomTile = GridUtils.GetTile(grid, j, min.y, majorOrder);
+                    T bottomTile = GridUtils.GetTile(grid, j, min.y);
                     if (bottomTile != null && (includeWalls || bottomTile.IsWalkable))
                     {
                         list.Add(bottomTile);
                     }
                 }
-                if (GridUtils.AreCoordsIntoGrid(grid, j, max.y, majorOrder))
+                if (GridUtils.AreCoordsIntoGrid(grid, j, max.y))
                 {
-                    T topTile = GridUtils.GetTile(grid, j, max.y, majorOrder);
+                    T topTile = GridUtils.GetTile(grid, j, max.y);
                     if (topTile != null && (includeWalls || topTile.IsWalkable))
                     {
                         list.Add(topTile);
@@ -130,17 +99,17 @@ namespace Caskev.GridToolkit
             }
             for (int i = min.y + 1; i <= max.y - 1; i++)
             {
-                if (GridUtils.AreCoordsIntoGrid(grid, min.x, i, majorOrder))
+                if (GridUtils.AreCoordsIntoGrid(grid, min.x, i))
                 {
-                    T leftTile = GridUtils.GetTile(grid, min.x, i, majorOrder);
+                    T leftTile = GridUtils.GetTile(grid, min.x, i);
                     if (leftTile != null && (includeWalls || leftTile.IsWalkable))
                     {
                         list.Add(leftTile);
                     }
                 }
-                if (GridUtils.AreCoordsIntoGrid(grid, max.x, i, majorOrder))
+                if (GridUtils.AreCoordsIntoGrid(grid, max.x, i))
                 {
-                    T rightTile = GridUtils.GetTile(grid, max.x, i, majorOrder);
+                    T rightTile = GridUtils.GetTile(grid, max.x, i);
                     if (rightTile != null && (includeWalls || rightTile.IsWalkable))
                     {
                         list.Add(rightTile);
@@ -149,7 +118,7 @@ namespace Caskev.GridToolkit
             }
             return list.ToArray();
         }
-        private static T[] ExtractCircleArcFilled<T>(T[,] map, T center, int radius, bool includeCenter, bool includeWalls, MajorOrder majorOrder, float openingAngle, Vector2 direction) where T : ITile
+        private static T[] ExtractCircleArcFilled<T>(T[,] map, T center, int radius, bool includeCenter, bool includeWalls, float openingAngle, Vector2 direction) where T : ITile
         {
             int x = 0;
             int y = -radius;
@@ -157,7 +126,7 @@ namespace Caskev.GridToolkit
             int d_e = 3;
             int d_ne = -(radius << 1) + 5;
             HashSet<T> points = new();
-            GetLineMirrors(map, center, ref points, x, y, openingAngle, direction, includeCenter, includeWalls, majorOrder);
+            GetLineMirrors(map, center, ref points, x, y, openingAngle, direction, includeCenter, includeWalls);
             while (x < -y)
             {
                 if (F_M <= 0)
@@ -173,18 +142,18 @@ namespace Caskev.GridToolkit
                 d_e += 2;
                 d_ne += 2;
                 x += 1;
-                GetLineMirrors(map, center, ref points, x, y, openingAngle, direction, includeCenter, includeWalls, majorOrder);
+                GetLineMirrors(map, center, ref points, x, y, openingAngle, direction, includeCenter, includeWalls);
             }
             return points.ToArray();
         }
-        private static T[] ExtractCircleArcOutline<T>(T[,] map, T center, int radius, bool includeWalls, MajorOrder majorOrder, float openingAngle, Vector2 direction) where T : ITile
+        private static T[] ExtractCircleArcOutline<T>(T[,] map, T center, int radius, bool includeWalls, float openingAngle, Vector2 direction) where T : ITile
         {
             int x = 0;
             int y = -radius;
             int F_M = 1 - radius;
             int d_e = 3;
             int d_ne = -(radius << 1) + 5;
-            T[] firstLineMirror = GetTileMirrors(map, center, x, y, openingAngle, direction, includeWalls, majorOrder);
+            T[] firstLineMirror = GetTileMirrors(map, center, x, y, openingAngle, direction, includeWalls);
             HashSet<T> points = new();
             for (int i = 0; i < firstLineMirror.Length; i++)
             {
@@ -205,7 +174,7 @@ namespace Caskev.GridToolkit
                 d_e += 2;
                 d_ne += 2;
                 x += 1;
-                T[] mirrorLine = GetTileMirrors(map, center, x, y, openingAngle, direction, includeWalls, majorOrder);
+                T[] mirrorLine = GetTileMirrors(map, center, x, y, openingAngle, direction, includeWalls);
                 for (int i = 0; i < mirrorLine.Length; i++)
                 {
                     points.Add(mirrorLine[i]);
@@ -213,68 +182,68 @@ namespace Caskev.GridToolkit
             }
             return points.ToArray();
         }
-        private static T[] GetTileMirrors<T>(T[,] map, T centerTile, int x, int y, float openingAngle, Vector2 direction, bool includeWalls, MajorOrder majorOrder) where T : ITile
+        private static T[] GetTileMirrors<T>(T[,] map, T centerTile, int x, int y, float openingAngle, Vector2 direction, bool includeWalls) where T : ITile
         {
             List<T> neis = new List<T>();
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X + x, centerTile.Y + y, majorOrder))
+            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X + x, centerTile.Y + y))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X + x, centerTile.Y + y, majorOrder);
+                T nei = GridUtils.GetTile(map, centerTile.X + x, centerTile.Y + y);
                 if (includeWalls || nei.IsWalkable && IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction))
                 {
                     neis.Add(nei);
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X - x, centerTile.Y + y, majorOrder))
+            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X - x, centerTile.Y + y))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X - x, centerTile.Y + y, majorOrder);
+                T nei = GridUtils.GetTile(map, centerTile.X - x, centerTile.Y + y);
                 if (includeWalls || nei.IsWalkable && IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction))
                 {
                     neis.Add(nei);
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X + x, centerTile.Y - y, majorOrder))
+            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X + x, centerTile.Y - y))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X + x, centerTile.Y - y, majorOrder);
+                T nei = GridUtils.GetTile(map, centerTile.X + x, centerTile.Y - y);
                 if (includeWalls || nei.IsWalkable && IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction))
                 {
                     neis.Add(nei);
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X - x, centerTile.Y - y, majorOrder))
+            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X - x, centerTile.Y - y))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X - x, centerTile.Y - y, majorOrder);
+                T nei = GridUtils.GetTile(map, centerTile.X - x, centerTile.Y - y);
                 if (includeWalls || nei.IsWalkable && IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction))
                 {
                     neis.Add(nei);
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X + y, centerTile.Y + x, majorOrder))
+            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X + y, centerTile.Y + x))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X + y, centerTile.Y + x, majorOrder);
+                T nei = GridUtils.GetTile(map, centerTile.X + y, centerTile.Y + x);
                 if (includeWalls || nei.IsWalkable && IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction))
                 {
                     neis.Add(nei);
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X - y, centerTile.Y + x, majorOrder))
+            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X - y, centerTile.Y + x))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X - y, centerTile.Y + x, majorOrder);
+                T nei = GridUtils.GetTile(map, centerTile.X - y, centerTile.Y + x);
                 if (includeWalls || nei.IsWalkable && IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction))
                 {
                     neis.Add(nei);
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X + y, centerTile.Y - x, majorOrder))
+            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X + y, centerTile.Y - x))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X + y, centerTile.Y - x, majorOrder);
+                T nei = GridUtils.GetTile(map, centerTile.X + y, centerTile.Y - x);
                 if (includeWalls || nei.IsWalkable && IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction))
                 {
                     neis.Add(nei);
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X - y, centerTile.Y - x, majorOrder))
+            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X - y, centerTile.Y - x))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X - y, centerTile.Y - x, majorOrder);
+                T nei = GridUtils.GetTile(map, centerTile.X - y, centerTile.Y - x);
                 if (includeWalls || nei.IsWalkable && IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction))
                 {
                     neis.Add(nei);
@@ -282,69 +251,69 @@ namespace Caskev.GridToolkit
             }
             return neis.ToArray();
         }
-        private static void GetLineMirrors<T>(T[,] map, T centerTile, ref HashSet<T> tiles, int x, int y, float openingAngle, Vector2 direction, bool includeCenter, bool includeWalls, MajorOrder majorOrder) where T : ITile
+        private static void GetLineMirrors<T>(T[,] map, T centerTile, ref HashSet<T> tiles, int x, int y, float openingAngle, Vector2 direction, bool includeCenter, bool includeWalls) where T : ITile
         {
-            Vector2Int posLeft = GridUtils.ClampCoordsIntoGrid(map, x >= 0 ? centerTile.X - x : centerTile.X + x, centerTile.Y + y, majorOrder);
-            Vector2Int posRight = GridUtils.ClampCoordsIntoGrid(map, x >= 0 ? centerTile.X + x : centerTile.X - x, centerTile.Y + y, majorOrder);
+            Vector2Int posLeft = GridUtils.ClampCoordsIntoGrid(map, x >= 0 ? centerTile.X - x : centerTile.X + x, centerTile.Y + y);
+            Vector2Int posRight = GridUtils.ClampCoordsIntoGrid(map, x >= 0 ? centerTile.X + x : centerTile.X - x, centerTile.Y + y);
             for (int i = posLeft.x; i <= posRight.x; i++)
             {
-                T nei = GridUtils.GetTile(map, i, posLeft.y, majorOrder);
+                T nei = GridUtils.GetTile(map, i, posLeft.y);
                 if ((includeWalls || nei.IsWalkable) && (includeCenter || !GridUtils.TileEquals(nei, centerTile)) && IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction))
                 {
                     tiles.Add(nei);
                 }
             }
-            posLeft = GridUtils.ClampCoordsIntoGrid(map, x >= 0 ? centerTile.X - x : centerTile.X + x, centerTile.Y - y, majorOrder);
-            posRight = GridUtils.ClampCoordsIntoGrid(map, x >= 0 ? centerTile.X + x : centerTile.X - x, centerTile.Y - y, majorOrder);
+            posLeft = GridUtils.ClampCoordsIntoGrid(map, x >= 0 ? centerTile.X - x : centerTile.X + x, centerTile.Y - y);
+            posRight = GridUtils.ClampCoordsIntoGrid(map, x >= 0 ? centerTile.X + x : centerTile.X - x, centerTile.Y - y);
             for (int i = posLeft.x; i <= posRight.x; i++)
             {
-                T nei = GridUtils.GetTile(map, i, posLeft.y, majorOrder);
+                T nei = GridUtils.GetTile(map, i, posLeft.y);
                 if ((includeWalls || nei.IsWalkable) && (includeCenter || !GridUtils.TileEquals(nei, centerTile)) && IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction))
                 {
                     tiles.Add(nei);
                 }
             }
-            posLeft = GridUtils.ClampCoordsIntoGrid(map, y >= 0 ? centerTile.X - y : centerTile.X + y, centerTile.Y + x, majorOrder);
-            posRight = GridUtils.ClampCoordsIntoGrid(map, y >= 0 ? centerTile.X + y : centerTile.X - y, centerTile.Y + x, majorOrder);
+            posLeft = GridUtils.ClampCoordsIntoGrid(map, y >= 0 ? centerTile.X - y : centerTile.X + y, centerTile.Y + x);
+            posRight = GridUtils.ClampCoordsIntoGrid(map, y >= 0 ? centerTile.X + y : centerTile.X - y, centerTile.Y + x);
             for (int i = posLeft.x; i <= posRight.x; i++)
             {
-                T nei = GridUtils.GetTile(map, i, posLeft.y, majorOrder);
+                T nei = GridUtils.GetTile(map, i, posLeft.y);
                 if ((includeWalls || nei.IsWalkable) && (includeCenter || !GridUtils.TileEquals(nei, centerTile)) && IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction))
                 {
                     tiles.Add(nei);
                 }
             }
-            posLeft = GridUtils.ClampCoordsIntoGrid(map, y >= 0 ? centerTile.X - y : centerTile.X + y, centerTile.Y - x, majorOrder);
-            posRight = GridUtils.ClampCoordsIntoGrid(map, y >= 0 ? centerTile.X + y : centerTile.X - y, centerTile.Y - x, majorOrder);
+            posLeft = GridUtils.ClampCoordsIntoGrid(map, y >= 0 ? centerTile.X - y : centerTile.X + y, centerTile.Y - x);
+            posRight = GridUtils.ClampCoordsIntoGrid(map, y >= 0 ? centerTile.X + y : centerTile.X - y, centerTile.Y - x);
             for (int i = posLeft.x; i <= posRight.x; i++)
             {
-                T nei = GridUtils.GetTile(map, i, posLeft.y, majorOrder);
+                T nei = GridUtils.GetTile(map, i, posLeft.y);
                 if ((includeWalls || nei.IsWalkable) && (includeCenter || !GridUtils.TileEquals(nei, centerTile)) && IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction))
                 {
                     tiles.Add(nei);
                 }
             }
         }
-        private static bool IsInARectangle<T>(T[,] map, T tile, T center, Vector2Int rectangleSize, MajorOrder majorOrder) where T : ITile
+        private static bool IsInARectangle<T>(T[,] map, T tile, T center, Vector2Int rectangleSize) where T : ITile
         {
-            Vector2Int min = GridUtils.ClampCoordsIntoGrid(map, center.X + -rectangleSize.x, center.Y - rectangleSize.y, majorOrder);
-            Vector2Int max = GridUtils.ClampCoordsIntoGrid(map, center.X + rectangleSize.x, center.Y + rectangleSize.y, majorOrder);
+            Vector2Int min = GridUtils.ClampCoordsIntoGrid(map, center.X + -rectangleSize.x, center.Y - rectangleSize.y);
+            Vector2Int max = GridUtils.ClampCoordsIntoGrid(map, center.X + rectangleSize.x, center.Y + rectangleSize.y);
             return tile.X >= min.x && tile.X <= max.x && tile.Y >= min.y && tile.Y <= max.y;
         }
-        private static bool IsOnRectangleOutline<T>(T[,] map, T tile, T center, Vector2Int rectangleSize, MajorOrder majorOrder) where T : ITile
+        private static bool IsOnRectangleOutline<T>(T[,] map, T tile, T center, Vector2Int rectangleSize) where T : ITile
         {
-            Vector2Int min = GridUtils.ClampCoordsIntoGrid(map, center.X + -rectangleSize.x, center.Y - rectangleSize.y, majorOrder);
-            Vector2Int max = GridUtils.ClampCoordsIntoGrid(map, center.X + rectangleSize.x, center.Y + rectangleSize.y, majorOrder);
+            Vector2Int min = GridUtils.ClampCoordsIntoGrid(map, center.X + -rectangleSize.x, center.Y - rectangleSize.y);
+            Vector2Int max = GridUtils.ClampCoordsIntoGrid(map, center.X + rectangleSize.x, center.Y + rectangleSize.y);
             return (tile.X == min.x && tile.Y <= max.y && tile.Y >= min.y) || (tile.X == max.x && tile.Y <= max.y && tile.Y >= min.y) || (tile.Y == min.y && tile.X <= max.x && tile.X >= min.x) || (tile.Y == max.y && tile.X <= max.x && tile.X >= min.x);
         }
-        private static bool IsOnCircleArcFilled<T>(T[,] map, T tile, T center, int radius, float openingAngle, Vector2 direction, MajorOrder majorOrder) where T : ITile
+        private static bool IsOnCircleArcFilled<T>(T[,] map, T tile, T center, int radius, float openingAngle, Vector2 direction) where T : ITile
         {
             int x = 0;
             int y = -radius;
             int F_M = 1 - radius;
             int d_e = 3;
             int d_ne = -(radius << 1) + 5;
-            if (IsOnLineMirrors(map, tile, center, x, y, openingAngle, direction, majorOrder))
+            if (IsOnLineMirrors(map, tile, center, x, y, openingAngle, direction))
             {
                 return true;
             }
@@ -363,21 +332,21 @@ namespace Caskev.GridToolkit
                 d_e += 2;
                 d_ne += 2;
                 x += 1;
-                if (IsOnLineMirrors(map, tile, center, x, y, openingAngle, direction, majorOrder))
+                if (IsOnLineMirrors(map, tile, center, x, y, openingAngle, direction))
                 {
                     return true;
                 }
             }
             return false;
         }
-        private static bool IsOnCircleArcOutline<T>(T[,] map, T tile, T center, int radius, float openingAngle, Vector2 direction, MajorOrder majorOrder) where T : ITile
+        private static bool IsOnCircleArcOutline<T>(T[,] map, T tile, T center, int radius, float openingAngle, Vector2 direction) where T : ITile
         {
             int x = 0;
             int y = -radius;
             int F_M = 1 - radius;
             int d_e = 3;
             int d_ne = -(radius << 1) + 5;
-            if (IsOneOfTileMirrors(map, tile, center, x, y, openingAngle, direction, majorOrder))
+            if (IsOneOfTileMirrors(map, tile, center, x, y, openingAngle, direction))
             {
                 return true;
             }
@@ -396,74 +365,74 @@ namespace Caskev.GridToolkit
                 d_e += 2;
                 d_ne += 2;
                 x += 1;
-                if (IsOneOfTileMirrors(map, tile, center, x, y, openingAngle, direction, majorOrder))
+                if (IsOneOfTileMirrors(map, tile, center, x, y, openingAngle, direction))
                 {
                     return true;
                 }
             }
             return false;
         }
-        private static bool IsOneOfTileMirrors<T>(T[,] map, T tile, T centerTile, int x, int y, float openingAngle, Vector2 direction, MajorOrder majorOrder) where T : ITile
+        private static bool IsOneOfTileMirrors<T>(T[,] map, T tile, T centerTile, int x, int y, float openingAngle, Vector2 direction) where T : ITile
         {
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X + x, centerTile.Y + y, majorOrder))
+            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X + x, centerTile.Y + y))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X + x, centerTile.Y + y, majorOrder);
+                T nei = GridUtils.GetTile(map, centerTile.X + x, centerTile.Y + y);
                 if (IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction) && GridUtils.TileEquals(nei, tile))
                 {
                     return true;
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X - x, centerTile.Y + y, majorOrder))
+            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X - x, centerTile.Y + y))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X - x, centerTile.Y + y, majorOrder);
+                T nei = GridUtils.GetTile(map, centerTile.X - x, centerTile.Y + y);
                 if (IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction) && GridUtils.TileEquals(nei, tile))
                 {
                     return true;
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X + x, centerTile.Y - y, majorOrder))
+            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X + x, centerTile.Y - y))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X + x, centerTile.Y - y, majorOrder);
+                T nei = GridUtils.GetTile(map, centerTile.X + x, centerTile.Y - y);
                 if (IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction) && GridUtils.TileEquals(nei, tile))
                 {
                     return true;
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X - x, centerTile.Y - y, majorOrder))
+            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X - x, centerTile.Y - y))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X - x, centerTile.Y - y, majorOrder);
+                T nei = GridUtils.GetTile(map, centerTile.X - x, centerTile.Y - y);
                 if (IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction) && GridUtils.TileEquals(nei, tile))
                 {
                     return true;
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X + y, centerTile.Y + x, majorOrder))
+            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X + y, centerTile.Y + x))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X + y, centerTile.Y + x, majorOrder);
+                T nei = GridUtils.GetTile(map, centerTile.X + y, centerTile.Y + x);
                 if (IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction) && GridUtils.TileEquals(nei, tile))
                 {
                     return true;
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X - y, centerTile.Y + x, majorOrder))
+            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X - y, centerTile.Y + x))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X - y, centerTile.Y + x, majorOrder);
+                T nei = GridUtils.GetTile(map, centerTile.X - y, centerTile.Y + x);
                 if (IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction) && GridUtils.TileEquals(nei, tile))
                 {
                     return true;
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X + y, centerTile.Y - x, majorOrder))
+            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X + y, centerTile.Y - x))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X + y, centerTile.Y - x, majorOrder);
+                T nei = GridUtils.GetTile(map, centerTile.X + y, centerTile.Y - x);
                 if (IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction) && GridUtils.TileEquals(nei, tile))
                 {
                     return true;
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X - y, centerTile.Y - x, majorOrder))
+            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X - y, centerTile.Y - x))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X - y, centerTile.Y - x, majorOrder);
+                T nei = GridUtils.GetTile(map, centerTile.X - y, centerTile.Y - x);
                 if (IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction) && GridUtils.TileEquals(nei, tile))
                 {
                     return true;
@@ -471,43 +440,43 @@ namespace Caskev.GridToolkit
             }
             return false;
         }
-        private static bool IsOnLineMirrors<T>(T[,] map, T tile, T centerTile, int x, int y, float openingAngle, Vector2 direction, MajorOrder majorOrder) where T : ITile
+        private static bool IsOnLineMirrors<T>(T[,] map, T tile, T centerTile, int x, int y, float openingAngle, Vector2 direction) where T : ITile
         {
-            Vector2Int posLeft = GridUtils.ClampCoordsIntoGrid(map, x >= 0 ? centerTile.X - x : centerTile.X + x, centerTile.Y + y, majorOrder);
-            Vector2Int posRight = GridUtils.ClampCoordsIntoGrid(map, x >= 0 ? centerTile.X + x : centerTile.X - x, centerTile.Y + y, majorOrder);
+            Vector2Int posLeft = GridUtils.ClampCoordsIntoGrid(map, x >= 0 ? centerTile.X - x : centerTile.X + x, centerTile.Y + y);
+            Vector2Int posRight = GridUtils.ClampCoordsIntoGrid(map, x >= 0 ? centerTile.X + x : centerTile.X - x, centerTile.Y + y);
             for (int i = posLeft.x; i <= posRight.x; i++)
             {
-                T nei = GridUtils.GetTile(map, i, posLeft.y, majorOrder);
+                T nei = GridUtils.GetTile(map, i, posLeft.y);
                 if (IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction) && GridUtils.TileEquals(nei, tile))
                 {
                     return true;
                 }
             }
-            posLeft = GridUtils.ClampCoordsIntoGrid(map, x >= 0 ? centerTile.X - x : centerTile.X + x, centerTile.Y - y, majorOrder);
-            posRight = GridUtils.ClampCoordsIntoGrid(map, x >= 0 ? centerTile.X + x : centerTile.X - x, centerTile.Y - y, majorOrder);
+            posLeft = GridUtils.ClampCoordsIntoGrid(map, x >= 0 ? centerTile.X - x : centerTile.X + x, centerTile.Y - y);
+            posRight = GridUtils.ClampCoordsIntoGrid(map, x >= 0 ? centerTile.X + x : centerTile.X - x, centerTile.Y - y);
             for (int i = posLeft.x; i <= posRight.x; i++)
             {
-                T nei = GridUtils.GetTile(map, i, posLeft.y, majorOrder);
+                T nei = GridUtils.GetTile(map, i, posLeft.y);
                 if (IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction) && GridUtils.TileEquals(nei, tile))
                 {
                     return true;
                 }
             }
-            posLeft = GridUtils.ClampCoordsIntoGrid(map, y >= 0 ? centerTile.X - y : centerTile.X + y, centerTile.Y + x, majorOrder);
-            posRight = GridUtils.ClampCoordsIntoGrid(map, y >= 0 ? centerTile.X + y : centerTile.X - y, centerTile.Y + x, majorOrder);
+            posLeft = GridUtils.ClampCoordsIntoGrid(map, y >= 0 ? centerTile.X - y : centerTile.X + y, centerTile.Y + x);
+            posRight = GridUtils.ClampCoordsIntoGrid(map, y >= 0 ? centerTile.X + y : centerTile.X - y, centerTile.Y + x);
             for (int i = posLeft.x; i <= posRight.x; i++)
             {
-                T nei = GridUtils.GetTile(map, i, posLeft.y, majorOrder);
+                T nei = GridUtils.GetTile(map, i, posLeft.y);
                 if (IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction) && GridUtils.TileEquals(nei, tile))
                 {
                     return true;
                 }
             }
-            posLeft = GridUtils.ClampCoordsIntoGrid(map, y >= 0 ? centerTile.X - y : centerTile.X + y, centerTile.Y - x, majorOrder);
-            posRight = GridUtils.ClampCoordsIntoGrid(map, y >= 0 ? centerTile.X + y : centerTile.X - y, centerTile.Y - x, majorOrder);
+            posLeft = GridUtils.ClampCoordsIntoGrid(map, y >= 0 ? centerTile.X - y : centerTile.X + y, centerTile.Y - x);
+            posRight = GridUtils.ClampCoordsIntoGrid(map, y >= 0 ? centerTile.X + y : centerTile.X - y, centerTile.Y - x);
             for (int i = posLeft.x; i <= posRight.x; i++)
             {
-                T nei = GridUtils.GetTile(map, i, posLeft.y, majorOrder);
+                T nei = GridUtils.GetTile(map, i, posLeft.y);
                 if (IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction) && GridUtils.TileEquals(nei, tile))
                 {
                     return true;
@@ -532,13 +501,12 @@ namespace Caskev.GridToolkit
         /// <param name="rectangleExtends">The Vector2Int representing the extends of the rectangle from the center</param>
         /// <param name="includeCenter">Include the center tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesInARectangle<T>(T[,] map, T center, Vector2Int rectangleExtends, bool includeCenter = true, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetTilesInARectangle<T>(T[,] map, T center, Vector2Int rectangleExtends, bool includeCenter = true, bool includeWalls = true) where T : ITile
         {
             rectangleExtends.x = rectangleExtends.x < 1 ? 1 : rectangleExtends.x;
             rectangleExtends.y = rectangleExtends.y < 1 ? 1 : rectangleExtends.y;
-            return ExtractRectangle(map, center, rectangleExtends, includeCenter, includeWalls, majorOrder);
+            return ExtractRectangle(map, center, rectangleExtends, includeCenter, includeWalls);
         }
         /// <summary>
         /// Get tiles on a rectangle outline around a tile.<br/>
@@ -549,13 +517,12 @@ namespace Caskev.GridToolkit
         /// <param name="center">The center tile</param>
         /// <param name="rectangleExtends">The Vector2Int representing the extends of the rectangle from the center</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesOnARectangleOutline<T>(T[,] map, T center, Vector2Int rectangleExtends, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetTilesOnARectangleOutline<T>(T[,] map, T center, Vector2Int rectangleExtends, bool includeWalls = true) where T : ITile
         {
             rectangleExtends.x = rectangleExtends.x < 1 ? 1 : rectangleExtends.x;
             rectangleExtends.y = rectangleExtends.y < 1 ? 1 : rectangleExtends.y;
-            return ExtractRectangleOutline(map, center, rectangleExtends, includeWalls, majorOrder);
+            return ExtractRectangleOutline(map, center, rectangleExtends, includeWalls);
         }
 
         /// <summary>
@@ -568,12 +535,11 @@ namespace Caskev.GridToolkit
         /// <param name="radius">The circle radius</param>
         /// <param name="includeCenter">Include the center tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesInACircle<T>(T[,] map, T center, int radius, bool includeCenter = true, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetTilesInACircle<T>(T[,] map, T center, int radius, bool includeCenter = true, bool includeWalls = true) where T : ITile
         {
             radius = radius < 1 ? 1 : radius;
-            return ExtractCircleArcFilled(map, center, radius, includeCenter, includeWalls, majorOrder, 360f, Vector2.right);
+            return ExtractCircleArcFilled(map, center, radius, includeCenter, includeWalls, 360f, Vector2.right);
         }
         /// <summary>
         /// Get tiles on a circle outline around a tile.<br/>
@@ -584,12 +550,11 @@ namespace Caskev.GridToolkit
         /// <param name="center">The center tile</param>
         /// <param name="radius">The circle radius</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesOnACircleOutline<T>(T[,] map, T center, int radius, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetTilesOnACircleOutline<T>(T[,] map, T center, int radius, bool includeWalls = true) where T : ITile
         {
             radius = radius < 1 ? 1 : radius;
-            return ExtractCircleArcOutline(map, center, radius, includeWalls, majorOrder, 360f, Vector2.right);
+            return ExtractCircleArcOutline(map, center, radius, includeWalls, 360f, Vector2.right);
         }
 
         /// <summary>
@@ -603,11 +568,10 @@ namespace Caskev.GridToolkit
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesInACone<T>(T[,] map, T start, T destinationTile, float openingAngle, bool includeStart = true, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetTilesInACone<T>(T[,] map, T start, T destinationTile, float openingAngle, bool includeStart = true, bool includeWalls = true) where T : ITile
         {
-            return GetTilesInACone(map, start, new Vector2Int(destinationTile.X, destinationTile.Y), openingAngle, includeStart, includeWalls, majorOrder);
+            return GetTilesInACone(map, start, new Vector2Int(destinationTile.X, destinationTile.Y), openingAngle, includeStart, includeWalls);
         }
         /// <summary>
         /// Get tiles in a cone starting from a tile.<br/>
@@ -621,14 +585,13 @@ namespace Caskev.GridToolkit
         /// <param name="directionAngle">The cone direction angle in degrees. 0 represents a direction pointing to the right in 2D coordinates</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesInACone<T>(T[,] map, T start, int length, float openingAngle, float directionAngle, bool includeStart = true, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetTilesInACone<T>(T[,] map, T start, int length, float openingAngle, float directionAngle, bool includeStart = true, bool includeWalls = true) where T : ITile
         {
             float radians = directionAngle * Mathf.Deg2Rad;
             float dx = Mathf.Cos(radians);
             float dy = Mathf.Sin(radians);
-            return GetTilesInACone(map, start, length, openingAngle, new Vector2(dx, dy), includeStart, includeWalls, majorOrder);
+            return GetTilesInACone(map, start, length, openingAngle, new Vector2(dx, dy), includeStart, includeWalls);
         }
         /// <summary>
         /// Get tiles in a cone starting from a tile.<br/>
@@ -642,9 +605,8 @@ namespace Caskev.GridToolkit
         /// <param name="direction">The Vector2 representing the cone direction. Note that an 'empty' Vector2 (Vector2.zero) will be treated as Vector2.right</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesInACone<T>(T[,] map, T start, int length, float openingAngle, Vector2 direction, bool includeStart = true, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetTilesInACone<T>(T[,] map, T start, int length, float openingAngle, Vector2 direction, bool includeStart = true, bool includeWalls = true) where T : ITile
         {
             float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
             if (length > magnitude || Mathf.Approximately(length, 0f))
@@ -654,7 +616,7 @@ namespace Caskev.GridToolkit
             openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
             direction.Normalize();
             direction = direction == Vector2.zero ? Vector2.right : direction;
-            return ExtractCircleArcFilled(map, start, length, includeStart, includeWalls, majorOrder, openingAngle, direction);
+            return ExtractCircleArcFilled(map, start, length, includeStart, includeWalls, openingAngle, direction);
         }
         /// <summary>
         /// Get tiles in a cone starting from a tile.<br/>
@@ -667,13 +629,12 @@ namespace Caskev.GridToolkit
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesInACone<T>(T[,] map, T start, Vector2Int endPosition, float openingAngle, bool includeStart = true, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetTilesInACone<T>(T[,] map, T start, Vector2Int endPosition, float openingAngle, bool includeStart = true, bool includeWalls = true) where T : ITile
         {
             openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
             Vector2 direction = endPosition - new Vector2(start.X, start.Y);
-            return ExtractCircleArcFilled(map, start, Mathf.CeilToInt(direction.magnitude), includeStart, includeWalls, majorOrder, openingAngle, direction);
+            return ExtractCircleArcFilled(map, start, Mathf.CeilToInt(direction.magnitude), includeStart, includeWalls, openingAngle, direction);
         }
 
         /// <summary>
@@ -687,12 +648,11 @@ namespace Caskev.GridToolkit
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesOnALine<T>(T[,] map, T startTile, T destinationTile, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetTilesOnALine<T>(T[,] map, T startTile, T destinationTile, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeWalls = true) where T : ITile
         {
             Vector2Int endPos = new Vector2Int(destinationTile.X, destinationTile.Y);
-            return GetTilesOnALine(map, startTile, endPos, allowDiagonals, favorVertical, includeStart, includeWalls, majorOrder);
+            return GetTilesOnALine(map, startTile, endPos, allowDiagonals, favorVertical, includeStart, includeWalls);
         }
         /// <summary>
         /// Get all visible tiles from a start tile's cone of vision<br/>
@@ -707,9 +667,8 @@ namespace Caskev.GridToolkit
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesOnALine<T>(T[,] map, T startTile, int length, float directionAngle, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetTilesOnALine<T>(T[,] map, T startTile, int length, float directionAngle, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeWalls = true) where T : ITile
         {
             float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
             if (length > magnitude || Mathf.Approximately(length, 0f))
@@ -717,7 +676,7 @@ namespace Caskev.GridToolkit
                 length = Mathf.CeilToInt(magnitude);
             }
             Vector2Int endPos = new Vector2Int(Mathf.RoundToInt(startTile.X + Mathf.Cos(directionAngle * Mathf.Deg2Rad) * length), Mathf.RoundToInt(startTile.Y + Mathf.Sin(directionAngle * Mathf.Deg2Rad) * length));
-            return GetTilesOnALine(map, startTile, endPos, allowDiagonals, favorVertical, includeStart, includeWalls, majorOrder);
+            return GetTilesOnALine(map, startTile, endPos, allowDiagonals, favorVertical, includeStart, includeWalls);
         }
         /// <summary>
         /// Get all visible tiles from a start tile's cone of vision<br/>
@@ -732,9 +691,8 @@ namespace Caskev.GridToolkit
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesOnALine<T>(T[,] map, T startTile, int length, Vector2 direction, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetTilesOnALine<T>(T[,] map, T startTile, int length, Vector2 direction, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeWalls = true) where T : ITile
         {
             float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
             if (length > magnitude || Mathf.Approximately(length, 0f))
@@ -742,7 +700,7 @@ namespace Caskev.GridToolkit
                 length = Mathf.CeilToInt(magnitude);
             }
             Vector2Int endPos = Vector2Int.RoundToInt(new Vector2(startTile.X, startTile.Y) + (direction.normalized * length));
-            return GetTilesOnALine(map, startTile, endPos, allowDiagonals, favorVertical, includeStart, includeWalls, majorOrder);
+            return GetTilesOnALine(map, startTile, endPos, allowDiagonals, favorVertical, includeStart, includeWalls);
         }
         /// <summary>
         /// Get all visible tiles from a start tile's cone of vision<br/>
@@ -756,12 +714,11 @@ namespace Caskev.GridToolkit
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesOnALine<T>(T[,] map, T startTile, Vector2Int endPosition, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetTilesOnALine<T>(T[,] map, T startTile, Vector2Int endPosition, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeWalls = true) where T : ITile
         {
             HashSet<T> hashSet = new HashSet<T>();
-            Raycasting.Raycast(map, startTile, endPosition, allowDiagonals, favorVertical, includeStart, false, includeWalls, out bool isClear, majorOrder, ref hashSet);
+            Raycasting.Raycast(map, startTile, endPosition, allowDiagonals, favorVertical, includeStart, false, includeWalls, out bool isClear, ref hashSet);
             return hashSet.ToArray();
         }
 
@@ -774,9 +731,8 @@ namespace Caskev.GridToolkit
         /// <param name="neighbourDirectionAngle">The neighbour direction angle in degrees [0-360]. 0 represents a direction pointing to the right in 2D coordinates</param>
         /// <param name="neighbour">The neighbour of a tile</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>Returns true if the neighbour exists, false otherwise</returns>
-        public static bool GetTileNeighbour<T>(T[,] map, T tile, float neighbourDirectionAngle, out T neighbour, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static bool GetTileNeighbour<T>(T[,] map, T tile, float neighbourDirectionAngle, out T neighbour, bool includeWalls = true) where T : ITile
         {
             float radians = neighbourDirectionAngle * Mathf.Deg2Rad;
 
@@ -787,7 +743,7 @@ namespace Caskev.GridToolkit
                 Mathf.RoundToInt(dx),
                 Mathf.RoundToInt(dy)
             );
-            return GetTileNeighbour(map, tile, direction, out neighbour, includeWalls, majorOrder);
+            return GetTileNeighbour(map, tile, direction, out neighbour, includeWalls);
         }
         /// <summary>
         /// Get neighbour of a tile if it exists
@@ -798,16 +754,15 @@ namespace Caskev.GridToolkit
         /// <param name="neighbourDirection">The direction from the tile to the desired neighbour</param>
         /// <param name="neighbour">The neighbour of a tile</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>Returns true if the neighbour exists, false otherwise</returns>
-        public static bool GetTileNeighbour<T>(T[,] map, T tile, Vector2Int neighbourDirection, out T neighbour, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static bool GetTileNeighbour<T>(T[,] map, T tile, Vector2Int neighbourDirection, out T neighbour, bool includeWalls = true) where T : ITile
         {
             int x = neighbourDirection.x > 0 ? tile.X + 1 : (neighbourDirection.x < 0 ? tile.X - 1 : tile.X);
             int y = neighbourDirection.y > 0 ? tile.Y + 1 : (neighbourDirection.y < 0 ? tile.Y - 1 : tile.Y);
 
-            if (GridUtils.AreCoordsIntoGrid(map, x, y, majorOrder))
+            if (GridUtils.AreCoordsIntoGrid(map, x, y))
             {
-                T nei = GridUtils.GetTile(map, x, y, majorOrder);
+                T nei = GridUtils.GetTile(map, x, y);
                 if (includeWalls || nei.IsWalkable)
                 {
                     neighbour = nei;
@@ -824,9 +779,8 @@ namespace Caskev.GridToolkit
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="tile">A tile</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTileNeighbours<T>(T[,] map, T tile, bool includeWalls, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetTileNeighbours<T>(T[,] map, T tile, bool includeWalls) where T : ITile
         {
             List<T> neis = new List<T>();
             for (int i = -1; i < 2; i++)
@@ -837,9 +791,9 @@ namespace Caskev.GridToolkit
                     {
                         continue;
                     }
-                    if (GridUtils.AreCoordsIntoGrid(map, tile.X + i, tile.Y + j, majorOrder))
+                    if (GridUtils.AreCoordsIntoGrid(map, tile.X + i, tile.Y + j))
                     {
-                        T nei = GridUtils.GetTile(map, tile.X + i, tile.Y + j, majorOrder);
+                        T nei = GridUtils.GetTile(map, tile.X + i, tile.Y + j);
                         if (includeWalls || nei.IsWalkable)
                         {
                             neis.Add(nei);
@@ -856,38 +810,37 @@ namespace Caskev.GridToolkit
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="tile">A tile</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTileOrthogonalsNeighbours<T>(T[,] map, T tile, bool includeWalls, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetTileOrthogonalsNeighbours<T>(T[,] map, T tile, bool includeWalls) where T : ITile
         {
             List<T> neis = new List<T>();
-            if (GridUtils.AreCoordsIntoGrid(map, tile.X - 1, tile.Y + 0, majorOrder))
+            if (GridUtils.AreCoordsIntoGrid(map, tile.X - 1, tile.Y + 0))
             {
-                T nei = GridUtils.GetTile(map, tile.X - 1, tile.Y + 0, majorOrder);
+                T nei = GridUtils.GetTile(map, tile.X - 1, tile.Y + 0);
                 if (includeWalls || nei.IsWalkable)
                 {
                     neis.Add(nei);
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, tile.X + 1, tile.Y + 0, majorOrder))
+            if (GridUtils.AreCoordsIntoGrid(map, tile.X + 1, tile.Y + 0))
             {
-                T nei = GridUtils.GetTile(map, tile.X + 1, tile.Y + 0, majorOrder);
+                T nei = GridUtils.GetTile(map, tile.X + 1, tile.Y + 0);
                 if (includeWalls || nei.IsWalkable)
                 {
                     neis.Add(nei);
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, tile.X + 0, tile.Y - 1, majorOrder))
+            if (GridUtils.AreCoordsIntoGrid(map, tile.X + 0, tile.Y - 1))
             {
-                T nei = GridUtils.GetTile(map, tile.X + 0, tile.Y - 1, majorOrder);
+                T nei = GridUtils.GetTile(map, tile.X + 0, tile.Y - 1);
                 if (includeWalls || nei.IsWalkable)
                 {
                     neis.Add(nei);
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, tile.X + 0, tile.Y + 1, majorOrder))
+            if (GridUtils.AreCoordsIntoGrid(map, tile.X + 0, tile.Y + 1))
             {
-                T nei = GridUtils.GetTile(map, tile.X + 0, tile.Y + 1, majorOrder);
+                T nei = GridUtils.GetTile(map, tile.X + 0, tile.Y + 1);
                 if (includeWalls || nei.IsWalkable)
                 {
                     neis.Add(nei);
@@ -902,39 +855,38 @@ namespace Caskev.GridToolkit
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="tile">A tile</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTileDiagonalsNeighbours<T>(T[,] map, T tile, bool includeWalls, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetTileDiagonalsNeighbours<T>(T[,] map, T tile, bool includeWalls) where T : ITile
         {
             List<T> neis = new List<T>();
 
-            if (GridUtils.AreCoordsIntoGrid(map, tile.X - 1, tile.Y - 1, majorOrder))
+            if (GridUtils.AreCoordsIntoGrid(map, tile.X - 1, tile.Y - 1))
             {
-                T nei = GridUtils.GetTile(map, tile.X - 1, tile.Y - 1, majorOrder);
+                T nei = GridUtils.GetTile(map, tile.X - 1, tile.Y - 1);
                 if (includeWalls || nei.IsWalkable)
                 {
                     neis.Add(nei);
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, tile.X - 1, tile.Y + 1, majorOrder))
+            if (GridUtils.AreCoordsIntoGrid(map, tile.X - 1, tile.Y + 1))
             {
-                T nei = GridUtils.GetTile(map, tile.X - 1, tile.Y + 1, majorOrder);
+                T nei = GridUtils.GetTile(map, tile.X - 1, tile.Y + 1);
                 if (includeWalls || nei.IsWalkable)
                 {
                     neis.Add(nei);
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, tile.X + 1, tile.Y - 1, majorOrder))
+            if (GridUtils.AreCoordsIntoGrid(map, tile.X + 1, tile.Y - 1))
             {
-                T nei = GridUtils.GetTile(map, tile.X + 1, tile.Y - 1, majorOrder);
+                T nei = GridUtils.GetTile(map, tile.X + 1, tile.Y - 1);
                 if (includeWalls || nei.IsWalkable)
                 {
                     neis.Add(nei);
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, tile.X + 1, tile.Y + 1, majorOrder))
+            if (GridUtils.AreCoordsIntoGrid(map, tile.X + 1, tile.Y + 1))
             {
-                T nei = GridUtils.GetTile(map, tile.X + 1, tile.Y + 1, majorOrder);
+                T nei = GridUtils.GetTile(map, tile.X + 1, tile.Y + 1);
                 if (includeWalls || nei.IsWalkable)
                 {
                     neis.Add(nei);
@@ -951,11 +903,10 @@ namespace Caskev.GridToolkit
         /// <param name="tile">A tile</param>
         /// <param name="center">The center tile of the rectangle</param>
         /// <param name="rectangleExtends">The Vector2Int representing the extends of the rectangle from the center</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileInARectangle<T>(T[,] map, T tile, T center, Vector2Int rectangleExtends, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static bool IsTileInARectangle<T>(T[,] map, T tile, T center, Vector2Int rectangleExtends) where T : ITile
         {
-            return IsInARectangle(map, tile, center, rectangleExtends, majorOrder);
+            return IsInARectangle(map, tile, center, rectangleExtends);
         }
         /// <summary>
         /// Is this tile on a rectangle outline or not.
@@ -965,11 +916,10 @@ namespace Caskev.GridToolkit
         /// <param name="tile">A tile</param>
         /// <param name="center">The center tile of the rectangle</param>
         /// <param name="rectangleExtends">The Vector2Int representing the extends of the rectangle from the center</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileOnARectangleOutline<T>(T[,] map, T tile, T center, Vector2Int rectangleExtends, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static bool IsTileOnARectangleOutline<T>(T[,] map, T tile, T center, Vector2Int rectangleExtends) where T : ITile
         {
-            return IsOnRectangleOutline(map, tile, center, rectangleExtends, majorOrder);
+            return IsOnRectangleOutline(map, tile, center, rectangleExtends);
         }
 
         /// <summary>
@@ -980,11 +930,10 @@ namespace Caskev.GridToolkit
         /// <param name="tile">A tile</param>
         /// <param name="center">The center tile of the rectangle</param>
         /// <param name="radius">The circle radius</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileInACircle<T>(T[,] map, T tile, T center, int radius, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static bool IsTileInACircle<T>(T[,] map, T tile, T center, int radius) where T : ITile
         {
-            return IsOnCircleArcFilled(map, tile, center, radius, 360f, Vector2.right, majorOrder);
+            return IsOnCircleArcFilled(map, tile, center, radius, 360f, Vector2.right);
         }
         /// <summary>
         /// Is this tile on a circle outline or not.
@@ -994,11 +943,10 @@ namespace Caskev.GridToolkit
         /// <param name="tile">A tile</param>
         /// <param name="center">The center tile of the rectangle</param>
         /// <param name="radius">The circle radius</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileOnACircleOutline<T>(T[,] map, T tile, T center, int radius, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static bool IsTileOnACircleOutline<T>(T[,] map, T tile, T center, int radius) where T : ITile
         {
-            return IsOnCircleArcOutline(map, tile, center, radius, 360f, Vector2.right, majorOrder);
+            return IsOnCircleArcOutline(map, tile, center, radius, 360f, Vector2.right);
         }
 
         /// <summary>
@@ -1010,11 +958,10 @@ namespace Caskev.GridToolkit
         /// <param name="center">The center tile of the rectangle</param>
         /// <param name="destinationTile">The destination tile</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileInACone<T>(T[,] map, T tile, T center, T destinationTile, float openingAngle, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static bool IsTileInACone<T>(T[,] map, T tile, T center, T destinationTile, float openingAngle) where T : ITile
         {
-            return IsTileInACone(map, tile, center, new Vector2Int(destinationTile.X, destinationTile.Y), openingAngle, majorOrder);
+            return IsTileInACone(map, tile, center, new Vector2Int(destinationTile.X, destinationTile.Y), openingAngle);
         }
         /// <summary>
         /// Is this tile on a cone or not.
@@ -1025,13 +972,12 @@ namespace Caskev.GridToolkit
         /// <param name="center">The center tile of the rectangle</param>
         /// <param name="endPosition">The destination virtual coordinates (do not need to be into grid range)</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileInACone<T>(T[,] map, T tile, T center, Vector2Int endPosition, float openingAngle, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static bool IsTileInACone<T>(T[,] map, T tile, T center, Vector2Int endPosition, float openingAngle) where T : ITile
         {
             openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
             Vector2 direction = endPosition - new Vector2(center.X, center.Y);
-            return IsOnCircleArcFilled(map, tile, center, Mathf.CeilToInt(direction.magnitude), openingAngle, direction, majorOrder);
+            return IsOnCircleArcFilled(map, tile, center, Mathf.CeilToInt(direction.magnitude), openingAngle, direction);
         }
         /// <summary>
         /// Is this tile on a cone or not.
@@ -1043,9 +989,8 @@ namespace Caskev.GridToolkit
         /// <param name="length">The length of the cone</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="directionAngle">The cone direction angle in degrees. 0 represents a direction pointing to the right in 2D coordinates</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileInACone<T>(T[,] map, T tile, T center, int length, float openingAngle, float directionAngle, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static bool IsTileInACone<T>(T[,] map, T tile, T center, int length, float openingAngle, float directionAngle) where T : ITile
         {
             float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
             if (length > magnitude || Mathf.Approximately(length, 0f))
@@ -1056,7 +1001,7 @@ namespace Caskev.GridToolkit
             float radians = directionAngle * Mathf.Deg2Rad;
             float dx = Mathf.Cos(radians);
             float dy = Mathf.Sin(radians);
-            return IsOnCircleArcFilled(map, tile, center, length, openingAngle, new Vector2(dx, dy), majorOrder);
+            return IsOnCircleArcFilled(map, tile, center, length, openingAngle, new Vector2(dx, dy));
         }
         /// <summary>
         /// Is this tile on a cone or not.
@@ -1068,9 +1013,8 @@ namespace Caskev.GridToolkit
         /// <param name="length">The length of the cone</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="direction">The Vector2 representing the cone direction. Note that an 'empty' Vector2 (Vector2.zero) will be treated as Vector2.right</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileInACone<T>(T[,] map, T tile, T center, int length, float openingAngle, Vector2 direction, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static bool IsTileInACone<T>(T[,] map, T tile, T center, int length, float openingAngle, Vector2 direction) where T : ITile
         {
             float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
             if (length > magnitude || Mathf.Approximately(length, 0f))
@@ -1080,7 +1024,7 @@ namespace Caskev.GridToolkit
             direction.Normalize();
             direction = direction == Vector2.zero ? Vector2.right : direction;
             openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
-            return IsOnCircleArcFilled(map, tile, center, length, openingAngle, direction, majorOrder);
+            return IsOnCircleArcFilled(map, tile, center, length, openingAngle, direction);
         }
 
         /// <summary>
@@ -1093,12 +1037,11 @@ namespace Caskev.GridToolkit
         /// <param name="destinationTile">The destination tile of the line</param>
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileOnALine<T>(T[,] map, T tile, T start, T destinationTile, bool allowDiagonals = true, bool favorVertical = false, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static bool IsTileOnALine<T>(T[,] map, T tile, T start, T destinationTile, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
         {
             Vector2Int endPosition = new Vector2Int(destinationTile.X, destinationTile.Y);
-            return IsTileOnALine(map, start, tile, endPosition, allowDiagonals, favorVertical, majorOrder);
+            return IsTileOnALine(map, start, tile, endPosition, allowDiagonals, favorVertical);
         }
         /// <summary>
         /// Is a tile on a line
@@ -1110,9 +1053,8 @@ namespace Caskev.GridToolkit
         /// <param name="directionAngle">The cone direction angle in degrees. 0 represents a direction pointing to the right in 2D coordinates</param>
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileOnALine<T>(T[,] map, T tile, T start, int length, float directionAngle, bool allowDiagonals = true, bool favorVertical = false, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static bool IsTileOnALine<T>(T[,] map, T tile, T start, int length, float directionAngle, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
         {
             float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
             if (length > magnitude || Mathf.Approximately(length, 0f))
@@ -1120,7 +1062,7 @@ namespace Caskev.GridToolkit
                 length = Mathf.CeilToInt(magnitude);
             }
             Vector2Int endPosition = new Vector2Int(Mathf.RoundToInt(start.X + Mathf.Cos(directionAngle * Mathf.Deg2Rad) * length), Mathf.RoundToInt(start.Y + Mathf.Sin(directionAngle * Mathf.Deg2Rad) * length));
-            return IsTileOnALine(map, start, tile, endPosition, allowDiagonals, favorVertical, majorOrder);
+            return IsTileOnALine(map, start, tile, endPosition, allowDiagonals, favorVertical);
         }
         /// <summary>
         /// Is a tile on a line
@@ -1132,9 +1074,8 @@ namespace Caskev.GridToolkit
         /// <param name="direction">The Vector2 representing the cone direction. Note that an 'empty' Vector2 (Vector2.zero) will be treated as Vector2.right</param>
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileOnALine<T>(T[,] map, T tile, T start, int length, Vector2 direction, bool allowDiagonals = true, bool favorVertical = false, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static bool IsTileOnALine<T>(T[,] map, T tile, T start, int length, Vector2 direction, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
         {
             float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
             if (length > magnitude || Mathf.Approximately(length, 0f))
@@ -1142,7 +1083,7 @@ namespace Caskev.GridToolkit
                 length = Mathf.CeilToInt(magnitude);
             }
             Vector2Int endPosition = Vector2Int.RoundToInt(new Vector2(start.X, start.Y) + (direction.normalized * length));
-            return IsTileOnALine(map, start, tile, endPosition, allowDiagonals, favorVertical, majorOrder);
+            return IsTileOnALine(map, start, tile, endPosition, allowDiagonals, favorVertical);
         }
         /// <summary>
         /// Is a tile on a line
@@ -1153,11 +1094,10 @@ namespace Caskev.GridToolkit
         /// <param name="endPosition">The line destination virtual coordinates (do not need to be into grid range)</param>
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileOnALine<T>(T[,] map, T start, T tile, Vector2Int endPosition, bool allowDiagonals = true, bool favorVertical = false, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static bool IsTileOnALine<T>(T[,] map, T start, T tile, Vector2Int endPosition, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
         {
-            return Raycasting.IsTileOnALine(map, start, tile, endPosition, allowDiagonals, favorVertical, false, majorOrder);
+            return Raycasting.IsTileOnALine(map, start, tile, endPosition, allowDiagonals, favorVertical, false);
         }
 
         /// <summary>
@@ -1250,7 +1190,7 @@ namespace Caskev.GridToolkit
     /// </summary>
     public class Raycasting
     {
-        internal static bool IsTileOnALine<T>(T[,] map, T startTile, T tile, Vector2Int endPosition, bool allowDiagonals, bool favorVertical, bool breakOnWalls, MajorOrder majorOrder) where T : ITile
+        internal static bool IsTileOnALine<T>(T[,] map, T startTile, T tile, Vector2Int endPosition, bool allowDiagonals, bool favorVertical, bool breakOnWalls) where T : ITile
         {
             if (GridUtils.TileEquals(startTile, tile))
             {
@@ -1292,12 +1232,12 @@ namespace Caskev.GridToolkit
                     p.y += sign_y;
                     iy++;
                 }
-                bool isNextTileIntoGrid = GridUtils.AreCoordsIntoGrid(map, p.x, p.y, majorOrder);
+                bool isNextTileIntoGrid = GridUtils.AreCoordsIntoGrid(map, p.x, p.y);
                 if (!isNextTileIntoGrid)
                 {
                     break;
                 }
-                T nextTile = GridUtils.GetTile(map, p.x, p.y, majorOrder);
+                T nextTile = GridUtils.GetTile(map, p.x, p.y);
                 bool isNextTileWalkable = nextTile != null && nextTile.IsWalkable;
                 if (breakOnWalls && (nextTile == null || !nextTile.IsWalkable))
                 {
@@ -1314,7 +1254,7 @@ namespace Caskev.GridToolkit
             }
             return false;
         }
-        internal static void Raycast<T>(T[,] map, T startTile, Vector2Int endPosition, bool allowDiagonals, bool favorVertical, bool includeStart, bool breakOnWalls, bool includeWalls, out bool isClear, MajorOrder majorOrder, ref HashSet<T> results) where T : ITile
+        internal static void Raycast<T>(T[,] map, T startTile, Vector2Int endPosition, bool allowDiagonals, bool favorVertical, bool includeStart, bool breakOnWalls, bool includeWalls, out bool isClear, ref HashSet<T> results) where T : ITile
         {
             Vector2Int p0 = new Vector2Int(startTile.X, startTile.Y);
             Vector2Int p1 = endPosition;
@@ -1327,7 +1267,7 @@ namespace Caskev.GridToolkit
             Vector2Int p = new Vector2Int(p0.x, p0.y);
             if (includeStart)
             {
-                results.Add(GridUtils.GetTile(map, p.x, p.y, majorOrder));
+                results.Add(GridUtils.GetTile(map, p.x, p.y));
             }
             isClear = true;
             for (int ix = 0, iy = 0; ix < nx || iy < ny;)
@@ -1357,12 +1297,12 @@ namespace Caskev.GridToolkit
                     p.y += sign_y;
                     iy++;
                 }
-                bool isNextTileIntoGrid = GridUtils.AreCoordsIntoGrid(map, p.x, p.y, majorOrder);
+                bool isNextTileIntoGrid = GridUtils.AreCoordsIntoGrid(map, p.x, p.y);
                 if (!isNextTileIntoGrid)
                 {
                     break;
                 }
-                T tile = GridUtils.GetTile(map, p.x, p.y, majorOrder);
+                T tile = GridUtils.GetTile(map, p.x, p.y);
                 bool isNextTileWalkable = tile != null && tile.IsWalkable;
                 if (!isNextTileWalkable)
                 {
@@ -1376,10 +1316,10 @@ namespace Caskev.GridToolkit
                 {
                     continue;
                 }
-                results.Add(GridUtils.GetTile(map, p.x, p.y, majorOrder));
+                results.Add(GridUtils.GetTile(map, p.x, p.y));
             }
         }
-        private static void ConeCast<T>(T[,] map, T center, int radius, float openingAngle, Vector2 direction, ref bool isClear, bool includeStart, ref HashSet<T> resultList, MajorOrder majorOrder) where T : ITile
+        private static void ConeCast<T>(T[,] map, T center, int radius, float openingAngle, Vector2 direction, ref bool isClear, bool includeStart, ref HashSet<T> resultList) where T : ITile
         {
             bool lineClear = true;
             direction.Normalize();
@@ -1388,7 +1328,7 @@ namespace Caskev.GridToolkit
             int F_M = 1 - radius;
             int d_e = 3;
             int d_ne = -(radius << 1) + 5;
-            RaycastToMirrorPositions(map, center, x, y, openingAngle, direction, ref lineClear, includeStart, ref resultList, majorOrder);
+            RaycastToMirrorPositions(map, center, x, y, openingAngle, direction, ref lineClear, includeStart, ref resultList);
             if (!lineClear)
             {
                 isClear = false;
@@ -1408,20 +1348,20 @@ namespace Caskev.GridToolkit
                 d_e += 2;
                 d_ne += 2;
                 x += 1;
-                RaycastToMirrorPositions(map, center, x, y, openingAngle, direction, ref isClear, includeStart, ref resultList, majorOrder);
+                RaycastToMirrorPositions(map, center, x, y, openingAngle, direction, ref isClear, includeStart, ref resultList);
                 if (!lineClear)
                 {
                     isClear = false;
                 }
             }
         }
-        private static void RaycastToMirrorPositions<T>(T[,] map, T centerTile, int x, int y, float openingAngle, Vector2 direction, ref bool isClear, bool includeStart, ref HashSet<T> resultList, MajorOrder majorOrder) where T : ITile
+        private static void RaycastToMirrorPositions<T>(T[,] map, T centerTile, int x, int y, float openingAngle, Vector2 direction, ref bool isClear, bool includeStart, ref HashSet<T> resultList) where T : ITile
         {
             bool lineClear = true;
             Vector2Int nei = new Vector2Int(centerTile.X + x, centerTile.Y + y);
             if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
             {
-                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, majorOrder, ref resultList);
+                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, ref resultList);
             }
             if (!lineClear)
             {
@@ -1430,7 +1370,7 @@ namespace Caskev.GridToolkit
             nei = new Vector2Int(centerTile.X - x, centerTile.Y + y);
             if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
             {
-                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, majorOrder, ref resultList);
+                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, ref resultList);
             }
             if (!lineClear)
             {
@@ -1439,7 +1379,7 @@ namespace Caskev.GridToolkit
             nei = new Vector2Int(centerTile.X + x, centerTile.Y - y);
             if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
             {
-                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, majorOrder, ref resultList);
+                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, ref resultList);
                 if (!lineClear)
                 {
                     isClear = false;
@@ -1448,7 +1388,7 @@ namespace Caskev.GridToolkit
             nei = new Vector2Int(centerTile.X - x, centerTile.Y - y);
             if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
             {
-                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, majorOrder, ref resultList);
+                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, ref resultList);
                 if (!lineClear)
                 {
                     isClear = false;
@@ -1457,7 +1397,7 @@ namespace Caskev.GridToolkit
             nei = new Vector2Int(centerTile.X + y, centerTile.Y + x);
             if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
             {
-                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, majorOrder, ref resultList);
+                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, ref resultList);
                 if (!lineClear)
                 {
                     isClear = false;
@@ -1466,7 +1406,7 @@ namespace Caskev.GridToolkit
             nei = new Vector2Int(centerTile.X - y, centerTile.Y + x);
             if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
             {
-                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, majorOrder, ref resultList);
+                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, ref resultList);
                 if (!lineClear)
                 {
                     isClear = false;
@@ -1475,7 +1415,7 @@ namespace Caskev.GridToolkit
             nei = new Vector2Int(centerTile.X + y, centerTile.Y - x);
             if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
             {
-                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, majorOrder, ref resultList);
+                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, ref resultList);
                 if (!lineClear)
                 {
                     isClear = false;
@@ -1484,7 +1424,7 @@ namespace Caskev.GridToolkit
             nei = new Vector2Int(centerTile.X - y, centerTile.Y - x);
             if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
             {
-                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, majorOrder, ref resultList);
+                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, ref resultList);
                 if (!lineClear)
                 {
                     isClear = false;
@@ -1501,11 +1441,10 @@ namespace Caskev.GridToolkit
         /// <param name="destinationTile">The destination tile</param>
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
-        public static bool IsLineOfSightClear<T>(T[,] map, T startTile, T destinationTile, bool allowDiagonals = true, bool favorVertical = false, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static bool IsLineOfSightClear<T>(T[,] map, T startTile, T destinationTile, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
         {
-            GetLineOfSight(map, out bool isClear, startTile, destinationTile, allowDiagonals, favorVertical, false, majorOrder);
+            GetLineOfSight(map, out bool isClear, startTile, destinationTile, allowDiagonals, favorVertical, false);
             return isClear;
         }
         /// <summary>
@@ -1518,11 +1457,10 @@ namespace Caskev.GridToolkit
         /// <param name="directionAngle">The angle of the line from the start tile</param>
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
-        public static bool IsLineOfSightClear<T>(T[,] map, T startTile, int length, float directionAngle, bool allowDiagonals = true, bool favorVertical = false, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static bool IsLineOfSightClear<T>(T[,] map, T startTile, int length, float directionAngle, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
         {
-            GetLineOfSight(map, out bool isClear, startTile, length, directionAngle, allowDiagonals, favorVertical, false, majorOrder);
+            GetLineOfSight(map, out bool isClear, startTile, length, directionAngle, allowDiagonals, favorVertical, false);
             return isClear;
         }
         /// <summary>
@@ -1535,11 +1473,10 @@ namespace Caskev.GridToolkit
         /// <param name="direction">The direction of the line from the start tile</param>
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
-        public static bool IsLineOfSightClear<T>(T[,] map, T startTile, int length, Vector2 direction, bool allowDiagonals = true, bool favorVertical = false, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static bool IsLineOfSightClear<T>(T[,] map, T startTile, int length, Vector2 direction, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
         {
-            GetLineOfSight(map, out bool isClear, startTile, length, direction, allowDiagonals, favorVertical, false, majorOrder);
+            GetLineOfSight(map, out bool isClear, startTile, length, direction, allowDiagonals, favorVertical, false);
             return isClear;
         }
         /// <summary>
@@ -1551,11 +1488,10 @@ namespace Caskev.GridToolkit
         /// <param name="endPosition">The destination virtual coordinates (do not need to be into grid range)</param>
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
-        public static bool IsLineOfSightClear<T>(T[,] map, T startTile, Vector2Int endPosition, bool allowDiagonals = true, bool favorVertical = false, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static bool IsLineOfSightClear<T>(T[,] map, T startTile, Vector2Int endPosition, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
         {
-            GetLineOfSight(map, out bool isClear, startTile, endPosition, allowDiagonals, favorVertical, false, majorOrder);
+            GetLineOfSight(map, out bool isClear, startTile, endPosition, allowDiagonals, favorVertical, false);
             return isClear;
         }
 
@@ -1567,11 +1503,10 @@ namespace Caskev.GridToolkit
         /// <param name="startTile">The start tile</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="destinationTile">The destination tile</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
-        public static bool IsConeOfVisionClear<T>(T[,] map, T startTile, float openingAngle, T destinationTile, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static bool IsConeOfVisionClear<T>(T[,] map, T startTile, float openingAngle, T destinationTile) where T : ITile
         {
-            GetConeOfVision(map, out bool clear, startTile, openingAngle, destinationTile, true, majorOrder);
+            GetConeOfVision(map, out bool clear, startTile, openingAngle, destinationTile, true);
             return clear;
         }
         /// <summary>
@@ -1583,11 +1518,10 @@ namespace Caskev.GridToolkit
         /// <param name="length">The length of the cone</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="directionAngle">The angle of the line from the start tile</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
-        public static bool IsConeOfVisionClear<T>(T[,] map, T startTile, int length, float openingAngle, float directionAngle, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static bool IsConeOfVisionClear<T>(T[,] map, T startTile, int length, float openingAngle, float directionAngle) where T : ITile
         {
-            GetConeOfVision(map, out bool clear, startTile, length, openingAngle, directionAngle, true, majorOrder);
+            GetConeOfVision(map, out bool clear, startTile, length, openingAngle, directionAngle, true);
             return clear;
         }
         /// <summary>
@@ -1599,11 +1533,10 @@ namespace Caskev.GridToolkit
         /// <param name="length">The length of the cone</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="direction">The direction of the line from the start tile</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
-        public static bool IsConeOfVisionClear<T>(T[,] map, T startTile, int length, float openingAngle, Vector2 direction, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static bool IsConeOfVisionClear<T>(T[,] map, T startTile, int length, float openingAngle, Vector2 direction) where T : ITile
         {
-            GetConeOfVision(map, out bool clear, startTile, length, openingAngle, direction, true, majorOrder);
+            GetConeOfVision(map, out bool clear, startTile, length, openingAngle, direction, true);
             return clear;
         }
         /// <summary>
@@ -1614,11 +1547,10 @@ namespace Caskev.GridToolkit
         /// <param name="startTile">The start tile</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="endPosition">The destination virtual coordinates (do not need to be into grid range)</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
-        public static bool IsConeOfVisionClear<T>(T[,] map, T startTile, float openingAngle, Vector2Int endPosition, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static bool IsConeOfVisionClear<T>(T[,] map, T startTile, float openingAngle, Vector2Int endPosition) where T : ITile
         {
-            GetConeOfVision(map, out bool clear, startTile, openingAngle, endPosition, true, majorOrder);
+            GetConeOfVision(map, out bool clear, startTile, openingAngle, endPosition, true);
             return clear;
         }
 
@@ -1633,12 +1565,11 @@ namespace Caskev.GridToolkit
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
-        public static T[] GetLineOfSight<T>(T[,] map, T startTile, T destinationTile, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetLineOfSight<T>(T[,] map, T startTile, T destinationTile, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
         {
             Vector2Int endPos = new Vector2Int(destinationTile.X, destinationTile.Y);
-            return GetLineOfSight(map, startTile, endPos, allowDiagonals, favorVertical, includeStart, majorOrder);
+            return GetLineOfSight(map, startTile, endPos, allowDiagonals, favorVertical, includeStart);
         }
         /// <summary>
         /// Get all tiles on a line of sight from a start tile.<br/>
@@ -1651,9 +1582,8 @@ namespace Caskev.GridToolkit
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetLineOfSight<T>(T[,] map, T startTile, int length, float directionAngle, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetLineOfSight<T>(T[,] map, T startTile, int length, float directionAngle, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
         {
             float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
             if (length > magnitude || Mathf.Approximately(length, 0f))
@@ -1661,7 +1591,7 @@ namespace Caskev.GridToolkit
                 length = Mathf.CeilToInt(magnitude);
             }
             Vector2Int endPos = new Vector2Int(Mathf.RoundToInt(startTile.X + Mathf.Cos(directionAngle * Mathf.Deg2Rad) * length), Mathf.RoundToInt(startTile.Y + Mathf.Sin(directionAngle * Mathf.Deg2Rad) * length));
-            return GetLineOfSight(map, startTile, endPos, allowDiagonals, favorVertical, includeStart, majorOrder);
+            return GetLineOfSight(map, startTile, endPos, allowDiagonals, favorVertical, includeStart);
         }
         /// <summary>
         /// Get all tiles on a line of sight from a start tile.<br/>
@@ -1674,9 +1604,8 @@ namespace Caskev.GridToolkit
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetLineOfSight<T>(T[,] map, T startTile, int length, Vector2 direction, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetLineOfSight<T>(T[,] map, T startTile, int length, Vector2 direction, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
         {
             float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
             if (length > magnitude || Mathf.Approximately(length, 0f))
@@ -1684,7 +1613,7 @@ namespace Caskev.GridToolkit
                 length = Mathf.CeilToInt(magnitude);
             }
             Vector2Int endPos = Vector2Int.RoundToInt(new Vector2(startTile.X, startTile.Y) + (direction.normalized * length));
-            return GetLineOfSight(map, startTile, endPos, allowDiagonals, favorVertical, includeStart, majorOrder);
+            return GetLineOfSight(map, startTile, endPos, allowDiagonals, favorVertical, includeStart);
         }
         /// <summary>
         /// Get all tiles on a line of sight from a start tile.<br/>
@@ -1696,12 +1625,11 @@ namespace Caskev.GridToolkit
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetLineOfSight<T>(T[,] map, T startTile, Vector2Int endPosition, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetLineOfSight<T>(T[,] map, T startTile, Vector2Int endPosition, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
         {
             HashSet<T> hashSet = new HashSet<T>();
-            Raycast(map, startTile, endPosition, allowDiagonals, favorVertical, includeStart, true, false, out bool isClear, majorOrder, ref hashSet);
+            Raycast(map, startTile, endPosition, allowDiagonals, favorVertical, includeStart, true, false, out bool isClear, ref hashSet);
             return hashSet.ToArray();
         }
         /// <summary>
@@ -1715,12 +1643,11 @@ namespace Caskev.GridToolkit
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
-        public static T[] GetLineOfSight<T>(T[,] map, out bool isClear, T startTile, T destinationTile, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetLineOfSight<T>(T[,] map, out bool isClear, T startTile, T destinationTile, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
         {
             Vector2Int endPos = new Vector2Int(destinationTile.X, destinationTile.Y);
-            return GetLineOfSight(map, out isClear, startTile, endPos, allowDiagonals, favorVertical, includeStart, majorOrder);
+            return GetLineOfSight(map, out isClear, startTile, endPos, allowDiagonals, favorVertical, includeStart);
         }
         /// <summary>
         /// Get all tiles on a line of sight from a start tile.<br/>
@@ -1734,9 +1661,8 @@ namespace Caskev.GridToolkit
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetLineOfSight<T>(T[,] map, out bool isClear, T startTile, int length, float directionAngle, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetLineOfSight<T>(T[,] map, out bool isClear, T startTile, int length, float directionAngle, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
         {
             float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
             if (length > magnitude || Mathf.Approximately(length, 0f))
@@ -1744,7 +1670,7 @@ namespace Caskev.GridToolkit
                 length = Mathf.CeilToInt(magnitude);
             }
             Vector2Int endPos = new Vector2Int(Mathf.RoundToInt(startTile.X + Mathf.Cos(directionAngle * Mathf.Deg2Rad) * length), Mathf.RoundToInt(startTile.Y + Mathf.Sin(directionAngle * Mathf.Deg2Rad) * length));
-            return GetLineOfSight(map, out isClear, startTile, endPos, allowDiagonals, favorVertical, includeStart, majorOrder);
+            return GetLineOfSight(map, out isClear, startTile, endPos, allowDiagonals, favorVertical, includeStart);
         }
         /// <summary>
         /// Get all tiles on a line of sight from a start tile.<br/>
@@ -1759,9 +1685,8 @@ namespace Caskev.GridToolkit
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetLineOfSight<T>(T[,] map, out bool isClear, T startTile, int length, Vector2 direction, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetLineOfSight<T>(T[,] map, out bool isClear, T startTile, int length, Vector2 direction, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
         {
             float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
             if (length > magnitude || Mathf.Approximately(length, 0f))
@@ -1769,7 +1694,7 @@ namespace Caskev.GridToolkit
                 length = Mathf.CeilToInt(magnitude);
             }
             Vector2Int endPos = Vector2Int.RoundToInt(new Vector2(startTile.X, startTile.Y) + (direction.normalized * length));
-            return GetLineOfSight(map, out isClear, startTile, endPos, allowDiagonals, favorVertical, includeStart, majorOrder);
+            return GetLineOfSight(map, out isClear, startTile, endPos, allowDiagonals, favorVertical, includeStart);
         }
         /// <summary>
         /// Get all tiles on a line of sight from a start tile.<br/>
@@ -1783,12 +1708,11 @@ namespace Caskev.GridToolkit
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetLineOfSight<T>(T[,] map, out bool isClear, T startTile, Vector2Int endPosition, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetLineOfSight<T>(T[,] map, out bool isClear, T startTile, Vector2Int endPosition, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
         {
             HashSet<T> hashSet = new HashSet<T>();
-            Raycast(map, startTile, endPosition, allowDiagonals, favorVertical, includeStart, true, false, out isClear, majorOrder, ref hashSet);
+            Raycast(map, startTile, endPosition, allowDiagonals, favorVertical, includeStart, true, false, out isClear, ref hashSet);
             return hashSet.ToArray();
         }
 
@@ -1802,9 +1726,8 @@ namespace Caskev.GridToolkit
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="destinationTile">The destination tile at the end of the cone</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetConeOfVision<T>(T[,] map, T startTile, float openingAngle, T destinationTile, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetConeOfVision<T>(T[,] map, T startTile, float openingAngle, T destinationTile, bool includeStart = true) where T : ITile
         {
             openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
             Vector2Int startPos = new Vector2Int(startTile.X, startTile.Y);
@@ -1812,7 +1735,7 @@ namespace Caskev.GridToolkit
             Vector2 direction = endPos - startPos;
             HashSet<T> lines = new HashSet<T>();
             bool isClear = true;
-            ConeCast(map, startTile, Mathf.CeilToInt(direction.magnitude), openingAngle, direction, ref isClear, includeStart, ref lines, majorOrder);
+            ConeCast(map, startTile, Mathf.CeilToInt(direction.magnitude), openingAngle, direction, ref isClear, includeStart, ref lines);
             return lines.ToArray();
         }
         /// <summary>
@@ -1826,9 +1749,8 @@ namespace Caskev.GridToolkit
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="directionAngle">The angle of the line from the start tile</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetConeOfVision<T>(T[,] map, T startTile, int length, float openingAngle, float directionAngle, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetConeOfVision<T>(T[,] map, T startTile, int length, float openingAngle, float directionAngle, bool includeStart = true) where T : ITile
         {
             openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
             float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
@@ -1841,7 +1763,7 @@ namespace Caskev.GridToolkit
             Vector2 direction = endPos - startPos;
             HashSet<T> lines = new HashSet<T>();
             bool isClear = true;
-            ConeCast(map, startTile, length, openingAngle, direction, ref isClear, includeStart, ref lines, majorOrder);
+            ConeCast(map, startTile, length, openingAngle, direction, ref isClear, includeStart, ref lines);
             return lines.ToArray();
         }
         /// <summary>
@@ -1855,9 +1777,8 @@ namespace Caskev.GridToolkit
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="direction">The direction of the line from the start tile</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetConeOfVision<T>(T[,] map, T startTile, int length, float openingAngle, Vector2 direction, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetConeOfVision<T>(T[,] map, T startTile, int length, float openingAngle, Vector2 direction, bool includeStart = true) where T : ITile
         {
             openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
             float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
@@ -1867,7 +1788,7 @@ namespace Caskev.GridToolkit
             }
             HashSet<T> lines = new HashSet<T>();
             bool isClear = true;
-            ConeCast(map, startTile, length, openingAngle, direction, ref isClear, includeStart, ref lines, majorOrder);
+            ConeCast(map, startTile, length, openingAngle, direction, ref isClear, includeStart, ref lines);
             return lines.ToArray();
         }
         /// <summary>
@@ -1880,16 +1801,15 @@ namespace Caskev.GridToolkit
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="endPosition">The destination virtual coordinates (do not need to be into grid range)</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetConeOfVision<T>(T[,] map, T startTile, float openingAngle, Vector2Int endPosition, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetConeOfVision<T>(T[,] map, T startTile, float openingAngle, Vector2Int endPosition, bool includeStart = true) where T : ITile
         {
             openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
             Vector2Int startPos = new Vector2Int(startTile.X, startTile.Y);
             Vector2 direction = endPosition - startPos;
             HashSet<T> lines = new HashSet<T>();
             bool isClear = true;
-            ConeCast(map, startTile, Mathf.FloorToInt(direction.magnitude), openingAngle, direction, ref isClear, includeStart, ref lines, majorOrder);
+            ConeCast(map, startTile, Mathf.FloorToInt(direction.magnitude), openingAngle, direction, ref isClear, includeStart, ref lines);
             return lines.ToArray();
         }
         /// <summary>
@@ -1903,9 +1823,8 @@ namespace Caskev.GridToolkit
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="destinationTile">The destination tile at the end of the cone</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetConeOfVision<T>(T[,] map, out bool isClear, T startTile, float openingAngle, T destinationTile, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetConeOfVision<T>(T[,] map, out bool isClear, T startTile, float openingAngle, T destinationTile, bool includeStart = true) where T : ITile
         {
             openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
             Vector2Int startPos = new Vector2Int(startTile.X, startTile.Y);
@@ -1914,7 +1833,7 @@ namespace Caskev.GridToolkit
             Vector2 direction = endPos - startPos;
             HashSet<T> lines = new HashSet<T>();
             isClear = true;
-            ConeCast(map, startTile, Mathf.FloorToInt(direction.magnitude), openingAngle, direction, ref isClear, includeStart, ref lines, majorOrder);
+            ConeCast(map, startTile, Mathf.FloorToInt(direction.magnitude), openingAngle, direction, ref isClear, includeStart, ref lines);
             return lines.ToArray();
         }
         /// <summary>
@@ -1929,9 +1848,8 @@ namespace Caskev.GridToolkit
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="directionAngle">The angle of the line from the start tile</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetConeOfVision<T>(T[,] map, out bool isClear, T startTile, int length, float openingAngle, float directionAngle, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetConeOfVision<T>(T[,] map, out bool isClear, T startTile, int length, float openingAngle, float directionAngle, bool includeStart = true) where T : ITile
         {
             openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
             float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
@@ -1944,7 +1862,7 @@ namespace Caskev.GridToolkit
             Vector2 direction = endPos - startPos;
             HashSet<T> lines = new HashSet<T>();
             isClear = true;
-            ConeCast(map, startTile, length, openingAngle, direction, ref isClear, includeStart, ref lines, majorOrder);
+            ConeCast(map, startTile, length, openingAngle, direction, ref isClear, includeStart, ref lines);
             return lines.ToArray();
         }
         /// <summary>
@@ -1959,9 +1877,8 @@ namespace Caskev.GridToolkit
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="direction">The direction of the line from the start tile</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetConeOfVision<T>(T[,] map, out bool isClear, T startTile, int length, float openingAngle, Vector2 direction, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetConeOfVision<T>(T[,] map, out bool isClear, T startTile, int length, float openingAngle, Vector2 direction, bool includeStart = true) where T : ITile
         {
             openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
             float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
@@ -1971,7 +1888,7 @@ namespace Caskev.GridToolkit
             }
             HashSet<T> lines = new HashSet<T>();
             isClear = true;
-            ConeCast(map, startTile, length, openingAngle, direction, ref isClear, includeStart, ref lines, majorOrder);
+            ConeCast(map, startTile, length, openingAngle, direction, ref isClear, includeStart, ref lines);
             return lines.ToArray();
         }
         /// <summary>
@@ -1985,16 +1902,15 @@ namespace Caskev.GridToolkit
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="endPosition">The destination virtual coordinates (do not need to be into grid range)</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetConeOfVision<T>(T[,] map, out bool isClear, T startTile, float openingAngle, Vector2Int endPosition, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetConeOfVision<T>(T[,] map, out bool isClear, T startTile, float openingAngle, Vector2Int endPosition, bool includeStart = true) where T : ITile
         {
             openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
             Vector2Int startPos = new Vector2Int(startTile.X, startTile.Y);
             Vector2 direction = endPosition - startPos;
             HashSet<T> lines = new HashSet<T>();
             isClear = true;
-            ConeCast(map, startTile, Mathf.CeilToInt(direction.magnitude), openingAngle, direction, ref isClear, includeStart, ref lines, majorOrder);
+            ConeCast(map, startTile, Mathf.CeilToInt(direction.magnitude), openingAngle, direction, ref isClear, includeStart, ref lines);
             return lines.ToArray();
         }
     }
@@ -2007,19 +1923,19 @@ namespace Caskev.GridToolkit
     /// </summary>
     public class Pathfinding
     {
-        private static bool GetTile<T>(T[,] map, int x, int y, out T tile, MajorOrder majorOrder) where T : ITile
+        private static bool GetTile<T>(T[,] map, int x, int y, out T tile) where T : ITile
         {
-            if (x > -1 && y > -1 && x < GridUtils.GetHorizontalLength(map, majorOrder) && y < GridUtils.GetVerticalLength(map, majorOrder))
+            if (x > -1 && y > -1 && x < GridUtils.GetHorizontalLength(map) && y < GridUtils.GetVerticalLength(map))
             {
-                tile = GridUtils.GetTile(map, x, y, majorOrder);
+                tile = GridUtils.GetTile(map, x, y);
                 return true;
             }
             tile = default;
             return false;
         }
-        private static bool GetLeftNeighbour<T>(T[,] map, int x, int y, out T nei, MajorOrder majorOrder) where T : ITile
+        private static bool GetLeftNeighbour<T>(T[,] map, int x, int y, out T nei) where T : ITile
         {
-            if (GetTile(map, x - 1, y, out nei, majorOrder))
+            if (GetTile(map, x - 1, y, out nei))
             {
                 if (nei != null && nei.IsWalkable)
                 {
@@ -2028,9 +1944,9 @@ namespace Caskev.GridToolkit
             }
             return false;
         }
-        private static bool GetRightNeighbour<T>(T[,] map, int x, int y, out T nei, MajorOrder majorOrder) where T : ITile
+        private static bool GetRightNeighbour<T>(T[,] map, int x, int y, out T nei) where T : ITile
         {
-            if (GetTile(map, x + 1, y, out nei, majorOrder))
+            if (GetTile(map, x + 1, y, out nei))
             {
                 if (nei != null && nei.IsWalkable)
                 {
@@ -2039,9 +1955,9 @@ namespace Caskev.GridToolkit
             }
             return false;
         }
-        private static bool GetBottomNeighbour<T>(T[,] map, int x, int y, out T nei, MajorOrder majorOrder) where T : ITile
+        private static bool GetBottomNeighbour<T>(T[,] map, int x, int y, out T nei) where T : ITile
         {
-            if (GetTile(map, x, y - 1, out nei, majorOrder))
+            if (GetTile(map, x, y - 1, out nei))
             {
                 if (nei != null && nei.IsWalkable)
                 {
@@ -2050,9 +1966,9 @@ namespace Caskev.GridToolkit
             }
             return false;
         }
-        private static bool GetTopNeighbour<T>(T[,] map, int x, int y, out T nei, MajorOrder majorOrder) where T : ITile
+        private static bool GetTopNeighbour<T>(T[,] map, int x, int y, out T nei) where T : ITile
         {
-            if (GetTile(map, x, y + 1, out nei, majorOrder))
+            if (GetTile(map, x, y + 1, out nei))
             {
                 if (nei != null && nei.IsWalkable)
                 {
@@ -2061,9 +1977,9 @@ namespace Caskev.GridToolkit
             }
             return false;
         }
-        private static bool GetLeftBottomNeighbour<T>(T[,] map, int x, int y, out T nei, MajorOrder majorOrder) where T : ITile
+        private static bool GetLeftBottomNeighbour<T>(T[,] map, int x, int y, out T nei) where T : ITile
         {
-            if (GetTile(map, x - 1, y - 1, out nei, majorOrder))
+            if (GetTile(map, x - 1, y - 1, out nei))
             {
                 if (nei != null && nei.IsWalkable)
                 {
@@ -2072,9 +1988,9 @@ namespace Caskev.GridToolkit
             }
             return false;
         }
-        private static bool GetLeftTopNeighbour<T>(T[,] map, int x, int y, out T nei, MajorOrder majorOrder) where T : ITile
+        private static bool GetLeftTopNeighbour<T>(T[,] map, int x, int y, out T nei) where T : ITile
         {
-            if (GetTile(map, x - 1, y + 1, out nei, majorOrder))
+            if (GetTile(map, x - 1, y + 1, out nei))
             {
                 if (nei != null && nei.IsWalkable)
                 {
@@ -2083,9 +1999,9 @@ namespace Caskev.GridToolkit
             }
             return false;
         }
-        private static bool GetRightBottomNeighbour<T>(T[,] map, int x, int y, out T nei, MajorOrder majorOrder) where T : ITile
+        private static bool GetRightBottomNeighbour<T>(T[,] map, int x, int y, out T nei) where T : ITile
         {
-            if (GetTile(map, x + 1, y - 1, out nei, majorOrder))
+            if (GetTile(map, x + 1, y - 1, out nei))
             {
                 if (nei != null && nei.IsWalkable)
                 {
@@ -2094,9 +2010,9 @@ namespace Caskev.GridToolkit
             }
             return false;
         }
-        private static bool GetRightTopNeighbour<T>(T[,] map, int x, int y, out T nei, MajorOrder majorOrder) where T : ITile
+        private static bool GetRightTopNeighbour<T>(T[,] map, int x, int y, out T nei) where T : ITile
         {
-            if (GetTile(map, x + 1, y + 1, out nei, majorOrder))
+            if (GetTile(map, x + 1, y + 1, out nei))
             {
                 if (nei != null && nei.IsWalkable)
                 {
@@ -2105,72 +2021,72 @@ namespace Caskev.GridToolkit
             }
             return false;
         }
-        private static void GetTileOrthographicNeighbours<T>(ref List<T> nodes, T[,] map, int x, int y, MajorOrder majorOrder) where T : ITile
+        private static void GetTileOrthographicNeighbours<T>(ref List<T> nodes, T[,] map, int x, int y) where T : ITile
         {
             T nei;
 
-            bool leftWalkable = GetLeftNeighbour(map, x, y, out nei, majorOrder);
+            bool leftWalkable = GetLeftNeighbour(map, x, y, out nei);
             if (leftWalkable)
             {
                 nodes.Add(nei);
             }
-            bool rightWalkable = GetRightNeighbour(map, x, y, out nei, majorOrder);
+            bool rightWalkable = GetRightNeighbour(map, x, y, out nei);
             if (rightWalkable)
             {
                 nodes.Add(nei);
             }
-            bool bottomWalkable = GetBottomNeighbour(map, x, y, out nei, majorOrder);
+            bool bottomWalkable = GetBottomNeighbour(map, x, y, out nei);
             if (bottomWalkable)
             {
                 nodes.Add(nei);
             }
-            bool topWalkable = GetTopNeighbour(map, x, y, out nei, majorOrder);
+            bool topWalkable = GetTopNeighbour(map, x, y, out nei);
             if (topWalkable)
             {
                 nodes.Add(nei);
             }
         }
-        private static void GetTileNeighbours<T>(ref List<T> nodes, T[,] map, int x, int y, MajorOrder majorOrder) where T : ITile
+        private static void GetTileNeighbours<T>(ref List<T> nodes, T[,] map, int x, int y) where T : ITile
         {
             T nei;
 
-            bool leftWalkable = GetLeftNeighbour(map, x, y, out nei, majorOrder);
+            bool leftWalkable = GetLeftNeighbour(map, x, y, out nei);
             if (leftWalkable)
             {
                 nodes.Add(nei);
             }
-            bool rightWalkable = GetRightNeighbour(map, x, y, out nei, majorOrder);
+            bool rightWalkable = GetRightNeighbour(map, x, y, out nei);
             if (rightWalkable)
             {
                 nodes.Add(nei);
             }
-            bool bottomWalkable = GetBottomNeighbour(map, x, y, out nei, majorOrder);
+            bool bottomWalkable = GetBottomNeighbour(map, x, y, out nei);
             if (bottomWalkable)
             {
                 nodes.Add(nei);
             }
-            bool topWalkable = GetTopNeighbour(map, x, y, out nei, majorOrder);
+            bool topWalkable = GetTopNeighbour(map, x, y, out nei);
             if (topWalkable)
             {
                 nodes.Add(nei);
             }
 
-            bool leftBottomWalkable = GetLeftBottomNeighbour(map, x, y, out nei, majorOrder);
+            bool leftBottomWalkable = GetLeftBottomNeighbour(map, x, y, out nei);
             if (leftBottomWalkable)
             {
                 nodes.Add(nei);
             }
-            bool rightBottomWalkable = GetRightBottomNeighbour(map, x, y, out nei, majorOrder);
+            bool rightBottomWalkable = GetRightBottomNeighbour(map, x, y, out nei);
             if (rightBottomWalkable)
             {
                 nodes.Add(nei);
             }
-            bool leftTopWalkable = GetLeftTopNeighbour(map, x, y, out nei, majorOrder);
+            bool leftTopWalkable = GetLeftTopNeighbour(map, x, y, out nei);
             if (leftTopWalkable)
             {
                 nodes.Add(nei);
             }
-            bool rightTopWalkable = GetRightTopNeighbour(map, x, y, out nei, majorOrder);
+            bool rightTopWalkable = GetRightTopNeighbour(map, x, y, out nei);
             if (rightTopWalkable)
             {
                 nodes.Add(nei);
@@ -2182,11 +2098,10 @@ namespace Caskev.GridToolkit
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
         /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="targetTile">The target tile for the paths calculation</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <param name="progress">An optional IProgress object to get the generation progression</param>
         /// <param name="cancelToken">An optional CancellationToken object to cancel the generation</param>
         /// <returns>A DirectionMap object</returns>
-        public static Task<DirectionMap> GenerateDirectionMapAsync<T>(T[,] grid, T targetTile, MajorOrder majorOrder = MajorOrder.DEFAULT, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : ITile
+        public static Task<DirectionMap> GenerateDirectionMapAsync<T>(T[,] grid, T targetTile, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : ITile
         {
             Task<DirectionMap> task = Task.Run(() =>
             {
@@ -2200,7 +2115,7 @@ namespace Caskev.GridToolkit
                 int totalSize = width * height;
                 NextTileDirection[] directionMap = new NextTileDirection[totalSize];
                 bool[] visited = new bool[totalSize];
-                int targetIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, targetTile.X, targetTile.Y, majorOrder);
+                int targetIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, targetTile.X, targetTile.Y);
                 visited[targetIndex] = true;
                 directionMap[targetIndex] = NextTileDirection.SELF;
                 Queue<T> frontier = new Queue<T>();
@@ -2217,10 +2132,10 @@ namespace Caskev.GridToolkit
                     }
                     progress?.Report((float)visitedCount / totalSize);
                     current = frontier.Dequeue();
-                    GetTileOrthographicNeighbours(ref neighbourgs, grid, current.X, current.Y, majorOrder);
+                    GetTileOrthographicNeighbours(ref neighbourgs, grid, current.X, current.Y);
                     foreach (T neiTile in neighbourgs)
                     {
-                        neighborIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, neiTile.X, neiTile.Y, majorOrder);
+                        neighborIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, neiTile.X, neiTile.Y);
                         if (!visited[neighborIndex])
                         {
                             visitedCount++;
@@ -2231,7 +2146,7 @@ namespace Caskev.GridToolkit
                     }
                     neighbourgs.Clear();
                 }
-                return new DirectionMap(directionMap, targetIndex, majorOrder);
+                return new DirectionMap(directionMap, targetIndex);
             });
             return task;
         }
@@ -2241,9 +2156,8 @@ namespace Caskev.GridToolkit
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
         /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="targetTile">The target tile for the paths calculation</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A DirectionMap object</returns>
-        public static DirectionMap GenerateDirectionMap<T>(T[,] grid, T targetTile, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static DirectionMap GenerateDirectionMap<T>(T[,] grid, T targetTile) where T : ITile
         {
             if (targetTile == null || !targetTile.IsWalkable)
             {
@@ -2255,7 +2169,7 @@ namespace Caskev.GridToolkit
             int totalSize = width * height;
             NextTileDirection[] directionMap = new NextTileDirection[totalSize];
             bool[] visited = new bool[totalSize];
-            int targetIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, targetTile.X, targetTile.Y, majorOrder);
+            int targetIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, targetTile.X, targetTile.Y);
             visited[targetIndex] = true;
             directionMap[targetIndex] = NextTileDirection.SELF;
             Queue<T> frontier = new Queue<T>();
@@ -2266,10 +2180,10 @@ namespace Caskev.GridToolkit
             while (frontier.Count > 0)
             {
                 current = frontier.Dequeue();
-                GetTileOrthographicNeighbours(ref neighbourgs, grid, current.X, current.Y, majorOrder);
+                GetTileOrthographicNeighbours(ref neighbourgs, grid, current.X, current.Y);
                 foreach (T neiTile in neighbourgs)
                 {
-                    neighborIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, neiTile.X, neiTile.Y, majorOrder);
+                    neighborIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, neiTile.X, neiTile.Y);
                     if (!visited[neighborIndex])
                     {
                         visited[neighborIndex] = true;
@@ -2279,7 +2193,7 @@ namespace Caskev.GridToolkit
                 }
                 neighbourgs.Clear();
             }
-            return new DirectionMap(directionMap, targetIndex, majorOrder);
+            return new DirectionMap(directionMap, targetIndex);
         }
     }
 
@@ -2294,19 +2208,12 @@ namespace Caskev.GridToolkit
     {
         internal readonly NextTileDirection[] _directionMap;
         private readonly int _target;
-        private readonly MajorOrder _majorOrder;
 
-        internal DirectionMap(NextTileDirection[] directionMap, int target, MajorOrder majorOrder)
+        internal DirectionMap(NextTileDirection[] directionMap, int target)
         {
             _directionMap = directionMap;
             _target = target;
-            _majorOrder = majorOrder;
         }
-        /// <summary>
-        /// The MajorOrder parameter value that has been used to generate this DirectionMap
-        /// </summary>
-        public MajorOrder MajorOrder { get => _majorOrder; }
-
         /// <summary>
         /// Is the tile is accessible from the target into this this DirectionMap. Usefull to check if the tile is usable as a parameter for this DirectionMap's methods.
         /// </summary>
@@ -2318,7 +2225,7 @@ namespace Caskev.GridToolkit
             {
                 return false;
             }
-            return _directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y, _majorOrder)] != NextTileDirection.NONE;
+            return _directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)] != NextTileDirection.NONE;
         }
         /// <summary>
         /// Returns the tile that has been used as the target to generate this DirectionMap
@@ -2327,8 +2234,8 @@ namespace Caskev.GridToolkit
         /// <returns></returns>
         public T GetTargetTile<T>(T[,] grid) where T : ITile
         {
-            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _target, _majorOrder);
-            return GridUtils.GetTile(grid, targetCoords.x, targetCoords.y, _majorOrder);
+            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _target);
+            return GridUtils.GetTile(grid, targetCoords.x, targetCoords.y);
         }
         /// <summary>
         /// Get the next tile on the path between a tile and the target.
@@ -2356,7 +2263,7 @@ namespace Caskev.GridToolkit
             {
                 throw new Exception("Do not call DirectionMap method with an inaccessible tile");
             }
-            return _directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y, _majorOrder)];
+            return _directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)];
         }
         /// <summary>
         /// Get all the tiles on the path from a tile to the target.
@@ -2373,8 +2280,8 @@ namespace Caskev.GridToolkit
                 throw new Exception("Do not call DirectionMap method with an inaccessible tile");
             }
 
-            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _target, _majorOrder);
-            T target = GridUtils.GetTile(grid, targetCoords.x, targetCoords.y, _majorOrder);
+            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _target);
+            T target = GridUtils.GetTile(grid, targetCoords.x, targetCoords.y);
 
             T tile = includeStart ? startTile : GetNextTile(grid, startTile);
             bool targetReached = GridUtils.TileEquals(tile, target);
@@ -2418,11 +2325,9 @@ namespace Caskev.GridToolkit
         /// <returns>A byte array representing the serialized DirectionMap</returns>
         public byte[] ToByteArray()
         {
-            int bytesCount = sizeof(byte) + sizeof(int) + sizeof(int) + sizeof(byte) * _directionMap.Length;
+            int bytesCount = sizeof(int) + sizeof(int) + sizeof(byte) * _directionMap.Length;
             byte[] bytes = new byte[bytesCount];
             int byteIndex = 0;
-            bytes[0] = (byte)_majorOrder;
-            byteIndex++;
             BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _target);
             byteIndex += sizeof(int);
             BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _directionMap.Length);
@@ -2444,11 +2349,9 @@ namespace Caskev.GridToolkit
         {
             Task<byte[]> task = Task.Run(() =>
             {
-                int bytesCount = sizeof(byte) + sizeof(int) + sizeof(int) + sizeof(byte) * _directionMap.Length;
+                int bytesCount = sizeof(int) + sizeof(int) + sizeof(byte) * _directionMap.Length;
                 byte[] bytes = new byte[bytesCount];
                 int byteIndex = 0;
-                bytes[0] = (byte)_majorOrder;
-                byteIndex++;
                 BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _target);
                 byteIndex += sizeof(int);
                 BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _directionMap.Length);
@@ -2480,8 +2383,6 @@ namespace Caskev.GridToolkit
                 throw new ArgumentException("The grid cannot be null");
             }
             int byteIndex = 0;
-            MajorOrder majorOrder = (MajorOrder)bytes[0];
-            byteIndex++;
             int target = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
             byteIndex += sizeof(int);
             int count = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
@@ -2492,7 +2393,7 @@ namespace Caskev.GridToolkit
                 directionMap[i] = (NextTileDirection)bytes[byteIndex];
                 byteIndex++;
             }
-            return new DirectionMap(directionMap, target, majorOrder);
+            return new DirectionMap(directionMap, target);
         }
         /// <summary>
         /// Returns a DirectionMap from a byte array that has been serialized with the ToByteArray method.
@@ -2511,8 +2412,6 @@ namespace Caskev.GridToolkit
                     throw new ArgumentException("The grid cannot be null");
                 }
                 int byteIndex = 0;
-                MajorOrder majorOrder = (MajorOrder)bytes[0];
-                byteIndex++;
                 int target = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
                 byteIndex += sizeof(int);
                 int count = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
@@ -2528,15 +2427,15 @@ namespace Caskev.GridToolkit
                     directionMap[i] = (NextTileDirection)bytes[byteIndex];
                     byteIndex++;
                 }
-                return new DirectionMap(directionMap, target, majorOrder);
+                return new DirectionMap(directionMap, target);
             });
             return task;
         }
         private T GetNextTile<T>(T[,] grid, T tile) where T : ITile
         {
-            Vector2Int nextTileDirection = GridUtils.NextNodeDirectionToVector2Int(_directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y, _majorOrder)]);
+            Vector2Int nextTileDirection = GridUtils.NextNodeDirectionToVector2Int(_directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)]);
             Vector2Int nextTileCoords = new(tile.X + nextTileDirection.x, tile.Y + nextTileDirection.y);
-            return GridUtils.GetTile(grid, nextTileCoords.x, nextTileCoords.y, _majorOrder);
+            return GridUtils.GetTile(grid, nextTileCoords.x, nextTileCoords.y);
         }
     }
 
@@ -2614,39 +2513,15 @@ namespace Caskev.GridToolkit
                     return Vector2Int.zero;
             }
         }
-        internal static Vector2Int GetCoordinatesFromFlatIndex(Vector2Int gridDimensions, int flatIndex, MajorOrder order)
+        internal static Vector2Int GetCoordinatesFromFlatIndex(Vector2Int gridDimensions, int flatIndex)
         {
-            DefaultMajorOrder majorOrder = ResolveMajorOrder(order);
+            return new Vector2Int(flatIndex % gridDimensions.y, flatIndex / gridDimensions.y);
+        }
+        internal static int GetFlatIndexFromCoordinates(Vector2Int gridDimensions, int x, int y)
+        {
+            return y * gridDimensions.y + x;
+        }
 
-            if (majorOrder == DefaultMajorOrder.ROW_MAJOR_ORDER)
-            {
-                int y = flatIndex / gridDimensions.y;
-                int x = flatIndex % gridDimensions.y;
-                return new Vector2Int(x, y);
-            }
-            else // COLUMN_MAJOR_ORDER
-            {
-                int x = flatIndex / gridDimensions.x;
-                int y = flatIndex % gridDimensions.x;
-                return new Vector2Int(x, y);
-            }
-        }
-        internal static int GetFlatIndexFromCoordinates(Vector2Int gridDimensions, int x, int y, MajorOrder order)
-        {
-            DefaultMajorOrder majorOrder = ResolveMajorOrder(order);
-            if (majorOrder == DefaultMajorOrder.ROW_MAJOR_ORDER)
-            {
-                return y * gridDimensions.y + x;
-            }
-            else
-            {
-                return x * gridDimensions.x + y;
-            }
-        }
-        internal static DefaultMajorOrder ResolveMajorOrder(MajorOrder majorOrder)
-        {
-            return majorOrder == MajorOrder.DEFAULT ? GridGlobalSettings.DefaultMajorOrder : (DefaultMajorOrder)(((int)majorOrder) - 1);
-        }
         /// <summary>
         /// Compare two tiles to check if they share the same coordinates values
         /// </summary>
@@ -2665,11 +2540,10 @@ namespace Caskev.GridToolkit
         /// <param name="grid">A two-dimensional array</param>
         /// <param name="x">Horizontal coordinate to clamp</param>
         /// <param name="y">Vertical coordinate to clamp</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A Vector2Int representing the clamped coordinates</returns>
-        public static Vector2Int ClampCoordsIntoGrid<T>(T[,] grid, int x, int y, MajorOrder majorOrder)
+        public static Vector2Int ClampCoordsIntoGrid<T>(T[,] grid, int x, int y)
         {
-            return new Vector2Int(Mathf.Clamp(x, 0, GetHorizontalLength(grid, majorOrder) - 1), Mathf.Clamp(y, 0, GetVerticalLength(grid, majorOrder) - 1));
+            return new Vector2Int(Mathf.Clamp(x, 0, GetHorizontalLength(grid) - 1), Mathf.Clamp(y, 0, GetVerticalLength(grid) - 1));
         }
         /// <summary>
         /// Check if specific coordinates are into the grid range
@@ -2678,73 +2552,42 @@ namespace Caskev.GridToolkit
         /// <param name="grid">A two-dimensional array</param>
         /// <param name="x">Horizontal coordinate to check</param>
         /// <param name="y">Vertical coordinate to check</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A boolean value</returns>
-        public static bool AreCoordsIntoGrid<T>(T[,] grid, int x, int y, MajorOrder majorOrder)
+        public static bool AreCoordsIntoGrid<T>(T[,] grid, int x, int y)
         {
-            return x >= 0 && x < GetHorizontalLength(grid, majorOrder) && y >= 0 && y < GetVerticalLength(grid, majorOrder);
+            return x >= 0 && x < GetHorizontalLength(grid) && y >= 0 && y < GetVerticalLength(grid);
         }
         /// <summary>
-        /// Returns a tile with automatic handling of the majorOrder
+        /// Returns a tile from the grid at specific coordinates
         /// </summary>
         /// <typeparam name="T">Any type</typeparam>
         /// <param name="grid">A two-dimensional array</param>
         /// <param name="x">Horizontal coordinate of the tile</param>
         /// <param name="y">Vertical coordinate of the tile</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>A tile</returns>
-        public static T GetTile<T>(T[,] grid, int x, int y, MajorOrder majorOrder)
+        public static T GetTile<T>(T[,] grid, int x, int y)
         {
-            DefaultMajorOrder resolvedMajorOrder = ResolveMajorOrder(majorOrder);
-
-            if (resolvedMajorOrder == DefaultMajorOrder.ROW_MAJOR_ORDER)
-            {
-                return grid[y, x];
-            }
-            else
-            {
-                return grid[x, y];
-            }
+            return grid[y, x];
         }
         /// <summary>
         /// Returns the horizontal length of a grid
         /// </summary>
         /// <typeparam name="T">Any type</typeparam>
         /// <param name="grid">A two-dimensional array</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>The horizontal length of a grid</returns>
-        public static int GetHorizontalLength<T>(T[,] grid, MajorOrder majorOrder)
+        public static int GetHorizontalLength<T>(T[,] grid)
         {
-            DefaultMajorOrder resolvedMajorOrder = ResolveMajorOrder(majorOrder);
-
-            if (resolvedMajorOrder == DefaultMajorOrder.ROW_MAJOR_ORDER)
-            {
-                return grid.GetLength(1);
-            }
-            else
-            {
-                return grid.GetLength(0);
-            }
+            return grid.GetLength(1);
         }
         /// <summary>
         /// Returns the vertical length of a grid
         /// </summary>
         /// <typeparam name="T">Any type</typeparam>
         /// <param name="grid">A two-dimensional array</param>
-        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridToolkit::MajorOrder)</param>
         /// <returns>The vertical length of a grid</returns>
-        public static int GetVerticalLength<T>(T[,] grid, MajorOrder majorOrder)
+        public static int GetVerticalLength<T>(T[,] grid)
         {
-            DefaultMajorOrder resolvedMajorOrder = ResolveMajorOrder(majorOrder);
-
-            if (resolvedMajorOrder == DefaultMajorOrder.ROW_MAJOR_ORDER)
-            {
-                return grid.GetLength(0);
-            }
-            else
-            {
-                return grid.GetLength(1);
-            }
+            return grid.GetLength(0);
         }
     }
 }

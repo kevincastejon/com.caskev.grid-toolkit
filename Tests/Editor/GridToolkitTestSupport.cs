@@ -15,49 +15,24 @@ namespace GridToolkitTests
 
     public static class GridFactory
     {
-        public static TestTile[,] Build(int w, int h, MajorOrder order, Func<int, int, bool> walkable = null)
+        public static TestTile[,] Build(int w, int h, Func<int, int, bool> walkable = null)
         {
             walkable ??= ((x, y) => true);
-
-            if (order == MajorOrder.ROW_MAJOR_ORDER)
-            {
-                var g = new TestTile[h, w];
-                for (int y = 0; y < h; y++) for (int x = 0; x < w; x++) g[y, x] = new TestTile(x, y, walkable(x, y));
-                return g;
-            }
-            else
-            {
-                var g = new TestTile[w, h];
-                for (int x = 0; x < w; x++) for (int y = 0; y < h; y++) g[x, y] = new TestTile(x, y, walkable(x, y));
-                return g;
-            }
+            var g = new TestTile[h, w];
+            for (int y = 0; y < h; y++) for (int x = 0; x < w; x++) g[y, x] = new TestTile(x, y, walkable(x, y));
+            return g;
         }
-        public static TestTile[,] Build(bool[,] grid, MajorOrder order)
+        public static TestTile[,] Build(bool[,] grid)
         {
-            if (order == MajorOrder.ROW_MAJOR_ORDER)
+            var g = new TestTile[grid.GetLength(0), grid.GetLength(1)];
+            for (int i = 0; i < g.GetLength(0); i++)
             {
-                var g = new TestTile[grid.GetLength(0), grid.GetLength(1)];
-                for (int i = 0; i < g.GetLength(0); i++)
+                for (int j = 0; j < g.GetLength(1); j++)
                 {
-                    for (int j = 0; j < g.GetLength(1); j++)
-                    {
-                        g[i, j] = new TestTile(j, i, grid[i,j]);
-                    }
+                    g[i, j] = new TestTile(j, i, grid[i, j]);
                 }
-                return g;
             }
-            else
-            {
-                var g = new TestTile[grid.GetLength(1), grid.GetLength(0)];
-                for (int i = 0; i < g.GetLength(0); i++)
-                {
-                    for (int j = 0; j < g.GetLength(1); j++)
-                    {
-                        g[i, j] = new TestTile(i, j, grid[j,i]);
-                    }
-                }
-                return g;
-            }
+            return g;
         }
     }
 }

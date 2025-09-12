@@ -7,8 +7,7 @@ namespace GridToolkitTests
 {
     public class Extraction_Tests
     {
-        TestTile[,] _gridRowMajorOrder;
-        TestTile[,] _gridColMajorOrder;
+        TestTile[,] _grid;
 
         [SetUp]
         public void Setup()
@@ -35,21 +34,16 @@ namespace GridToolkitTests
                 { true , true , true , true , true , true , true , true , true , true , true , true , true , false, true , true , true , true , true , true , true , true , true , true , true  },
                 { true , true , true , true , true , true , true , true , true , true , true , true , true , false, true , true , true , true , true , true , true , true , true , true , true  },
             };
-
-            _gridRowMajorOrder = GridFactory.Build(map, MajorOrder.ROW_MAJOR_ORDER);
-            _gridColMajorOrder = GridFactory.Build(map, MajorOrder.COLUMN_MAJOR_ORDER);
+            _grid = GridFactory.Build(map);
         }
-        [TestCase(true, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(true, MajorOrder.COLUMN_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesInARectangle_InsideBounds_IncludeWalls(bool includeCenter, MajorOrder majorOrder)
+        [TestCase(true)]
+        [TestCase(false)]
+        public void GetTilesInARectangle_InsideBounds_IncludeWalls(bool includeCenter)
         {
             int coordX = 10;
             int coordY = 11;
             int rectWidth = 6;
             int rectHeight = 4;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int? center = includeCenter ? new Vector2Int(coordX, coordY) : null;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 new(4, 7) , new(5, 7) , new(6, 7) , new(7, 7) , new(8, 7) , new(9, 7) , new(10, 7) , new(11, 7) , new(12, 7) , new(13, 7) , new(14, 7) , new(15, 7) , new(16, 7) ,
@@ -62,7 +56,7 @@ namespace GridToolkitTests
                 new(4, 14), new(5, 14), new(6, 14), new(7, 14), new(8, 14), new(9, 14), new(10, 14), new(11, 14), new(12, 14), new(13, 14), new(14, 14), new(15, 14), new(16, 14),
                 new(4, 15), new(5, 15), new(6, 15), new(7, 15), new(8, 15), new(9, 15), new(10, 15), new(11, 15), new(12, 15), new(13, 15), new(14, 15), new(15, 15), new(16, 15),
             };
-            TestTile[] extractedTiles = Extraction.GetTilesInARectangle(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), new Vector2Int(rectWidth, rectHeight), includeCenter, true, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesInARectangle(_grid, GridUtils.GetTile(_grid, coordX, coordY), new Vector2Int(rectWidth, rectHeight), includeCenter, true);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -73,17 +67,14 @@ namespace GridToolkitTests
                 Assert.IsTrue(extractedTiles.Any((x) => x.X == expectedTiles[i]?.x && x.Y == expectedTiles[i]?.y));
             }
         }
-        [TestCase(true, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(true, MajorOrder.COLUMN_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesInARectangle_InsideBounds_ExcludeWalls(bool includeCenter, MajorOrder majorOrder)
+        [TestCase(true)]
+        [TestCase(false)]
+        public void GetTilesInARectangle_InsideBounds_ExcludeWalls(bool includeCenter)
         {
             int coordX = 10;
             int coordY = 11;
             int rectWidth = 6;
             int rectHeight = 4;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int? center = includeCenter ? new Vector2Int(coordX, coordY) : null;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 new(4, 7) , null      , new(6, 7) , new(7, 7) , new(8, 7) , new(9, 7) , new(10, 7) , new(11, 7) , new(12, 7) , new(13, 7) , new(14, 7) , new(15, 7) , new(16, 7) ,
@@ -96,7 +87,7 @@ namespace GridToolkitTests
                 new(4, 14), new(5, 14), null      , new(7, 14), new(8, 14), new(9, 14), new(10, 14), new(11, 14), new(12, 14), null       , new(14, 14), new(15, 14), new(16, 14),
                 null      , null      , null      , new(7, 15), new(8, 15), new(9, 15), new(10, 15), new(11, 15), new(12, 15), null       , new(14, 15), new(15, 15), new(16, 15),
             };
-            TestTile[] extractedTiles = Extraction.GetTilesInARectangle(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), new Vector2Int(rectWidth, rectHeight), includeCenter, false, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesInARectangle(_grid, GridUtils.GetTile(_grid, coordX, coordY), new Vector2Int(rectWidth, rectHeight), includeCenter, false);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -108,17 +99,14 @@ namespace GridToolkitTests
             }
         }
 
-        [TestCase(true, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(true, MajorOrder.COLUMN_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesInARectangle_OutsideBounds_IncludeWalls(bool includeCenter, MajorOrder majorOrder)
+        [TestCase(true)]
+        [TestCase(false)]
+        public void GetTilesInARectangle_OutsideBounds_IncludeWalls(bool includeCenter)
         {
             int coordX = 2;
             int coordY = 1;
             int rectWidth = 40;
             int rectHeight = 40;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int? center = includeCenter ? new Vector2Int(coordX, coordY) : null;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 new(0, 0) , new(1, 0) , new(2, 0) , new(3, 0) , new(4, 0) , new(5, 0) , new(6, 0) , new(7, 0) , new(8, 0) , new(9, 0) , new(10, 0) , new(11, 0) , new(12, 0) , new(13, 0) , new(14, 0) , new(15, 0) , new(16, 0) , new(17, 0) , new(18, 0) , new(19, 0) , new(20, 0) , new(21, 0) , new(22, 0) , new(23, 0) , new(24, 0) ,
@@ -142,7 +130,7 @@ namespace GridToolkitTests
                 new(0, 18), new(1, 18), new(2, 18), new(3, 18), new(4, 18), new(5, 18), new(6, 18), new(7, 18), new(8, 18), new(9, 18), new(10, 18), new(11, 18), new(12, 18), new(13, 18), new(14, 18), new(15, 18), new(16, 18), new(17, 18), new(18, 18), new(19, 18), new(20, 18), new(21, 18), new(22, 18), new(23, 18), new(24, 18),
                 new(0, 19), new(1, 19), new(2, 19), new(3, 19), new(4, 19), new(5, 19), new(6, 19), new(7, 19), new(8, 19), new(9, 19), new(10, 19), new(11, 19), new(12, 19), new(13, 19), new(14, 19), new(15, 19), new(16, 19), new(17, 19), new(18, 19), new(19, 19), new(20, 19), new(21, 19), new(22, 19), new(23, 19), new(24, 19),
             };
-            TestTile[] extractedTiles = Extraction.GetTilesInARectangle(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), new Vector2Int(rectWidth, rectHeight), includeCenter, true, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesInARectangle(_grid, GridUtils.GetTile(_grid, coordX, coordY), new Vector2Int(rectWidth, rectHeight), includeCenter, true);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -153,17 +141,14 @@ namespace GridToolkitTests
                 Assert.IsTrue(extractedTiles.Any((x) => x.X == expectedTiles[i]?.x && x.Y == expectedTiles[i]?.y));
             }
         }
-        [TestCase(true, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(true, MajorOrder.COLUMN_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesInARectangle_OutsideBounds_ExcludeWalls(bool includeCenter, MajorOrder majorOrder)
+        [TestCase(true)]
+        [TestCase(false)]
+        public void GetTilesInARectangle_OutsideBounds_ExcludeWalls(bool includeCenter)
         {
             int coordX = 2;
             int coordY = 1;
             int rectWidth = 40;
             int rectHeight = 40;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int? center = includeCenter ? new Vector2Int(coordX, coordY) : null;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 new(0, 0) , null      , new(2, 0) , new(3, 0) , new(4, 0) , new(5, 0) , new(6, 0) , new(7, 0) , new(8, 0) , new(9, 0) , new(10, 0) , new(11, 0) , new(12, 0) , new(13, 0) , new(14, 0) , new(15, 0) , new(16, 0) , null       , new(18, 0) , new(19, 0) , new(20, 0) , new(21, 0) , new(22, 0) , new(23, 0) , new(24, 0) ,
@@ -187,7 +172,7 @@ namespace GridToolkitTests
                 new(0, 18), new(1, 18), new(2, 18), new(3, 18), new(4, 18), new(5, 18), new(6, 18), new(7, 18), new(8, 18), new(9, 18), new(10, 18), new(11, 18), new(12, 18), null       , new(14, 18), new(15, 18), new(16, 18), new(17, 18), new(18, 18), new(19, 18), new(20, 18), new(21, 18), new(22, 18), new(23, 18), new(24, 18),
                 new(0, 19), new(1, 19), new(2, 19), new(3, 19), new(4, 19), new(5, 19), new(6, 19), new(7, 19), new(8, 19), new(9, 19), new(10, 19), new(11, 19), new(12, 19), null       , new(14, 19), new(15, 19), new(16, 19), new(17, 19), new(18, 19), new(19, 19), new(20, 19), new(21, 19), new(22, 19), new(23, 19), new(24, 19),
             };
-            TestTile[] extractedTiles = Extraction.GetTilesInARectangle(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), new Vector2Int(rectWidth, rectHeight), includeCenter, false, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesInARectangle(_grid, GridUtils.GetTile(_grid, coordX, coordY), new Vector2Int(rectWidth, rectHeight), includeCenter, false);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -200,15 +185,13 @@ namespace GridToolkitTests
         }
 
 
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesInARectangleOutline_InsideBounds_IncludeWalls(MajorOrder majorOrder)
+        [Test]
+        public void GetTilesInARectangleOutline_InsideBounds_IncludeWalls()
         {
             int coordX = 10;
             int coordY = 11;
             int rectWidth = 6;
             int rectHeight = 4;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 new(4, 7) , new(5, 7) , new(6, 7) , new(7, 7) , new(8, 7) , new(9, 7) , new(10, 7) , new(11, 7) , new(12, 7) , new(13, 7) , new(14, 7) , new(15, 7) , new(16, 7) ,
                 new(4, 8) , null      , null      , null      , null      , null      , null      , null        , null       , null       , null       , null       , new(16, 8) ,
@@ -220,7 +203,7 @@ namespace GridToolkitTests
                 new(4, 14), null      , null      , null      , null      , null      , null      , null        , null       , null       , null       , null       , new(16, 14),
                 new(4, 15), new(5, 15), new(6, 15), new(7, 15), new(8, 15), new(9, 15), new(10, 15), new(11, 15), new(12, 15), new(13, 15), new(14, 15), new(15, 15), new(16, 15),
             };
-            TestTile[] extractedTiles = Extraction.GetTilesOnARectangleOutline(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), new Vector2Int(rectWidth, rectHeight), true, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesOnARectangleOutline(_grid, GridUtils.GetTile(_grid, coordX, coordY), new Vector2Int(rectWidth, rectHeight), true);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -231,15 +214,13 @@ namespace GridToolkitTests
                 Assert.IsTrue(extractedTiles.Any((x) => x.X == expectedTiles[i]?.x && x.Y == expectedTiles[i]?.y));
             }
         }
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesInARectangleOutline_InsideBounds_ExcludeWalls(MajorOrder majorOrder)
+        [Test]
+        public void GetTilesInARectangleOutline_InsideBounds_ExcludeWalls()
         {
             int coordX = 10;
             int coordY = 11;
             int rectWidth = 6;
             int rectHeight = 4;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 new(4, 7) , null      , new(6, 7) , new(7, 7) , new(8, 7) , new(9, 7) , new(10, 7) , new(11, 7) , new(12, 7) , new(13, 7) , new(14, 7) , new(15, 7) , new(16, 7) ,
                 null      , null      , null      , null      , null      , null      , null       , null       , null       , null       , null       , null       , null       ,
@@ -251,7 +232,7 @@ namespace GridToolkitTests
                 new(4, 14), null      , null      , null      , null      , null      , null       , null       , null       , null       , null       , null       , new(16, 14),
                 null      , null      , null      , new(7, 15), new(8, 15), new(9, 15), new(10, 15), new(11, 15), new(12, 15), null       , new(14, 15), new(15, 15), new(16, 15),
             };
-            TestTile[] extractedTiles = Extraction.GetTilesOnARectangleOutline(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), new Vector2Int(rectWidth, rectHeight), false, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesOnARectangleOutline(_grid, GridUtils.GetTile(_grid, coordX, coordY), new Vector2Int(rectWidth, rectHeight), false);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -263,17 +244,15 @@ namespace GridToolkitTests
             }
         }
 
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesInARectangleOutline_OutsideBounds_IncludeWalls(MajorOrder majorOrder)
+        [Test]
+        public void GetTilesInARectangleOutline_OutsideBounds_IncludeWalls()
         {
             int coordX = 2;
             int coordY = 1;
             int rectWidth = 40;
             int rectHeight = 40;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int?[] expectedTiles = new Vector2Int?[0];
-            TestTile[] extractedTiles = Extraction.GetTilesOnARectangleOutline(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), new Vector2Int(rectWidth, rectHeight), true, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesOnARectangleOutline(_grid, GridUtils.GetTile(_grid, coordX, coordY), new Vector2Int(rectWidth, rectHeight), true);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -284,17 +263,15 @@ namespace GridToolkitTests
                 Assert.IsTrue(extractedTiles.Any((x) => x.X == expectedTiles[i]?.x && x.Y == expectedTiles[i]?.y));
             }
         }
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesInARectangleOutline_OutsideBounds_ExcludeWalls(MajorOrder majorOrder)
+        [Test]
+        public void GetTilesInARectangleOutline_OutsideBounds_ExcludeWalls()
         {
             int coordX = 2;
             int coordY = 1;
             int rectWidth = 40;
             int rectHeight = 40;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int?[] expectedTiles = new Vector2Int?[0];
-            TestTile[] extractedTiles = Extraction.GetTilesOnARectangleOutline(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), new Vector2Int(rectWidth, rectHeight), false, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesOnARectangleOutline(_grid, GridUtils.GetTile(_grid, coordX, coordY), new Vector2Int(rectWidth, rectHeight), false);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -308,16 +285,13 @@ namespace GridToolkitTests
 
 
 
-        [TestCase(true, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(true, MajorOrder.COLUMN_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesInACircle_InsideBounds_IncludeWalls(bool includeCenter, MajorOrder majorOrder)
+        [TestCase(true)]
+        [TestCase(false)]
+        public void GetTilesInACircle_InsideBounds_IncludeWalls(bool includeCenter)
         {
             int coordX = 10;
             int coordY = 11;
             int radius = 6;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int? center = includeCenter ? new Vector2Int(coordX, coordY) : null;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 null      , null      , null      , null      , new(8, 5) , new(9, 5) , new(10, 5) , new(11, 5) , new(12, 5) , null       , null       , null       , null       ,
@@ -334,7 +308,7 @@ namespace GridToolkitTests
                 null      , null      , new(6, 16), new(7, 16), new(8, 16), new(9, 16), new(10, 16), new(11, 16), new(12, 16), new(13, 16), new(14, 16), null       , null       ,
                 null      , null      , null      , null      , new(8, 17), new(9, 17), new(10, 17), new(11, 17), new(12, 17), null       , null       , null       , null       ,
             };
-            TestTile[] extractedTiles = Extraction.GetTilesInACircle(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), radius, includeCenter, true, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesInACircle(_grid, GridUtils.GetTile(_grid, coordX, coordY), radius, includeCenter, true);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -345,16 +319,13 @@ namespace GridToolkitTests
                 Assert.IsTrue(extractedTiles.Any((x) => x.X == expectedTiles[i]?.x && x.Y == expectedTiles[i]?.y));
             }
         }
-        [TestCase(true, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(true, MajorOrder.COLUMN_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesInACircle_InsideBounds_ExcludeWalls(bool includeCenter, MajorOrder majorOrder)
+        [TestCase(true)]
+        [TestCase(false)]
+        public void GetTilesInACircle_InsideBounds_ExcludeWalls(bool includeCenter)
         {
             int coordX = 10;
             int coordY = 11;
             int radius = 6;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int? center = includeCenter ? new Vector2Int(coordX, coordY) : null;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 null      , null      , null      , null      , new(8, 5) , new(9, 5) , new(10, 5) , new(11, 5) , new(12, 5) , null       , null       , null       , null       ,
@@ -371,7 +342,7 @@ namespace GridToolkitTests
                 null      , null      , new(6, 16), new(7, 16), new(8, 16), new(9, 16), new(10, 16), new(11, 16), new(12, 16), null       , new(14, 16), null       , null       ,
                 null      , null      , null      , null      , new(8, 17), new(9, 17), new(10, 17), new(11, 17), new(12, 17), null       , null       , null       , null       ,
             };
-            TestTile[] extractedTiles = Extraction.GetTilesInACircle(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), radius, includeCenter, false, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesInACircle(_grid, GridUtils.GetTile(_grid, coordX, coordY), radius, includeCenter, false);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -383,16 +354,13 @@ namespace GridToolkitTests
             }
         }
 
-        [TestCase(true, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(true, MajorOrder.COLUMN_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesInACircle_OutsideBounds_IncludeWalls(bool includeCenter, MajorOrder majorOrder)
+        [TestCase(true)]
+        [TestCase(false)]
+        public void GetTilesInACircle_OutsideBounds_IncludeWalls(bool includeCenter)
         {
             int coordX = 2;
             int coordY = 1;
             int radius = 40;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int? center = includeCenter ? new Vector2Int(coordX, coordY) : null;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 new(0, 0) , new(1, 0) , new(2, 0) , new(3, 0) , new(4, 0) , new(5, 0) , new(6, 0) , new(7, 0) , new(8, 0) , new(9, 0) , new(10, 0) , new(11, 0) , new(12, 0) , new(13, 0) , new(14, 0) , new(15, 0) , new(16, 0) , new(17, 0) , new(18, 0) , new(19, 0) , new(20, 0) , new(21, 0) , new(22, 0) , new(23, 0) , new(24, 0) ,
@@ -416,7 +384,7 @@ namespace GridToolkitTests
                 new(0, 18), new(1, 18), new(2, 18), new(3, 18), new(4, 18), new(5, 18), new(6, 18), new(7, 18), new(8, 18), new(9, 18), new(10, 18), new(11, 18), new(12, 18), new(13, 18), new(14, 18), new(15, 18), new(16, 18), new(17, 18), new(18, 18), new(19, 18), new(20, 18), new(21, 18), new(22, 18), new(23, 18), new(24, 18),
                 new(0, 19), new(1, 19), new(2, 19), new(3, 19), new(4, 19), new(5, 19), new(6, 19), new(7, 19), new(8, 19), new(9, 19), new(10, 19), new(11, 19), new(12, 19), new(13, 19), new(14, 19), new(15, 19), new(16, 19), new(17, 19), new(18, 19), new(19, 19), new(20, 19), new(21, 19), new(22, 19), new(23, 19), new(24, 19),
             };
-            TestTile[] extractedTiles = Extraction.GetTilesInACircle(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), radius, includeCenter, true, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesInACircle(_grid, GridUtils.GetTile(_grid, coordX, coordY), radius, includeCenter, true);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -427,16 +395,13 @@ namespace GridToolkitTests
                 Assert.IsTrue(extractedTiles.Any((x) => x.X == expectedTiles[i]?.x && x.Y == expectedTiles[i]?.y));
             }
         }
-        [TestCase(true, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(true, MajorOrder.COLUMN_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesInACircle_OutsideBounds_ExcludeWalls(bool includeCenter, MajorOrder majorOrder)
+        [TestCase(true)]
+        [TestCase(false)]
+        public void GetTilesInACircle_OutsideBounds_ExcludeWalls(bool includeCenter)
         {
             int coordX = 2;
             int coordY = 1;
             int radius = 40;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int? center = includeCenter ? new Vector2Int(coordX, coordY) : null;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 new(0, 0) , null      , new(2, 0) , new(3, 0) , new(4, 0) , new(5, 0) , new(6, 0) , new(7, 0) , new(8, 0) , new(9, 0) , new(10, 0) , new(11, 0) , new(12, 0) , new(13, 0) , new(14, 0) , new(15, 0) , new(16, 0) , null       , new(18, 0) , new(19, 0) , new(20, 0) , new(21, 0) , new(22, 0) , new(23, 0) , new(24, 0) ,
@@ -460,7 +425,7 @@ namespace GridToolkitTests
                 new(0, 18), new(1, 18), new(2, 18), new(3, 18), new(4, 18), new(5, 18), new(6, 18), new(7, 18), new(8, 18), new(9, 18), new(10, 18), new(11, 18), new(12, 18), null       , new(14, 18), new(15, 18), new(16, 18), new(17, 18), new(18, 18), new(19, 18), new(20, 18), new(21, 18), new(22, 18), new(23, 18), new(24, 18),
                 new(0, 19), new(1, 19), new(2, 19), new(3, 19), new(4, 19), new(5, 19), new(6, 19), new(7, 19), new(8, 19), new(9, 19), new(10, 19), new(11, 19), new(12, 19), null       , new(14, 19), new(15, 19), new(16, 19), new(17, 19), new(18, 19), new(19, 19), new(20, 19), new(21, 19), new(22, 19), new(23, 19), new(24, 19),
             };
-            TestTile[] extractedTiles = Extraction.GetTilesInACircle(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), radius, includeCenter, false, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesInACircle(_grid, GridUtils.GetTile(_grid, coordX, coordY), radius, includeCenter, false);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -473,14 +438,12 @@ namespace GridToolkitTests
         }
 
 
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesOnACircleOutline_InsideBounds_IncludeWalls(MajorOrder majorOrder)
+        [Test]
+        public void GetTilesOnACircleOutline_InsideBounds_IncludeWalls()
         {
             int coordX = 10;
             int coordY = 11;
             int radius = 6;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 null      , null      , null      , null      , new(8, 5) , new(9, 5) , new(10, 5) , new(11, 5) , new(12, 5) , null       , null       , null       , null       ,
                 null      , null      , new(6, 6) , new(7, 6) , null      , null      , null       , null       , null       , new(13, 6) , new(14, 6) , null       , null       ,
@@ -496,7 +459,7 @@ namespace GridToolkitTests
                 null      , null      , new(6, 16), new(7, 16), null      , null      , null       , null       , null       , new(13, 16), new(14, 16), null       , null       ,
                 null      , null      , null      , null      , new(8, 17), new(9, 17), new(10, 17), new(11, 17), new(12, 17), null       , null       , null       , null       ,
             };
-            TestTile[] extractedTiles = Extraction.GetTilesOnACircleOutline(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), radius, true, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesOnACircleOutline(_grid, GridUtils.GetTile(_grid, coordX, coordY), radius, true);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -507,14 +470,12 @@ namespace GridToolkitTests
                 Assert.IsTrue(extractedTiles.Any((x) => x.X == expectedTiles[i]?.x && x.Y == expectedTiles[i]?.y));
             }
         }
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesOnACircleOutline_InsideBounds_ExcludeWalls(MajorOrder majorOrder)
+        [Test]
+        public void GetTilesOnACircleOutline_InsideBounds_ExcludeWalls()
         {
             int coordX = 10;
             int coordY = 11;
             int radius = 6;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 null      , null      , null      , null      , new(8, 5) , new(9, 5) , new(10, 5) , new(11, 5) , new(12, 5) , null       , null       , null       , null       ,
                 null      , null      , new(6, 6) , new(7, 6) , null      , null      , null       , null       , null       , new(13, 6) , new(14, 6) , null       , null       ,
@@ -530,7 +491,7 @@ namespace GridToolkitTests
                 null      , null      , new(6, 16), new(7, 16), null      , null      , null       , null       , null       , null       , new(14, 16), null       , null       ,
                 null      , null      , null      , null      , new(8, 17), new(9, 17), new(10, 17), new(11, 17), new(12, 17), null       , null       , null       , null       ,
             };
-            TestTile[] extractedTiles = Extraction.GetTilesOnACircleOutline(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), radius, false, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesOnACircleOutline(_grid, GridUtils.GetTile(_grid, coordX, coordY), radius, false);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -542,16 +503,14 @@ namespace GridToolkitTests
             }
         }
 
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesOnACircleOutline_OutsideBounds_IncludeWalls(MajorOrder majorOrder)
+        [Test]
+        public void GetTilesOnACircleOutline_OutsideBounds_IncludeWalls()
         {
             int coordX = 2;
             int coordY = 1;
             int radius = 40;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int?[] expectedTiles = new Vector2Int?[0];
-            TestTile[] extractedTiles = Extraction.GetTilesOnACircleOutline(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), radius, true, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesOnACircleOutline(_grid, GridUtils.GetTile(_grid, coordX, coordY), radius, true);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -562,16 +521,14 @@ namespace GridToolkitTests
                 Assert.IsTrue(extractedTiles.Any((x) => x.X == expectedTiles[i]?.x && x.Y == expectedTiles[i]?.y));
             }
         }
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesOnACircleOutline_OutsideBounds_ExcludeWalls(MajorOrder majorOrder)
+        [Test]
+        public void GetTilesOnACircleOutline_OutsideBounds_ExcludeWalls()
         {
             int coordX = 2;
             int coordY = 1;
             int radius = 40;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int?[] expectedTiles = new Vector2Int?[0];
-            TestTile[] extractedTiles = Extraction.GetTilesOnACircleOutline(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), radius, false, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesOnACircleOutline(_grid, GridUtils.GetTile(_grid, coordX, coordY), radius, false);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -585,18 +542,15 @@ namespace GridToolkitTests
 
 
 
-        [TestCase(true, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(true, MajorOrder.COLUMN_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesInACone_InsideBounds_IncludeWalls(bool includeStart, MajorOrder majorOrder)
+        [TestCase(true)]
+        [TestCase(false)]
+        public void GetTilesInACone_InsideBounds_IncludeWalls(bool includeStart)
         {
             int coordX = 10;
             int coordY = 11;
             int length = 7;
             int directionAngle = 270;
             int openingAngle = 90;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int? start = includeStart ? new Vector2Int(coordX, coordY) : null;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 null      , null      , null      , new(8, 4) , new(9, 4) , new(10, 4) , new(11, 4) , new(12, 4) , null       , null       , null       ,
@@ -608,7 +562,7 @@ namespace GridToolkitTests
                 null      , null      , null      , null      , new(9, 10), new(10, 10), new(11, 10), null       , null       , null       , null       ,
                 null      , null      , null      , null      , null      , start      , null       , null       , null       , null       , null       ,
             };
-            TestTile[] extractedTiles = Extraction.GetTilesInACone(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), length, openingAngle, directionAngle, includeStart, true, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesInACone(_grid, GridUtils.GetTile(_grid, coordX, coordY), length, openingAngle, directionAngle, includeStart, true);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -619,18 +573,15 @@ namespace GridToolkitTests
                 Assert.IsTrue(extractedTiles.Any((x) => x.X == expectedTiles[i]?.x && x.Y == expectedTiles[i]?.y));
             }
         }
-        [TestCase(true, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(true, MajorOrder.COLUMN_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesInACone_InsideBounds_ExcludeWalls(bool includeStart, MajorOrder majorOrder)
+        [TestCase(true)]
+        [TestCase(false)]
+        public void GetTilesInACone_InsideBounds_ExcludeWalls(bool includeStart)
         {
             int coordX = 10;
             int coordY = 11;
             int length = 7;
             int directionAngle = 270;
             int openingAngle = 90;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int? start = includeStart ? new Vector2Int(coordX, coordY) : null;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 null      , null      , null      , new(8, 4) , new(9, 4) , null       , null       , new(12, 4) , null       , null       , null       ,
@@ -642,7 +593,7 @@ namespace GridToolkitTests
                 null      , null      , null      , null      , new(9, 10), new(10, 10), new(11, 10), null       , null       , null       , null       ,
                 null      , null      , null      , null      , null      , start      , null       , null       , null       , null       , null       ,
             };
-            TestTile[] extractedTiles = Extraction.GetTilesInACone(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), length, openingAngle, directionAngle, includeStart, false, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesInACone(_grid, GridUtils.GetTile(_grid, coordX, coordY), length, openingAngle, directionAngle, includeStart, false);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -654,18 +605,15 @@ namespace GridToolkitTests
             }
         }
 
-        [TestCase(true, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(true, MajorOrder.COLUMN_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesInACone_OutsideBounds_IncludeWalls(bool includeStart, MajorOrder majorOrder)
+        [TestCase(true)]
+        [TestCase(false)]
+        public void GetTilesInACone_OutsideBounds_IncludeWalls(bool includeStart)
         {
             int coordX = 2;
             int coordY = 1;
             int length = 0;
             int directionAngle = 0;
             int openingAngle = 360;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int? start = includeStart ? new Vector2Int(coordX, coordY) : null;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 new(0, 0) , new(1, 0) , new(2, 0) , new(3, 0) , new(4, 0) , new(5, 0) , new(6, 0) , new(7, 0) , new(8, 0) , new(9, 0) , new(10, 0) , new(11, 0) , new(12, 0) , new(13, 0) , new(14, 0) , new(15, 0) , new(16, 0) , new(17, 0) , new(18, 0) , new(19, 0) , new(20, 0) , new(21, 0) , new(22, 0) , new(23, 0) , new(24, 0) ,
@@ -689,7 +637,7 @@ namespace GridToolkitTests
                 new(0, 18), new(1, 18), new(2, 18), new(3, 18), new(4, 18), new(5, 18), new(6, 18), new(7, 18), new(8, 18), new(9, 18), new(10, 18), new(11, 18), new(12, 18), new(13, 18), new(14, 18), new(15, 18), new(16, 18), new(17, 18), new(18, 18), new(19, 18), new(20, 18), new(21, 18), new(22, 18), new(23, 18), new(24, 18),
                 new(0, 19), new(1, 19), new(2, 19), new(3, 19), new(4, 19), new(5, 19), new(6, 19), new(7, 19), new(8, 19), new(9, 19), new(10, 19), new(11, 19), new(12, 19), new(13, 19), new(14, 19), new(15, 19), new(16, 19), new(17, 19), new(18, 19), new(19, 19), new(20, 19), new(21, 19), new(22, 19), new(23, 19), new(24, 19),
             };
-            TestTile[] extractedTiles = Extraction.GetTilesInACone(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), length, openingAngle, directionAngle, includeStart, true, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesInACone(_grid, GridUtils.GetTile(_grid, coordX, coordY), length, openingAngle, directionAngle, includeStart, true);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -700,18 +648,15 @@ namespace GridToolkitTests
                 Assert.IsTrue(extractedTiles.Any((x) => x.X == expectedTiles[i]?.x && x.Y == expectedTiles[i]?.y));
             }
         }
-        [TestCase(true, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(true, MajorOrder.COLUMN_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesInACone_OutsideBounds_ExcludeWalls(bool includeStart, MajorOrder majorOrder)
+        [TestCase(true)]
+        [TestCase(false)]
+        public void GetTilesInACone_OutsideBounds_ExcludeWalls(bool includeStart)
         {
             int coordX = 2;
             int coordY = 1;
             int length = 0;
             int directionAngle = 0;
             int openingAngle = 360;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int? start = includeStart ? new Vector2Int(coordX, coordY) : null;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 new(0, 0) , null      , new(2, 0) , new(3, 0) , new(4, 0) , new(5, 0) , new(6, 0) , new(7, 0) , new(8, 0) , new(9, 0) , new(10, 0) , new(11, 0) , new(12, 0) , new(13, 0) , new(14, 0) , new(15, 0) , new(16, 0) , null       , new(18, 0) , new(19, 0) , new(20, 0) , new(21, 0) , new(22, 0) , new(23, 0) , new(24, 0) ,
@@ -735,7 +680,7 @@ namespace GridToolkitTests
                 new(0, 18), new(1, 18), new(2, 18), new(3, 18), new(4, 18), new(5, 18), new(6, 18), new(7, 18), new(8, 18), new(9, 18), new(10, 18), new(11, 18), new(12, 18), null       , new(14, 18), new(15, 18), new(16, 18), new(17, 18), new(18, 18), new(19, 18), new(20, 18), new(21, 18), new(22, 18), new(23, 18), new(24, 18),
                 new(0, 19), new(1, 19), new(2, 19), new(3, 19), new(4, 19), new(5, 19), new(6, 19), new(7, 19), new(8, 19), new(9, 19), new(10, 19), new(11, 19), new(12, 19), null       , new(14, 19), new(15, 19), new(16, 19), new(17, 19), new(18, 19), new(19, 19), new(20, 19), new(21, 19), new(22, 19), new(23, 19), new(24, 19),
             };
-            TestTile[] extractedTiles = Extraction.GetTilesInACone(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), length, openingAngle, directionAngle, includeStart, false, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesInACone(_grid, GridUtils.GetTile(_grid, coordX, coordY), length, openingAngle, directionAngle, includeStart, false);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -750,17 +695,14 @@ namespace GridToolkitTests
 
 
 
-        [TestCase(true, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(true, MajorOrder.COLUMN_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesOnALine_InsideBounds_IncludeWalls_AllowDiagonals(bool includeStart, MajorOrder majorOrder)
+        [TestCase(true)]
+        [TestCase(false)]
+        public void GetTilesOnALine_InsideBounds_IncludeWalls_AllowDiagonals(bool includeStart)
         {
             int coordX = 10;
             int coordY = 11;
             int length = 7;
             int directionAngle = 45;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int? start = includeStart ? new Vector2Int(coordX, coordY) : null;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 start      , null       , null       , null       , null       , null       ,
@@ -770,7 +712,7 @@ namespace GridToolkitTests
                 null       , null       , null       , null       , new(14, 15), null       ,
                 null       , null       , null       , null       , null       , new(15, 16),
             };
-            TestTile[] extractedTiles = Extraction.GetTilesOnALine(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), length, directionAngle, true, false, includeStart, true, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesOnALine(_grid, GridUtils.GetTile(_grid, coordX, coordY), length, directionAngle, true, false, includeStart, true);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -781,17 +723,14 @@ namespace GridToolkitTests
                 Assert.IsTrue(extractedTiles.Any((x) => x.X == expectedTiles[i]?.x && x.Y == expectedTiles[i]?.y));
             }
         }
-        [TestCase(true, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(true, MajorOrder.COLUMN_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesOnALine_InsideBounds_IncludeWalls_NoDiagonals_FavorHorizontal(bool includeStart, MajorOrder majorOrder)
+        [TestCase(true)]
+        [TestCase(false)]
+        public void GetTilesOnALine_InsideBounds_IncludeWalls_NoDiagonals_FavorHorizontal(bool includeStart)
         {
             int coordX = 10;
             int coordY = 11;
             int length = 7;
             int directionAngle = 45;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int? start = includeStart ? new Vector2Int(coordX, coordY) : null;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 start      , new(11, 11), null       , null       , null       , null       ,
@@ -801,7 +740,7 @@ namespace GridToolkitTests
                 null       , null       , null       , null       , new(14, 15), new(15, 15),
                 null       , null       , null       , null       , null       , new(15, 16),
             };
-            TestTile[] extractedTiles = Extraction.GetTilesOnALine(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), length, directionAngle, false, false, includeStart, true, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesOnALine(_grid, GridUtils.GetTile(_grid, coordX, coordY), length, directionAngle, false, false, includeStart, true);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -812,17 +751,14 @@ namespace GridToolkitTests
                 Assert.IsTrue(extractedTiles.Any((x) => x.X == expectedTiles[i]?.x && x.Y == expectedTiles[i]?.y));
             }
         }
-        [TestCase(true, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(true, MajorOrder.COLUMN_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesOnALine_InsideBounds_IncludeWalls_NoDiagonals_FavorVertical(bool includeStart, MajorOrder majorOrder)
+        [TestCase(true)]
+        [TestCase(false)]
+        public void GetTilesOnALine_InsideBounds_IncludeWalls_NoDiagonals_FavorVertical(bool includeStart)
         {
             int coordX = 10;
             int coordY = 11;
             int length = 7;
             int directionAngle = 45;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int? start = includeStart ? new Vector2Int(coordX, coordY) : null;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 start      , null       , null       , null       , null       , null       ,
@@ -832,7 +768,7 @@ namespace GridToolkitTests
                 null       , null       , null       , new(13, 15), new(14, 15), null       ,
                 null       , null       , null       , null       , new(14, 16), new(15, 16),
             };
-            TestTile[] extractedTiles = Extraction.GetTilesOnALine(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), length, directionAngle, false, true, includeStart, true, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesOnALine(_grid, GridUtils.GetTile(_grid, coordX, coordY), length, directionAngle, false, true, includeStart, true);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -843,17 +779,14 @@ namespace GridToolkitTests
                 Assert.IsTrue(extractedTiles.Any((x) => x.X == expectedTiles[i]?.x && x.Y == expectedTiles[i]?.y));
             }
         }
-        [TestCase(true, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(true, MajorOrder.COLUMN_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesOnALine_InsideBounds_ExcludeWalls_AllowDiagonals(bool includeStart, MajorOrder majorOrder)
+        [TestCase(true)]
+        [TestCase(false)]
+        public void GetTilesOnALine_InsideBounds_ExcludeWalls_AllowDiagonals(bool includeStart)
         {
             int coordX = 10;
             int coordY = 11;
             int length = 7;
             int directionAngle = 45;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int? start = includeStart ? new Vector2Int(coordX, coordY) : null;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 start      , null       , null       , null       , null       , null       ,
@@ -863,7 +796,7 @@ namespace GridToolkitTests
                 null       , null       , null       , null       , new(14, 15), null       ,
                 null       , null       , null       , null       , null       , new(15, 16),
             };
-            TestTile[] extractedTiles = Extraction.GetTilesOnALine(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), length, directionAngle, true, false, includeStart, false, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesOnALine(_grid, GridUtils.GetTile(_grid, coordX, coordY), length, directionAngle, true, false, includeStart, false);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -874,17 +807,14 @@ namespace GridToolkitTests
                 Assert.IsTrue(extractedTiles.Any((x) => x.X == expectedTiles[i]?.x && x.Y == expectedTiles[i]?.y));
             }
         }
-        [TestCase(true, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(true, MajorOrder.COLUMN_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesOnALine_InsideBounds_ExcludeWalls_NoDiagonals_FavorHorizontal(bool includeStart, MajorOrder majorOrder)
+        [TestCase(true)]
+        [TestCase(false)]
+        public void GetTilesOnALine_InsideBounds_ExcludeWalls_NoDiagonals_FavorHorizontal(bool includeStart)
         {
             int coordX = 10;
             int coordY = 11;
             int length = 7;
             int directionAngle = 45;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int? start = includeStart ? new Vector2Int(coordX, coordY) : null;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 start      , new(11, 11), null       , null       , null       , null       ,
@@ -894,7 +824,7 @@ namespace GridToolkitTests
                 null       , null       , null       , null       , new(14, 15), new(15, 15),
                 null       , null       , null       , null       , null       , new(15, 16),
             };
-            TestTile[] extractedTiles = Extraction.GetTilesOnALine(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), length, directionAngle, false, false, includeStart, false, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesOnALine(_grid, GridUtils.GetTile(_grid, coordX, coordY), length, directionAngle, false, false, includeStart, false);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -905,17 +835,14 @@ namespace GridToolkitTests
                 Assert.IsTrue(extractedTiles.Any((x) => x.X == expectedTiles[i]?.x && x.Y == expectedTiles[i]?.y));
             }
         }
-        [TestCase(true, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(true, MajorOrder.COLUMN_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesOnALine_InsideBounds_ExcludeWalls_NoDiagonals_FavorVertical(bool includeStart, MajorOrder majorOrder)
+        [TestCase(true)]
+        [TestCase(false)]
+        public void GetTilesOnALine_InsideBounds_ExcludeWalls_NoDiagonals_FavorVertical(bool includeStart)
         {
             int coordX = 10;
             int coordY = 11;
             int length = 7;
             int directionAngle = 45;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int? start = includeStart ? new Vector2Int(coordX, coordY) : null;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 start      , null       , null       , null       , null       , null       ,
@@ -925,7 +852,7 @@ namespace GridToolkitTests
                 null       , null       , null       , null       , new(14, 15), null       ,
                 null       , null       , null       , null       , new(14, 16), new(15, 16),
             };
-            TestTile[] extractedTiles = Extraction.GetTilesOnALine(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), length, directionAngle, false, true, includeStart, false, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesOnALine(_grid, GridUtils.GetTile(_grid, coordX, coordY), length, directionAngle, false, true, includeStart, false);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -936,17 +863,14 @@ namespace GridToolkitTests
                 Assert.IsTrue(extractedTiles.Any((x) => x.X == expectedTiles[i]?.x && x.Y == expectedTiles[i]?.y));
             }
         }
-        [TestCase(true, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(true, MajorOrder.COLUMN_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesOnALine_OutsideBounds_IncludeWalls_AllowDiagonals(bool includeStart, MajorOrder majorOrder)
+        [TestCase(true)]
+        [TestCase(false)]
+        public void GetTilesOnALine_OutsideBounds_IncludeWalls_AllowDiagonals(bool includeStart)
         {
             int coordX = 20;
             int coordY = 15;
             int length = 0;
             int directionAngle = 45;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int? start = includeStart ? new Vector2Int(coordX, coordY) : null;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 start      , null       , null       , null       , null       ,
@@ -955,7 +879,7 @@ namespace GridToolkitTests
                 null       , null       , null       , new(23, 18), null       ,
                 null       , null       , null       , null       , new(24, 19),
             };
-            TestTile[] extractedTiles = Extraction.GetTilesOnALine(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), length, directionAngle, true, false, includeStart, true, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesOnALine(_grid, GridUtils.GetTile(_grid, coordX, coordY), length, directionAngle, true, false, includeStart, true);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -966,17 +890,14 @@ namespace GridToolkitTests
                 Assert.IsTrue(extractedTiles.Any((x) => x.X == expectedTiles[i]?.x && x.Y == expectedTiles[i]?.y));
             }
         }
-        [TestCase(true, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(true, MajorOrder.COLUMN_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesOnALine_OutsideBounds_IncludeWalls_NoDiagonals_FavorHorizontal(bool includeStart, MajorOrder majorOrder)
+        [TestCase(true)]
+        [TestCase(false)]
+        public void GetTilesOnALine_OutsideBounds_IncludeWalls_NoDiagonals_FavorHorizontal(bool includeStart)
         {
             int coordX = 20;
             int coordY = 15;
             int length = 0;
             int directionAngle = 45;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int? start = includeStart ? new Vector2Int(coordX, coordY) : null;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 start      , new(21, 15), null       , null       , null       ,
@@ -985,7 +906,7 @@ namespace GridToolkitTests
                 null       , null       , null       , new(23, 18), new(24, 18),
                 null       , null       , null       , null       , new(24, 19),
             };
-            TestTile[] extractedTiles = Extraction.GetTilesOnALine(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), length, directionAngle, false, false, includeStart, true, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesOnALine(_grid, GridUtils.GetTile(_grid, coordX, coordY), length, directionAngle, false, false, includeStart, true);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -996,17 +917,14 @@ namespace GridToolkitTests
                 Assert.IsTrue(extractedTiles.Any((x) => x.X == expectedTiles[i]?.x && x.Y == expectedTiles[i]?.y));
             }
         }
-        [TestCase(true, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(true, MajorOrder.COLUMN_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesOnALine_OutsideBounds_IncludeWalls_NoDiagonals_FavorVertical(bool includeStart, MajorOrder majorOrder)
+        [TestCase(true)]
+        [TestCase(false)]
+        public void GetTilesOnALine_OutsideBounds_IncludeWalls_NoDiagonals_FavorVertical(bool includeStart)
         {
             int coordX = 20;
             int coordY = 15;
             int length = 0;
             int directionAngle = 45;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int? start = includeStart ? new Vector2Int(coordX, coordY) : null;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 start      , null       , null       , null       , null       ,
@@ -1015,7 +933,7 @@ namespace GridToolkitTests
                 null       , null       , new(22, 18), new(23, 18), null       ,
                 null       , null       , null       , new(23, 19), new(24, 19),
             };
-            TestTile[] extractedTiles = Extraction.GetTilesOnALine(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), length, directionAngle, false, true, includeStart, true, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesOnALine(_grid, GridUtils.GetTile(_grid, coordX, coordY), length, directionAngle, false, true, includeStart, true);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -1026,17 +944,14 @@ namespace GridToolkitTests
                 Assert.IsTrue(extractedTiles.Any((x) => x.X == expectedTiles[i]?.x && x.Y == expectedTiles[i]?.y));
             }
         }
-        [TestCase(true, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(true, MajorOrder.COLUMN_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesOnALine_OutsideBounds_ExcludeWalls_AllowDiagonals(bool includeStart, MajorOrder majorOrder)
+        [TestCase(true)]
+        [TestCase(false)]
+        public void GetTilesOnALine_OutsideBounds_ExcludeWalls_AllowDiagonals(bool includeStart)
         {
             int coordX = 20;
             int coordY = 15;
             int length = 0;
             int directionAngle = 45;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int? start = includeStart ? new Vector2Int(coordX, coordY) : null;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 start      , null       , null       , null       , null       ,
@@ -1045,7 +960,7 @@ namespace GridToolkitTests
                 null       , null       , null       , new(23, 18), null       ,
                 null       , null       , null       , null       , new(24, 19),
             };
-            TestTile[] extractedTiles = Extraction.GetTilesOnALine(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), length, directionAngle, true, false, includeStart, /*true,*/ false, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesOnALine(_grid, GridUtils.GetTile(_grid, coordX, coordY), length, directionAngle, true, false, includeStart, /*true,*/ false);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -1056,17 +971,14 @@ namespace GridToolkitTests
                 Assert.IsTrue(extractedTiles.Any((x) => x.X == expectedTiles[i]?.x && x.Y == expectedTiles[i]?.y), $"Tile {expectedTiles[i]} has not been found into the extracted tiles");
             }
         }
-        [TestCase(true, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(true, MajorOrder.COLUMN_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesOnALine_OutsideBounds_ExcludeWalls_NoDiagonals_FavorHorizontal(bool includeStart, MajorOrder majorOrder)
+        [TestCase(true)]
+        [TestCase(false)]
+        public void GetTilesOnALine_OutsideBounds_ExcludeWalls_NoDiagonals_FavorHorizontal(bool includeStart)
         {
             int coordX = 20;
             int coordY = 15;
             int length = 0;
             int directionAngle = 45;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int? start = includeStart ? new Vector2Int(coordX, coordY) : null;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 start      , new(21, 15), null       , null       , null       ,
@@ -1075,7 +987,7 @@ namespace GridToolkitTests
                 null       , null       , null       , new(23, 18), new(24, 18),
                 null       , null       , null       , null       , new(24, 19),
             };
-            TestTile[] extractedTiles = Extraction.GetTilesOnALine(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), length, directionAngle, false, false, includeStart, false, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesOnALine(_grid, GridUtils.GetTile(_grid, coordX, coordY), length, directionAngle, false, false, includeStart, false);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -1086,17 +998,14 @@ namespace GridToolkitTests
                 Assert.IsTrue(extractedTiles.Any((x) => x.X == expectedTiles[i]?.x && x.Y == expectedTiles[i]?.y));
             }
         }
-        [TestCase(true, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(true, MajorOrder.COLUMN_MAJOR_ORDER)]
-        [TestCase(false, MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTilesOnALine_OutsideBounds_ExcludeWalls_NoDiagonals_FavorVertical(bool includeStart, MajorOrder majorOrder)
+        [TestCase(true)]
+        [TestCase(false)]
+        public void GetTilesOnALine_OutsideBounds_ExcludeWalls_NoDiagonals_FavorVertical(bool includeStart)
         {
             int coordX = 20;
             int coordY = 15;
             int length = 0;
             int directionAngle = 45;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int? start = includeStart ? new Vector2Int(coordX, coordY) : null;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 start      , null       , null       , null       , null       ,
@@ -1105,7 +1014,7 @@ namespace GridToolkitTests
                 null       , null       , new(22, 18), new(23, 18), null       ,
                 null       , null       , null       , new(23, 19), new(24, 19),
             };
-            TestTile[] extractedTiles = Extraction.GetTilesOnALine(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), length, directionAngle, false, true, includeStart, false, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTilesOnALine(_grid, GridUtils.GetTile(_grid, coordX, coordY), length, directionAngle, false, true, includeStart, false);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -1116,40 +1025,34 @@ namespace GridToolkitTests
                 Assert.IsTrue(extractedTiles.Any((x) => x.X == expectedTiles[i]?.x && x.Y == expectedTiles[i]?.y));
             }
         }
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTileNeighbour_IncludeWalls(MajorOrder majorOrder)
+        [Test]
+        public void GetTileNeighbour_IncludeWalls()
         {
             int coordX = 20;
             int coordY = 15;
             int directionAngle = 45;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
-            Extraction.GetTileNeighbour(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), directionAngle, out TestTile neighbour, true, majorOrder);
+            Extraction.GetTileNeighbour(_grid, GridUtils.GetTile(_grid, coordX, coordY), directionAngle, out TestTile neighbour, true);
             Assert.IsTrue(neighbour.X == 21 && neighbour.Y == 16, $"Neighbour coordinates are wrong. Expected X:{21} Y:{16} but got X:{neighbour.X} Y:{neighbour.Y}.");
         }
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTileNeighbour_ExcludeWalls(MajorOrder majorOrder)
+        [Test]
+        public void GetTileNeighbour_ExcludeWalls()
         {
             int coordX = 20;
             int coordY = 15;
             int directionAngle = 45;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
-            Assert.IsFalse(Extraction.GetTileNeighbour(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), directionAngle, out TestTile neighbour, false, majorOrder));
+            Assert.IsFalse(Extraction.GetTileNeighbour(_grid, GridUtils.GetTile(_grid, coordX, coordY), directionAngle, out TestTile neighbour, false));
         }
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTileNeighbours_IncludeWalls(MajorOrder majorOrder)
+        [Test]
+        public void GetTileNeighbours_IncludeWalls()
         {
             int coordX = 20;
             int coordY = 15;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 new(19, 14), new(20, 14), new(21, 14),
                 new(19, 15), null       , new(21, 15),
                 new(19, 16), new(20, 16), new(21, 16),
             };
-            TestTile[] extractedTiles = Extraction.GetTileNeighbours(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), true, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTileNeighbours(_grid, GridUtils.GetTile(_grid, coordX, coordY), true);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -1160,19 +1063,17 @@ namespace GridToolkitTests
                 Assert.IsTrue(extractedTiles.Any((x) => x.X == expectedTiles[i]?.x && x.Y == expectedTiles[i]?.y));
             }
         }
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTileNeighbours_ExcludeWalls(MajorOrder majorOrder)
+        [Test]
+        public void GetTileNeighbours_ExcludeWalls()
         {
             int coordX = 20;
             int coordY = 15;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 new(19, 14), new(20, 14), new(21, 14),
                 new(19, 15), null       , new(21, 15),
                 null       , null       , null       ,
             };
-            TestTile[] extractedTiles = Extraction.GetTileNeighbours(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), false, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTileNeighbours(_grid, GridUtils.GetTile(_grid, coordX, coordY), false);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -1183,19 +1084,17 @@ namespace GridToolkitTests
                 Assert.IsTrue(extractedTiles.Any((x) => x.X == expectedTiles[i]?.x && x.Y == expectedTiles[i]?.y));
             }
         }
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTileOrthogonalNeighbours_IncludeWalls(MajorOrder majorOrder)
+        [Test]
+        public void GetTileOrthogonalNeighbours_IncludeWalls()
         {
             int coordX = 20;
             int coordY = 15;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 null       , new(20, 14), null       ,
                 new(19, 15), null       , new(21, 15),
                 null       , new(20, 16), null       ,
             };
-            TestTile[] extractedTiles = Extraction.GetTileOrthogonalsNeighbours(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), true, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTileOrthogonalsNeighbours(_grid, GridUtils.GetTile(_grid, coordX, coordY), true);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -1206,19 +1105,17 @@ namespace GridToolkitTests
                 Assert.IsTrue(extractedTiles.Any((x) => x.X == expectedTiles[i]?.x && x.Y == expectedTiles[i]?.y));
             }
         }
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTileOrthogonalNeighbours_ExcludeWalls(MajorOrder majorOrder)
+        [Test]
+        public void GetTileOrthogonalNeighbours_ExcludeWalls()
         {
             int coordX = 20;
             int coordY = 15;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 null       , new(20, 14), null       ,
                 new(19, 15), null       , new(21, 15),
                 null       , null       , null       ,
             };
-            TestTile[] extractedTiles = Extraction.GetTileOrthogonalsNeighbours(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), false, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTileOrthogonalsNeighbours(_grid, GridUtils.GetTile(_grid, coordX, coordY), false);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -1229,19 +1126,17 @@ namespace GridToolkitTests
                 Assert.IsTrue(extractedTiles.Any((x) => x.X == expectedTiles[i]?.x && x.Y == expectedTiles[i]?.y));
             }
         }
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTileDiagonalsNeighbours_IncludeWalls(MajorOrder majorOrder)
+        [Test]
+        public void GetTileDiagonalsNeighbours_IncludeWalls()
         {
             int coordX = 20;
             int coordY = 15;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 new(19, 14), null       , new(21, 14),
                 null       , null       , null       ,
                 new(19, 16), null       , new(21, 16),
             };
-            TestTile[] extractedTiles = Extraction.GetTileDiagonalsNeighbours(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), true, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTileDiagonalsNeighbours(_grid, GridUtils.GetTile(_grid, coordX, coordY), true);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -1252,19 +1147,17 @@ namespace GridToolkitTests
                 Assert.IsTrue(extractedTiles.Any((x) => x.X == expectedTiles[i]?.x && x.Y == expectedTiles[i]?.y));
             }
         }
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void GetTileDiagonalsNeighbours_ExcludeWalls(MajorOrder majorOrder)
+        [Test]
+        public void GetTileDiagonalsNeighbours_ExcludeWalls()
         {
             int coordX = 20;
             int coordY = 15;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
             Vector2Int?[] expectedTiles = new Vector2Int?[] {
                 new(19, 14), null       , new(21, 14),
                 null       , null       , null       ,
                 null       , null       , null       ,
             };
-            TestTile[] extractedTiles = Extraction.GetTileDiagonalsNeighbours(grid, GridUtils.GetTile(grid, coordX, coordY, majorOrder), false, majorOrder);
+            TestTile[] extractedTiles = Extraction.GetTileDiagonalsNeighbours(_grid, GridUtils.GetTile(_grid, coordX, coordY), false);
             Assert.AreEqual(expectedTiles.Count(x => x != null), extractedTiles.Length, "Number of extracted tiles does not match expected count.");
             for (int i = 0; i < expectedTiles.Length; i++)
             {
@@ -1277,9 +1170,8 @@ namespace GridToolkitTests
         }
 
 
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void IsTileInARectangle(MajorOrder majorOrder)
+        [Test]
+        public void IsTileInARectangle()
         {
             int coordX = 10;
             int coordY = 11;
@@ -1289,13 +1181,11 @@ namespace GridToolkitTests
             int falseY = 19;
             int width = 6;
             int height = 4;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
-            Assert.IsTrue(Extraction.IsTileInARectangle(grid, GridUtils.GetTile(grid, trueX, trueY, majorOrder), GridUtils.GetTile(grid, coordX, coordY, majorOrder), new(width, height), majorOrder));
-            Assert.IsFalse(Extraction.IsTileInARectangle(grid, GridUtils.GetTile(grid, falseX, falseY, majorOrder), GridUtils.GetTile(grid, coordX, coordY, majorOrder), new(width, height), majorOrder));
+            Assert.IsTrue(Extraction.IsTileInARectangle(_grid, GridUtils.GetTile(_grid, trueX, trueY), GridUtils.GetTile(_grid, coordX, coordY), new(width, height)));
+            Assert.IsFalse(Extraction.IsTileInARectangle(_grid, GridUtils.GetTile(_grid, falseX, falseY), GridUtils.GetTile(_grid, coordX, coordY), new(width, height)));
         }
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void IsTileInARectangleOutline(MajorOrder majorOrder)
+        [Test]
+        public void IsTileInARectangleOutline()
         {
             int coordX = 10;
             int coordY = 11;
@@ -1305,15 +1195,13 @@ namespace GridToolkitTests
             int falseY = 16;
             int width = 6;
             int height = 4;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
-            Assert.IsTrue(Extraction.IsTileOnARectangleOutline(grid, GridUtils.GetTile(grid, trueX, trueY, majorOrder), GridUtils.GetTile(grid, coordX, coordY, majorOrder), new(width, height), majorOrder));
-            Assert.IsFalse(Extraction.IsTileOnARectangleOutline(grid, GridUtils.GetTile(grid, falseX, falseY, majorOrder), GridUtils.GetTile(grid, coordX, coordY, majorOrder), new(width, height), majorOrder));
+            Assert.IsTrue(Extraction.IsTileOnARectangleOutline(_grid, GridUtils.GetTile(_grid, trueX, trueY), GridUtils.GetTile(_grid, coordX, coordY), new(width, height)));
+            Assert.IsFalse(Extraction.IsTileOnARectangleOutline(_grid, GridUtils.GetTile(_grid, falseX, falseY), GridUtils.GetTile(_grid, coordX, coordY), new(width, height)));
         }
 
 
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void IsTileInACircle(MajorOrder majorOrder)
+        [Test]
+        public void IsTileInACircle()
         {
             int coordX = 10;
             int coordY = 11;
@@ -1322,13 +1210,11 @@ namespace GridToolkitTests
             int falseX = 16;
             int falseY = 16;
             int radius = 6;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
-            Assert.IsTrue(Extraction.IsTileInACircle(grid, GridUtils.GetTile(grid, trueX, trueY, majorOrder), GridUtils.GetTile(grid, coordX, coordY, majorOrder), radius, majorOrder));
-            Assert.IsFalse(Extraction.IsTileInACircle(grid, GridUtils.GetTile(grid, falseX, falseY, majorOrder), GridUtils.GetTile(grid, coordX, coordY, majorOrder), radius, majorOrder));
+            Assert.IsTrue(Extraction.IsTileInACircle(_grid, GridUtils.GetTile(_grid, trueX, trueY), GridUtils.GetTile(_grid, coordX, coordY), radius));
+            Assert.IsFalse(Extraction.IsTileInACircle(_grid, GridUtils.GetTile(_grid, falseX, falseY), GridUtils.GetTile(_grid, coordX, coordY), radius));
         }
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void IsTileInACircleOutline(MajorOrder majorOrder)
+        [Test]
+        public void IsTileInACircleOutline()
         {
             int coordX = 10;
             int coordY = 11;
@@ -1337,15 +1223,13 @@ namespace GridToolkitTests
             int falseX = 16;
             int falseY = 16;
             int radius = 6;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
-            Assert.IsTrue(Extraction.IsTileOnACircleOutline(grid, GridUtils.GetTile(grid, trueX, trueY, majorOrder), GridUtils.GetTile(grid, coordX, coordY, majorOrder), radius, majorOrder));
-            Assert.IsFalse(Extraction.IsTileOnACircleOutline(grid, GridUtils.GetTile(grid, falseX, falseY, majorOrder), GridUtils.GetTile(grid, coordX, coordY, majorOrder), radius, majorOrder));
+            Assert.IsTrue(Extraction.IsTileOnACircleOutline(_grid, GridUtils.GetTile(_grid, trueX, trueY), GridUtils.GetTile(_grid, coordX, coordY), radius));
+            Assert.IsFalse(Extraction.IsTileOnACircleOutline(_grid, GridUtils.GetTile(_grid, falseX, falseY), GridUtils.GetTile(_grid, coordX, coordY), radius));
         }
 
 
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void IsTileInACone(MajorOrder majorOrder)
+        [Test]
+        public void IsTileInACone()
         {
             int coordX = 10;
             int coordY = 11;
@@ -1356,14 +1240,12 @@ namespace GridToolkitTests
             int length = 7;
             int openingAngle = 90;
             int destinationAngle = 270;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
-            Assert.IsTrue(Extraction.IsTileInACone(grid, GridUtils.GetTile(grid, trueX, trueY, majorOrder), GridUtils.GetTile(grid, coordX, coordY, majorOrder), length, openingAngle, destinationAngle, majorOrder));
-            Assert.IsFalse(Extraction.IsTileInACone(grid, GridUtils.GetTile(grid, falseX, falseY, majorOrder), GridUtils.GetTile(grid, coordX, coordY, majorOrder), length, openingAngle, destinationAngle, majorOrder));
+            Assert.IsTrue(Extraction.IsTileInACone(_grid, GridUtils.GetTile(_grid, trueX, trueY), GridUtils.GetTile(_grid, coordX, coordY), length, openingAngle, destinationAngle));
+            Assert.IsFalse(Extraction.IsTileInACone(_grid, GridUtils.GetTile(_grid, falseX, falseY), GridUtils.GetTile(_grid, coordX, coordY), length, openingAngle, destinationAngle));
         }
 
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void IsTileOnALine_AllowDiagonals(MajorOrder majorOrder)
+        [Test]
+        public void IsTileOnALine_AllowDiagonals()
         {
             int coordX = 10;
             int coordY = 11;
@@ -1373,13 +1255,11 @@ namespace GridToolkitTests
             int falseY = 3;
             int length = 7;
             int destinationAngle = 270;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
-            Assert.IsTrue(Extraction.IsTileOnALine(grid, GridUtils.GetTile(grid, trueX, trueY, majorOrder), GridUtils.GetTile(grid, coordX, coordY, majorOrder), length, destinationAngle, true, false, majorOrder));
-            Assert.IsFalse(Extraction.IsTileOnALine(grid, GridUtils.GetTile(grid, falseX, falseY, majorOrder), GridUtils.GetTile(grid, coordX, coordY, majorOrder), length, destinationAngle, true, false, majorOrder));
+            Assert.IsTrue(Extraction.IsTileOnALine(_grid, GridUtils.GetTile(_grid, trueX, trueY), GridUtils.GetTile(_grid, coordX, coordY), length, destinationAngle, true, false));
+            Assert.IsFalse(Extraction.IsTileOnALine(_grid, GridUtils.GetTile(_grid, falseX, falseY), GridUtils.GetTile(_grid, coordX, coordY), length, destinationAngle, true, false));
         }
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void IsTileOnALine_NoDiagonals_FavorHorizontal(MajorOrder majorOrder)
+        [Test]
+        public void IsTileOnALine_NoDiagonals_FavorHorizontal()
         {
             int coordX = 10;
             int coordY = 11;
@@ -1389,13 +1269,11 @@ namespace GridToolkitTests
             int falseY = 3;
             int length = 7;
             int destinationAngle = 270;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
-            Assert.IsTrue(Extraction.IsTileOnALine(grid, GridUtils.GetTile(grid, trueX, trueY, majorOrder), GridUtils.GetTile(grid, coordX, coordY, majorOrder), length, destinationAngle, false, false, majorOrder));
-            Assert.IsFalse(Extraction.IsTileOnALine(grid, GridUtils.GetTile(grid, falseX, falseY, majorOrder), GridUtils.GetTile(grid, coordX, coordY, majorOrder), length, destinationAngle, false, false, majorOrder));
+            Assert.IsTrue(Extraction.IsTileOnALine(_grid, GridUtils.GetTile(_grid, trueX, trueY), GridUtils.GetTile(_grid, coordX, coordY), length, destinationAngle, false, false));
+            Assert.IsFalse(Extraction.IsTileOnALine(_grid, GridUtils.GetTile(_grid, falseX, falseY), GridUtils.GetTile(_grid, coordX, coordY), length, destinationAngle, false, false));
         }
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void IsTileOnALine_NoDiagonals_FavorVertical(MajorOrder majorOrder)
+        [Test]
+        public void IsTileOnALine_NoDiagonals_FavorVertical()
         {
             int coordX = 10;
             int coordY = 11;
@@ -1405,13 +1283,11 @@ namespace GridToolkitTests
             int falseY = 3;
             int length = 7;
             int destinationAngle = 270;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
-            Assert.IsTrue(Extraction.IsTileOnALine(grid, GridUtils.GetTile(grid, trueX, trueY, majorOrder), GridUtils.GetTile(grid, coordX, coordY, majorOrder), length, destinationAngle, false, true, majorOrder));
-            Assert.IsFalse(Extraction.IsTileOnALine(grid, GridUtils.GetTile(grid, falseX, falseY, majorOrder), GridUtils.GetTile(grid, coordX, coordY, majorOrder), length, destinationAngle, false, true, majorOrder));
+            Assert.IsTrue(Extraction.IsTileOnALine(_grid, GridUtils.GetTile(_grid, trueX, trueY), GridUtils.GetTile(_grid, coordX, coordY), length, destinationAngle, false, true));
+            Assert.IsFalse(Extraction.IsTileOnALine(_grid, GridUtils.GetTile(_grid, falseX, falseY), GridUtils.GetTile(_grid, coordX, coordY), length, destinationAngle, false, true));
         }
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void IsTileNeighbor_IncludeWalls(MajorOrder majorOrder)
+        [Test]
+        public void IsTileNeighbor_IncludeWalls()
         {
             int coordX = 10;
             int coordY = 11;
@@ -1420,27 +1296,23 @@ namespace GridToolkitTests
             int falseX = 12;
             int falseY = 13;
             int destinationAngle = 45;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
 
-            Assert.IsTrue(Extraction.IsTileNeighbor(GridUtils.GetTile(grid, trueX, trueY, majorOrder), GridUtils.GetTile(grid, coordX, coordY, majorOrder), destinationAngle, true));
-            Assert.IsFalse(Extraction.IsTileNeighbor(GridUtils.GetTile(grid, falseX, falseY, majorOrder), GridUtils.GetTile(grid, coordX, coordY, majorOrder), destinationAngle, true));
+            Assert.IsTrue(Extraction.IsTileNeighbor(GridUtils.GetTile(_grid, trueX, trueY), GridUtils.GetTile(_grid, coordX, coordY), destinationAngle, true));
+            Assert.IsFalse(Extraction.IsTileNeighbor(GridUtils.GetTile(_grid, falseX, falseY), GridUtils.GetTile(_grid, coordX, coordY), destinationAngle, true));
         }
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void IsTileNeighbor_ExcludeWalls(MajorOrder majorOrder)
+        [Test]
+        public void IsTileNeighbor_ExcludeWalls()
         {
             int coordX = 10;
             int coordY = 11;
             int falseX = 11;
             int falseY = 12;
             int destinationAngle = 315;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
 
-            Assert.IsFalse(Extraction.IsTileNeighbor(GridUtils.GetTile(grid, falseX, falseY, majorOrder), GridUtils.GetTile(grid, coordX, coordY, majorOrder), destinationAngle, false));
+            Assert.IsFalse(Extraction.IsTileNeighbor(GridUtils.GetTile(_grid, falseX, falseY), GridUtils.GetTile(_grid, coordX, coordY), destinationAngle, false));
         }
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void IsTileAnyNeighbor_IncludeWalls(MajorOrder majorOrder)
+        [Test]
+        public void IsTileAnyNeighbor_IncludeWalls()
         {
             int coordX = 10;
             int coordY = 11;
@@ -1448,26 +1320,22 @@ namespace GridToolkitTests
             int trueY = 12;
             int falseX = 12;
             int falseY = 13;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
 
-            Assert.IsTrue(Extraction.IsTileAnyNeighbor(GridUtils.GetTile(grid, trueX, trueY, majorOrder), GridUtils.GetTile(grid, coordX, coordY, majorOrder), true));
-            Assert.IsFalse(Extraction.IsTileAnyNeighbor(GridUtils.GetTile(grid, falseX, falseY, majorOrder), GridUtils.GetTile(grid, coordX, coordY, majorOrder), true));
+            Assert.IsTrue(Extraction.IsTileAnyNeighbor(GridUtils.GetTile(_grid, trueX, trueY), GridUtils.GetTile(_grid, coordX, coordY), true));
+            Assert.IsFalse(Extraction.IsTileAnyNeighbor(GridUtils.GetTile(_grid, falseX, falseY), GridUtils.GetTile(_grid, coordX, coordY), true));
         }
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void IsTileAnyNeighbor_ExcludeWalls(MajorOrder majorOrder)
+        [Test]
+        public void IsTileAnyNeighbor_ExcludeWalls()
         {
             int coordX = 10;
             int coordY = 11;
             int falseX = 11;
             int falseY = 12;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
 
-            Assert.IsFalse(Extraction.IsTileAnyNeighbor(GridUtils.GetTile(grid, falseX, falseY, majorOrder), GridUtils.GetTile(grid, coordX, coordY, majorOrder), false));
+            Assert.IsFalse(Extraction.IsTileAnyNeighbor(GridUtils.GetTile(_grid, falseX, falseY), GridUtils.GetTile(_grid, coordX, coordY), false));
         }
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void IsTileOrthogonalNeighbor_IncludeWalls(MajorOrder majorOrder)
+        [Test]
+        public void IsTileOrthogonalNeighbor_IncludeWalls()
         {
             int coordX = 10;
             int coordY = 11;
@@ -1475,26 +1343,22 @@ namespace GridToolkitTests
             int trueY = 11;
             int falseX = 12;
             int falseY = 13;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
 
-            Assert.IsTrue(Extraction.IsTileOrthogonalNeighbor(GridUtils.GetTile(grid, trueX, trueY, majorOrder), GridUtils.GetTile(grid, coordX, coordY, majorOrder), true));
-            Assert.IsFalse(Extraction.IsTileOrthogonalNeighbor(GridUtils.GetTile(grid, falseX, falseY, majorOrder), GridUtils.GetTile(grid, coordX, coordY, majorOrder), true));
+            Assert.IsTrue(Extraction.IsTileOrthogonalNeighbor(GridUtils.GetTile(_grid, trueX, trueY), GridUtils.GetTile(_grid, coordX, coordY), true));
+            Assert.IsFalse(Extraction.IsTileOrthogonalNeighbor(GridUtils.GetTile(_grid, falseX, falseY), GridUtils.GetTile(_grid, coordX, coordY), true));
         }
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void IsTileOrthogonalNeighbor_ExcludeWalls(MajorOrder majorOrder)
+        [Test]
+        public void IsTileOrthogonalNeighbor_ExcludeWalls()
         {
             int coordX = 10;
             int coordY = 11;
             int falseX = 10;
             int falseY = 12;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
 
-            Assert.IsFalse(Extraction.IsTileOrthogonalNeighbor(GridUtils.GetTile(grid, falseX, falseY, majorOrder), GridUtils.GetTile(grid, coordX, coordY, majorOrder), false));
+            Assert.IsFalse(Extraction.IsTileOrthogonalNeighbor(GridUtils.GetTile(_grid, falseX, falseY), GridUtils.GetTile(_grid, coordX, coordY), false));
         }
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void IsTileDiagonalNeighbor_IncludeWalls(MajorOrder majorOrder)
+        [Test]
+        public void IsTileDiagonalNeighbor_IncludeWalls()
         {
             int coordX = 10;
             int coordY = 11;
@@ -1502,22 +1366,19 @@ namespace GridToolkitTests
             int falseY = 11;
             int trueX = 11;
             int trueY = 12;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
 
-            Assert.IsTrue(Extraction.IsTileDiagonalNeighbor(GridUtils.GetTile(grid, trueX, trueY, majorOrder), GridUtils.GetTile(grid, coordX, coordY, majorOrder), true));
-            Assert.IsFalse(Extraction.IsTileDiagonalNeighbor(GridUtils.GetTile(grid, falseX, falseY, majorOrder), GridUtils.GetTile(grid, coordX, coordY, majorOrder), true));
+            Assert.IsTrue(Extraction.IsTileDiagonalNeighbor(GridUtils.GetTile(_grid, trueX, trueY), GridUtils.GetTile(_grid, coordX, coordY), true));
+            Assert.IsFalse(Extraction.IsTileDiagonalNeighbor(GridUtils.GetTile(_grid, falseX, falseY), GridUtils.GetTile(_grid, coordX, coordY), true));
         }
-        [TestCase(MajorOrder.ROW_MAJOR_ORDER)]
-        [TestCase(MajorOrder.COLUMN_MAJOR_ORDER)]
-        public void IsTileDiagonalNeighbor_ExcludeWalls(MajorOrder majorOrder)
+        [Test]
+        public void IsTileDiagonalNeighbor_ExcludeWalls()
         {
             int coordX = 10;
             int coordY = 11;
             int falseX = 10;
             int falseY = 12;
-            TestTile[,] grid = majorOrder == MajorOrder.ROW_MAJOR_ORDER ? _gridRowMajorOrder : _gridColMajorOrder;
 
-            Assert.IsFalse(Extraction.IsTileDiagonalNeighbor(GridUtils.GetTile(grid, falseX, falseY, majorOrder), GridUtils.GetTile(grid, coordX, coordY, majorOrder), false));
+            Assert.IsFalse(Extraction.IsTileDiagonalNeighbor(GridUtils.GetTile(_grid, falseX, falseY), GridUtils.GetTile(_grid, coordX, coordY), false));
         }
     }
 }
