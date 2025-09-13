@@ -5,6 +5,7 @@ OUTPUT_DIRECTORY       = docs
 INPUT                  = Runtime README.md .github/workflows/MainPage.dox
 FILE_PATTERNS          = *.cs *.md
 RECURSIVE              = YES
+EXAMPLE_PATH           = ./
 
 # C# => utiliser l'optimisation Java/C# de Doxygen
 OPTIMIZE_OUTPUT_JAVA   = YES
