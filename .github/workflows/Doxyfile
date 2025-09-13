@@ -2,7 +2,7 @@
 PROJECT_NAME           = "Unity Grid Toolkit"
 PROJECT_BRIEF          = "Utilitary API to proceed operations on abstract grids such as tile extraction, raycasting, and pathfinding."
 OUTPUT_DIRECTORY       = docs
-INPUT                  = Runtime Editor Samples~ README.md
+INPUT                  = Runtime Editor README.md
 FILE_PATTERNS          = *.cs *.md
 RECURSIVE              = YES
 
