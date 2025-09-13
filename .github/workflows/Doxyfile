@@ -25,7 +25,6 @@ USE_MDFILE_AS_MAINPAGE = .github/worflows/MainPage.dox
 HAVE_DOT               = YES
 CALL_GRAPH             = NO
 CALLER_GRAPH           = NO
-CLASS_DIAGRAMS         = YES
 DOT_IMAGE_FORMAT       = svg
 
 # --- Divers ---
