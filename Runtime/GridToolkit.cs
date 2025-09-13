@@ -55,16 +55,16 @@ namespace Caskev.GridToolkit
     /// </summary>
     public class Extraction
     {
-        private static T[] ExtractRectangle<T>(T[,] map, T center, Vector2Int rectangleSize, bool includeCenter, bool includeWalls) where T : ITile
+        private static T[] ExtractRectangle<T>(T[,] grid, T center, Vector2Int rectangleSize, bool includeCenter, bool includeWalls) where T : ITile
         {
-            Vector2Int min = GridUtils.ClampCoordsIntoGrid(map, center.X + -rectangleSize.x, center.Y - rectangleSize.y);
-            Vector2Int max = GridUtils.ClampCoordsIntoGrid(map, center.X + rectangleSize.x, center.Y + rectangleSize.y);
+            Vector2Int min = GridUtils.ClampCoordsIntoGrid(grid, center.X + -rectangleSize.x, center.Y - rectangleSize.y);
+            Vector2Int max = GridUtils.ClampCoordsIntoGrid(grid, center.X + rectangleSize.x, center.Y + rectangleSize.y);
             List<T> list = new();
             for (int i = min.y; i <= max.y; i++)
             {
                 for (int j = min.x; j <= max.x; j++)
                 {
-                    T tile = GridUtils.GetTile(map, j, i);
+                    T tile = GridUtils.GetTile(grid, j, i);
                     if (tile != null && (includeWalls || tile.IsWalkable) && (includeCenter || !GridUtils.TileEquals(tile, center)))
                     {
                         list.Add(tile);
@@ -118,7 +118,7 @@ namespace Caskev.GridToolkit
             }
             return list.ToArray();
         }
-        private static T[] ExtractCircleArcFilled<T>(T[,] map, T center, int radius, bool includeCenter, bool includeWalls, float openingAngle, Vector2 direction) where T : ITile
+        private static T[] ExtractCircleArcFilled<T>(T[,] grid, T center, int radius, bool includeCenter, bool includeWalls, float openingAngle, Vector2 direction) where T : ITile
         {
             int x = 0;
             int y = -radius;
@@ -126,7 +126,7 @@ namespace Caskev.GridToolkit
             int d_e = 3;
             int d_ne = -(radius << 1) + 5;
             HashSet<T> points = new();
-            GetLineMirrors(map, center, ref points, x, y, openingAngle, direction, includeCenter, includeWalls);
+            GetLineMirrors(grid, center, ref points, x, y, openingAngle, direction, includeCenter, includeWalls);
             while (x < -y)
             {
                 if (F_M <= 0)
@@ -142,18 +142,18 @@ namespace Caskev.GridToolkit
                 d_e += 2;
                 d_ne += 2;
                 x += 1;
-                GetLineMirrors(map, center, ref points, x, y, openingAngle, direction, includeCenter, includeWalls);
+                GetLineMirrors(grid, center, ref points, x, y, openingAngle, direction, includeCenter, includeWalls);
             }
             return points.ToArray();
         }
-        private static T[] ExtractCircleArcOutline<T>(T[,] map, T center, int radius, bool includeWalls, float openingAngle, Vector2 direction) where T : ITile
+        private static T[] ExtractCircleArcOutline<T>(T[,] grid, T center, int radius, bool includeWalls, float openingAngle, Vector2 direction) where T : ITile
         {
             int x = 0;
             int y = -radius;
             int F_M = 1 - radius;
             int d_e = 3;
             int d_ne = -(radius << 1) + 5;
-            T[] firstLineMirror = GetTileMirrors(map, center, x, y, openingAngle, direction, includeWalls);
+            T[] firstLineMirror = GetTileMirrors(grid, center, x, y, openingAngle, direction, includeWalls);
             HashSet<T> points = new();
             for (int i = 0; i < firstLineMirror.Length; i++)
             {
@@ -174,7 +174,7 @@ namespace Caskev.GridToolkit
                 d_e += 2;
                 d_ne += 2;
                 x += 1;
-                T[] mirrorLine = GetTileMirrors(map, center, x, y, openingAngle, direction, includeWalls);
+                T[] mirrorLine = GetTileMirrors(grid, center, x, y, openingAngle, direction, includeWalls);
                 for (int i = 0; i < mirrorLine.Length; i++)
                 {
                     points.Add(mirrorLine[i]);
@@ -182,68 +182,68 @@ namespace Caskev.GridToolkit
             }
             return points.ToArray();
         }
-        private static T[] GetTileMirrors<T>(T[,] map, T centerTile, int x, int y, float openingAngle, Vector2 direction, bool includeWalls) where T : ITile
+        private static T[] GetTileMirrors<T>(T[,] grid, T centerTile, int x, int y, float openingAngle, Vector2 direction, bool includeWalls) where T : ITile
         {
             List<T> neis = new List<T>();
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X + x, centerTile.Y + y))
+            if (GridUtils.AreCoordsIntoGrid(grid, centerTile.X + x, centerTile.Y + y))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X + x, centerTile.Y + y);
+                T nei = GridUtils.GetTile(grid, centerTile.X + x, centerTile.Y + y);
                 if (includeWalls || nei.IsWalkable && IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction))
                 {
                     neis.Add(nei);
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X - x, centerTile.Y + y))
+            if (GridUtils.AreCoordsIntoGrid(grid, centerTile.X - x, centerTile.Y + y))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X - x, centerTile.Y + y);
+                T nei = GridUtils.GetTile(grid, centerTile.X - x, centerTile.Y + y);
                 if (includeWalls || nei.IsWalkable && IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction))
                 {
                     neis.Add(nei);
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X + x, centerTile.Y - y))
+            if (GridUtils.AreCoordsIntoGrid(grid, centerTile.X + x, centerTile.Y - y))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X + x, centerTile.Y - y);
+                T nei = GridUtils.GetTile(grid, centerTile.X + x, centerTile.Y - y);
                 if (includeWalls || nei.IsWalkable && IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction))
                 {
                     neis.Add(nei);
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X - x, centerTile.Y - y))
+            if (GridUtils.AreCoordsIntoGrid(grid, centerTile.X - x, centerTile.Y - y))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X - x, centerTile.Y - y);
+                T nei = GridUtils.GetTile(grid, centerTile.X - x, centerTile.Y - y);
                 if (includeWalls || nei.IsWalkable && IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction))
                 {
                     neis.Add(nei);
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X + y, centerTile.Y + x))
+            if (GridUtils.AreCoordsIntoGrid(grid, centerTile.X + y, centerTile.Y + x))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X + y, centerTile.Y + x);
+                T nei = GridUtils.GetTile(grid, centerTile.X + y, centerTile.Y + x);
                 if (includeWalls || nei.IsWalkable && IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction))
                 {
                     neis.Add(nei);
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X - y, centerTile.Y + x))
+            if (GridUtils.AreCoordsIntoGrid(grid, centerTile.X - y, centerTile.Y + x))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X - y, centerTile.Y + x);
+                T nei = GridUtils.GetTile(grid, centerTile.X - y, centerTile.Y + x);
                 if (includeWalls || nei.IsWalkable && IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction))
                 {
                     neis.Add(nei);
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X + y, centerTile.Y - x))
+            if (GridUtils.AreCoordsIntoGrid(grid, centerTile.X + y, centerTile.Y - x))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X + y, centerTile.Y - x);
+                T nei = GridUtils.GetTile(grid, centerTile.X + y, centerTile.Y - x);
                 if (includeWalls || nei.IsWalkable && IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction))
                 {
                     neis.Add(nei);
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X - y, centerTile.Y - x))
+            if (GridUtils.AreCoordsIntoGrid(grid, centerTile.X - y, centerTile.Y - x))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X - y, centerTile.Y - x);
+                T nei = GridUtils.GetTile(grid, centerTile.X - y, centerTile.Y - x);
                 if (includeWalls || nei.IsWalkable && IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction))
                 {
                     neis.Add(nei);
@@ -251,69 +251,69 @@ namespace Caskev.GridToolkit
             }
             return neis.ToArray();
         }
-        private static void GetLineMirrors<T>(T[,] map, T centerTile, ref HashSet<T> tiles, int x, int y, float openingAngle, Vector2 direction, bool includeCenter, bool includeWalls) where T : ITile
+        private static void GetLineMirrors<T>(T[,] grid, T centerTile, ref HashSet<T> tiles, int x, int y, float openingAngle, Vector2 direction, bool includeCenter, bool includeWalls) where T : ITile
         {
-            Vector2Int posLeft = GridUtils.ClampCoordsIntoGrid(map, x >= 0 ? centerTile.X - x : centerTile.X + x, centerTile.Y + y);
-            Vector2Int posRight = GridUtils.ClampCoordsIntoGrid(map, x >= 0 ? centerTile.X + x : centerTile.X - x, centerTile.Y + y);
+            Vector2Int posLeft = GridUtils.ClampCoordsIntoGrid(grid, x >= 0 ? centerTile.X - x : centerTile.X + x, centerTile.Y + y);
+            Vector2Int posRight = GridUtils.ClampCoordsIntoGrid(grid, x >= 0 ? centerTile.X + x : centerTile.X - x, centerTile.Y + y);
             for (int i = posLeft.x; i <= posRight.x; i++)
             {
-                T nei = GridUtils.GetTile(map, i, posLeft.y);
+                T nei = GridUtils.GetTile(grid, i, posLeft.y);
                 if ((includeWalls || nei.IsWalkable) && (includeCenter || !GridUtils.TileEquals(nei, centerTile)) && IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction))
                 {
                     tiles.Add(nei);
                 }
             }
-            posLeft = GridUtils.ClampCoordsIntoGrid(map, x >= 0 ? centerTile.X - x : centerTile.X + x, centerTile.Y - y);
-            posRight = GridUtils.ClampCoordsIntoGrid(map, x >= 0 ? centerTile.X + x : centerTile.X - x, centerTile.Y - y);
+            posLeft = GridUtils.ClampCoordsIntoGrid(grid, x >= 0 ? centerTile.X - x : centerTile.X + x, centerTile.Y - y);
+            posRight = GridUtils.ClampCoordsIntoGrid(grid, x >= 0 ? centerTile.X + x : centerTile.X - x, centerTile.Y - y);
             for (int i = posLeft.x; i <= posRight.x; i++)
             {
-                T nei = GridUtils.GetTile(map, i, posLeft.y);
+                T nei = GridUtils.GetTile(grid, i, posLeft.y);
                 if ((includeWalls || nei.IsWalkable) && (includeCenter || !GridUtils.TileEquals(nei, centerTile)) && IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction))
                 {
                     tiles.Add(nei);
                 }
             }
-            posLeft = GridUtils.ClampCoordsIntoGrid(map, y >= 0 ? centerTile.X - y : centerTile.X + y, centerTile.Y + x);
-            posRight = GridUtils.ClampCoordsIntoGrid(map, y >= 0 ? centerTile.X + y : centerTile.X - y, centerTile.Y + x);
+            posLeft = GridUtils.ClampCoordsIntoGrid(grid, y >= 0 ? centerTile.X - y : centerTile.X + y, centerTile.Y + x);
+            posRight = GridUtils.ClampCoordsIntoGrid(grid, y >= 0 ? centerTile.X + y : centerTile.X - y, centerTile.Y + x);
             for (int i = posLeft.x; i <= posRight.x; i++)
             {
-                T nei = GridUtils.GetTile(map, i, posLeft.y);
+                T nei = GridUtils.GetTile(grid, i, posLeft.y);
                 if ((includeWalls || nei.IsWalkable) && (includeCenter || !GridUtils.TileEquals(nei, centerTile)) && IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction))
                 {
                     tiles.Add(nei);
                 }
             }
-            posLeft = GridUtils.ClampCoordsIntoGrid(map, y >= 0 ? centerTile.X - y : centerTile.X + y, centerTile.Y - x);
-            posRight = GridUtils.ClampCoordsIntoGrid(map, y >= 0 ? centerTile.X + y : centerTile.X - y, centerTile.Y - x);
+            posLeft = GridUtils.ClampCoordsIntoGrid(grid, y >= 0 ? centerTile.X - y : centerTile.X + y, centerTile.Y - x);
+            posRight = GridUtils.ClampCoordsIntoGrid(grid, y >= 0 ? centerTile.X + y : centerTile.X - y, centerTile.Y - x);
             for (int i = posLeft.x; i <= posRight.x; i++)
             {
-                T nei = GridUtils.GetTile(map, i, posLeft.y);
+                T nei = GridUtils.GetTile(grid, i, posLeft.y);
                 if ((includeWalls || nei.IsWalkable) && (includeCenter || !GridUtils.TileEquals(nei, centerTile)) && IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction))
                 {
                     tiles.Add(nei);
                 }
             }
         }
-        private static bool IsInARectangle<T>(T[,] map, T tile, T center, Vector2Int rectangleSize) where T : ITile
+        private static bool IsInARectangle<T>(T[,] grid, T tile, T center, Vector2Int rectangleSize) where T : ITile
         {
-            Vector2Int min = GridUtils.ClampCoordsIntoGrid(map, center.X + -rectangleSize.x, center.Y - rectangleSize.y);
-            Vector2Int max = GridUtils.ClampCoordsIntoGrid(map, center.X + rectangleSize.x, center.Y + rectangleSize.y);
+            Vector2Int min = GridUtils.ClampCoordsIntoGrid(grid, center.X + -rectangleSize.x, center.Y - rectangleSize.y);
+            Vector2Int max = GridUtils.ClampCoordsIntoGrid(grid, center.X + rectangleSize.x, center.Y + rectangleSize.y);
             return tile.X >= min.x && tile.X <= max.x && tile.Y >= min.y && tile.Y <= max.y;
         }
-        private static bool IsOnRectangleOutline<T>(T[,] map, T tile, T center, Vector2Int rectangleSize) where T : ITile
+        private static bool IsOnRectangleOutline<T>(T[,] grid, T tile, T center, Vector2Int rectangleSize) where T : ITile
         {
-            Vector2Int min = GridUtils.ClampCoordsIntoGrid(map, center.X + -rectangleSize.x, center.Y - rectangleSize.y);
-            Vector2Int max = GridUtils.ClampCoordsIntoGrid(map, center.X + rectangleSize.x, center.Y + rectangleSize.y);
+            Vector2Int min = GridUtils.ClampCoordsIntoGrid(grid, center.X + -rectangleSize.x, center.Y - rectangleSize.y);
+            Vector2Int max = GridUtils.ClampCoordsIntoGrid(grid, center.X + rectangleSize.x, center.Y + rectangleSize.y);
             return (tile.X == min.x && tile.Y <= max.y && tile.Y >= min.y) || (tile.X == max.x && tile.Y <= max.y && tile.Y >= min.y) || (tile.Y == min.y && tile.X <= max.x && tile.X >= min.x) || (tile.Y == max.y && tile.X <= max.x && tile.X >= min.x);
         }
-        private static bool IsOnCircleArcFilled<T>(T[,] map, T tile, T center, int radius, float openingAngle, Vector2 direction) where T : ITile
+        private static bool IsOnCircleArcFilled<T>(T[,] grid, T tile, T center, int radius, float openingAngle, Vector2 direction) where T : ITile
         {
             int x = 0;
             int y = -radius;
             int F_M = 1 - radius;
             int d_e = 3;
             int d_ne = -(radius << 1) + 5;
-            if (IsOnLineMirrors(map, tile, center, x, y, openingAngle, direction))
+            if (IsOnLineMirrors(grid, tile, center, x, y, openingAngle, direction))
             {
                 return true;
             }
@@ -332,21 +332,21 @@ namespace Caskev.GridToolkit
                 d_e += 2;
                 d_ne += 2;
                 x += 1;
-                if (IsOnLineMirrors(map, tile, center, x, y, openingAngle, direction))
+                if (IsOnLineMirrors(grid, tile, center, x, y, openingAngle, direction))
                 {
                     return true;
                 }
             }
             return false;
         }
-        private static bool IsOnCircleArcOutline<T>(T[,] map, T tile, T center, int radius, float openingAngle, Vector2 direction) where T : ITile
+        private static bool IsOnCircleArcOutline<T>(T[,] grid, T tile, T center, int radius, float openingAngle, Vector2 direction) where T : ITile
         {
             int x = 0;
             int y = -radius;
             int F_M = 1 - radius;
             int d_e = 3;
             int d_ne = -(radius << 1) + 5;
-            if (IsOneOfTileMirrors(map, tile, center, x, y, openingAngle, direction))
+            if (IsOneOfTileMirrors(grid, tile, center, x, y, openingAngle, direction))
             {
                 return true;
             }
@@ -365,74 +365,74 @@ namespace Caskev.GridToolkit
                 d_e += 2;
                 d_ne += 2;
                 x += 1;
-                if (IsOneOfTileMirrors(map, tile, center, x, y, openingAngle, direction))
+                if (IsOneOfTileMirrors(grid, tile, center, x, y, openingAngle, direction))
                 {
                     return true;
                 }
             }
             return false;
         }
-        private static bool IsOneOfTileMirrors<T>(T[,] map, T tile, T centerTile, int x, int y, float openingAngle, Vector2 direction) where T : ITile
+        private static bool IsOneOfTileMirrors<T>(T[,] grid, T tile, T centerTile, int x, int y, float openingAngle, Vector2 direction) where T : ITile
         {
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X + x, centerTile.Y + y))
+            if (GridUtils.AreCoordsIntoGrid(grid, centerTile.X + x, centerTile.Y + y))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X + x, centerTile.Y + y);
+                T nei = GridUtils.GetTile(grid, centerTile.X + x, centerTile.Y + y);
                 if (IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction) && GridUtils.TileEquals(nei, tile))
                 {
                     return true;
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X - x, centerTile.Y + y))
+            if (GridUtils.AreCoordsIntoGrid(grid, centerTile.X - x, centerTile.Y + y))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X - x, centerTile.Y + y);
+                T nei = GridUtils.GetTile(grid, centerTile.X - x, centerTile.Y + y);
                 if (IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction) && GridUtils.TileEquals(nei, tile))
                 {
                     return true;
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X + x, centerTile.Y - y))
+            if (GridUtils.AreCoordsIntoGrid(grid, centerTile.X + x, centerTile.Y - y))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X + x, centerTile.Y - y);
+                T nei = GridUtils.GetTile(grid, centerTile.X + x, centerTile.Y - y);
                 if (IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction) && GridUtils.TileEquals(nei, tile))
                 {
                     return true;
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X - x, centerTile.Y - y))
+            if (GridUtils.AreCoordsIntoGrid(grid, centerTile.X - x, centerTile.Y - y))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X - x, centerTile.Y - y);
+                T nei = GridUtils.GetTile(grid, centerTile.X - x, centerTile.Y - y);
                 if (IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction) && GridUtils.TileEquals(nei, tile))
                 {
                     return true;
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X + y, centerTile.Y + x))
+            if (GridUtils.AreCoordsIntoGrid(grid, centerTile.X + y, centerTile.Y + x))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X + y, centerTile.Y + x);
+                T nei = GridUtils.GetTile(grid, centerTile.X + y, centerTile.Y + x);
                 if (IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction) && GridUtils.TileEquals(nei, tile))
                 {
                     return true;
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X - y, centerTile.Y + x))
+            if (GridUtils.AreCoordsIntoGrid(grid, centerTile.X - y, centerTile.Y + x))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X - y, centerTile.Y + x);
+                T nei = GridUtils.GetTile(grid, centerTile.X - y, centerTile.Y + x);
                 if (IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction) && GridUtils.TileEquals(nei, tile))
                 {
                     return true;
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X + y, centerTile.Y - x))
+            if (GridUtils.AreCoordsIntoGrid(grid, centerTile.X + y, centerTile.Y - x))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X + y, centerTile.Y - x);
+                T nei = GridUtils.GetTile(grid, centerTile.X + y, centerTile.Y - x);
                 if (IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction) && GridUtils.TileEquals(nei, tile))
                 {
                     return true;
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, centerTile.X - y, centerTile.Y - x))
+            if (GridUtils.AreCoordsIntoGrid(grid, centerTile.X - y, centerTile.Y - x))
             {
-                T nei = GridUtils.GetTile(map, centerTile.X - y, centerTile.Y - x);
+                T nei = GridUtils.GetTile(grid, centerTile.X - y, centerTile.Y - x);
                 if (IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction) && GridUtils.TileEquals(nei, tile))
                 {
                     return true;
@@ -440,43 +440,43 @@ namespace Caskev.GridToolkit
             }
             return false;
         }
-        private static bool IsOnLineMirrors<T>(T[,] map, T tile, T centerTile, int x, int y, float openingAngle, Vector2 direction) where T : ITile
+        private static bool IsOnLineMirrors<T>(T[,] grid, T tile, T centerTile, int x, int y, float openingAngle, Vector2 direction) where T : ITile
         {
-            Vector2Int posLeft = GridUtils.ClampCoordsIntoGrid(map, x >= 0 ? centerTile.X - x : centerTile.X + x, centerTile.Y + y);
-            Vector2Int posRight = GridUtils.ClampCoordsIntoGrid(map, x >= 0 ? centerTile.X + x : centerTile.X - x, centerTile.Y + y);
+            Vector2Int posLeft = GridUtils.ClampCoordsIntoGrid(grid, x >= 0 ? centerTile.X - x : centerTile.X + x, centerTile.Y + y);
+            Vector2Int posRight = GridUtils.ClampCoordsIntoGrid(grid, x >= 0 ? centerTile.X + x : centerTile.X - x, centerTile.Y + y);
             for (int i = posLeft.x; i <= posRight.x; i++)
             {
-                T nei = GridUtils.GetTile(map, i, posLeft.y);
+                T nei = GridUtils.GetTile(grid, i, posLeft.y);
                 if (IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction) && GridUtils.TileEquals(nei, tile))
                 {
                     return true;
                 }
             }
-            posLeft = GridUtils.ClampCoordsIntoGrid(map, x >= 0 ? centerTile.X - x : centerTile.X + x, centerTile.Y - y);
-            posRight = GridUtils.ClampCoordsIntoGrid(map, x >= 0 ? centerTile.X + x : centerTile.X - x, centerTile.Y - y);
+            posLeft = GridUtils.ClampCoordsIntoGrid(grid, x >= 0 ? centerTile.X - x : centerTile.X + x, centerTile.Y - y);
+            posRight = GridUtils.ClampCoordsIntoGrid(grid, x >= 0 ? centerTile.X + x : centerTile.X - x, centerTile.Y - y);
             for (int i = posLeft.x; i <= posRight.x; i++)
             {
-                T nei = GridUtils.GetTile(map, i, posLeft.y);
+                T nei = GridUtils.GetTile(grid, i, posLeft.y);
                 if (IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction) && GridUtils.TileEquals(nei, tile))
                 {
                     return true;
                 }
             }
-            posLeft = GridUtils.ClampCoordsIntoGrid(map, y >= 0 ? centerTile.X - y : centerTile.X + y, centerTile.Y + x);
-            posRight = GridUtils.ClampCoordsIntoGrid(map, y >= 0 ? centerTile.X + y : centerTile.X - y, centerTile.Y + x);
+            posLeft = GridUtils.ClampCoordsIntoGrid(grid, y >= 0 ? centerTile.X - y : centerTile.X + y, centerTile.Y + x);
+            posRight = GridUtils.ClampCoordsIntoGrid(grid, y >= 0 ? centerTile.X + y : centerTile.X - y, centerTile.Y + x);
             for (int i = posLeft.x; i <= posRight.x; i++)
             {
-                T nei = GridUtils.GetTile(map, i, posLeft.y);
+                T nei = GridUtils.GetTile(grid, i, posLeft.y);
                 if (IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction) && GridUtils.TileEquals(nei, tile))
                 {
                     return true;
                 }
             }
-            posLeft = GridUtils.ClampCoordsIntoGrid(map, y >= 0 ? centerTile.X - y : centerTile.X + y, centerTile.Y - x);
-            posRight = GridUtils.ClampCoordsIntoGrid(map, y >= 0 ? centerTile.X + y : centerTile.X - y, centerTile.Y - x);
+            posLeft = GridUtils.ClampCoordsIntoGrid(grid, y >= 0 ? centerTile.X - y : centerTile.X + y, centerTile.Y - x);
+            posRight = GridUtils.ClampCoordsIntoGrid(grid, y >= 0 ? centerTile.X + y : centerTile.X - y, centerTile.Y - x);
             for (int i = posLeft.x; i <= posRight.x; i++)
             {
-                T nei = GridUtils.GetTile(map, i, posLeft.y);
+                T nei = GridUtils.GetTile(grid, i, posLeft.y);
                 if (IsIntoAngle(centerTile.X, centerTile.Y, nei.X, nei.Y, openingAngle, direction) && GridUtils.TileEquals(nei, tile))
                 {
                     return true;
@@ -496,33 +496,33 @@ namespace Caskev.GridToolkit
         /// Note that the order of the tiles into the returned array is not guaranteed.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="center">The center tile</param>
         /// <param name="rectangleExtends">The Vector2Int representing the extends of the rectangle from the center</param>
         /// <param name="includeCenter">Include the center tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default true</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesInARectangle<T>(T[,] map, T center, Vector2Int rectangleExtends, bool includeCenter = true, bool includeWalls = true) where T : ITile
+        public static T[] GetTilesInARectangle<T>(T[,] grid, T center, Vector2Int rectangleExtends, bool includeCenter = true, bool includeWalls = true) where T : ITile
         {
             rectangleExtends.x = rectangleExtends.x < 1 ? 1 : rectangleExtends.x;
             rectangleExtends.y = rectangleExtends.y < 1 ? 1 : rectangleExtends.y;
-            return ExtractRectangle(map, center, rectangleExtends, includeCenter, includeWalls);
+            return ExtractRectangle(grid, center, rectangleExtends, includeCenter, includeWalls);
         }
         /// <summary>
         /// Get tiles on a rectangle outline around a tile.<br/>
         /// Note that the order of the tiles into the returned array is not guaranteed.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="center">The center tile</param>
         /// <param name="rectangleExtends">The Vector2Int representing the extends of the rectangle from the center</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default true</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesOnARectangleOutline<T>(T[,] map, T center, Vector2Int rectangleExtends, bool includeWalls = true) where T : ITile
+        public static T[] GetTilesOnARectangleOutline<T>(T[,] grid, T center, Vector2Int rectangleExtends, bool includeWalls = true) where T : ITile
         {
             rectangleExtends.x = rectangleExtends.x < 1 ? 1 : rectangleExtends.x;
             rectangleExtends.y = rectangleExtends.y < 1 ? 1 : rectangleExtends.y;
-            return ExtractRectangleOutline(map, center, rectangleExtends, includeWalls);
+            return ExtractRectangleOutline(grid, center, rectangleExtends, includeWalls);
         }
 
         /// <summary>
@@ -530,31 +530,31 @@ namespace Caskev.GridToolkit
         /// Note that the order of the tiles into the returned array is not guaranteed.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="center">The center tile</param>
         /// <param name="radius">The circle radius</param>
         /// <param name="includeCenter">Include the center tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default true</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesInACircle<T>(T[,] map, T center, int radius, bool includeCenter = true, bool includeWalls = true) where T : ITile
+        public static T[] GetTilesInACircle<T>(T[,] grid, T center, int radius, bool includeCenter = true, bool includeWalls = true) where T : ITile
         {
             radius = radius < 1 ? 1 : radius;
-            return ExtractCircleArcFilled(map, center, radius, includeCenter, includeWalls, 360f, Vector2.right);
+            return ExtractCircleArcFilled(grid, center, radius, includeCenter, includeWalls, 360f, Vector2.right);
         }
         /// <summary>
         /// Get tiles on a circle outline around a tile.<br/>
         /// Note that the order of the tiles into the returned array is not guaranteed.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="center">The center tile</param>
         /// <param name="radius">The circle radius</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default true</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesOnACircleOutline<T>(T[,] map, T center, int radius, bool includeWalls = true) where T : ITile
+        public static T[] GetTilesOnACircleOutline<T>(T[,] grid, T center, int radius, bool includeWalls = true) where T : ITile
         {
             radius = radius < 1 ? 1 : radius;
-            return ExtractCircleArcOutline(map, center, radius, includeWalls, 360f, Vector2.right);
+            return ExtractCircleArcOutline(grid, center, radius, includeWalls, 360f, Vector2.right);
         }
 
         /// <summary>
@@ -562,23 +562,23 @@ namespace Caskev.GridToolkit
         /// Note that the order of the tiles into the returned array is not guaranteed.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="start">The start tile</param>
         /// <param name="destinationTile">The destination tile</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesInACone<T>(T[,] map, T start, T destinationTile, float openingAngle, bool includeStart = true, bool includeWalls = true) where T : ITile
+        public static T[] GetTilesInACone<T>(T[,] grid, T start, T destinationTile, float openingAngle, bool includeStart = true, bool includeWalls = true) where T : ITile
         {
-            return GetTilesInACone(map, start, new Vector2Int(destinationTile.X, destinationTile.Y), openingAngle, includeStart, includeWalls);
+            return GetTilesInACone(grid, start, new Vector2Int(destinationTile.X, destinationTile.Y), openingAngle, includeStart, includeWalls);
         }
         /// <summary>
         /// Get tiles in a cone starting from a tile.<br/>
         /// Note that the order of the tiles into the returned array is not guaranteed.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="start">The start tile</param>
         /// <param name="length">The cone length</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
@@ -586,19 +586,19 @@ namespace Caskev.GridToolkit
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesInACone<T>(T[,] map, T start, int length, float openingAngle, float directionAngle, bool includeStart = true, bool includeWalls = true) where T : ITile
+        public static T[] GetTilesInACone<T>(T[,] grid, T start, int length, float openingAngle, float directionAngle, bool includeStart = true, bool includeWalls = true) where T : ITile
         {
             float radians = directionAngle * Mathf.Deg2Rad;
             float dx = Mathf.Cos(radians);
             float dy = Mathf.Sin(radians);
-            return GetTilesInACone(map, start, length, openingAngle, new Vector2(dx, dy), includeStart, includeWalls);
+            return GetTilesInACone(grid, start, length, openingAngle, new Vector2(dx, dy), includeStart, includeWalls);
         }
         /// <summary>
         /// Get tiles in a cone starting from a tile.<br/>
         /// Note that the order of the tiles into the returned array is not guaranteed.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="start">The start tile</param>
         /// <param name="length">The cone length</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
@@ -606,9 +606,9 @@ namespace Caskev.GridToolkit
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesInACone<T>(T[,] map, T start, int length, float openingAngle, Vector2 direction, bool includeStart = true, bool includeWalls = true) where T : ITile
+        public static T[] GetTilesInACone<T>(T[,] grid, T start, int length, float openingAngle, Vector2 direction, bool includeStart = true, bool includeWalls = true) where T : ITile
         {
-            float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
+            float magnitude = new Vector2Int(grid.GetLength(0), grid.GetLength(1)).magnitude;
             if (length > magnitude || Mathf.Approximately(length, 0f))
             {
                 length = Mathf.CeilToInt(magnitude);
@@ -616,32 +616,32 @@ namespace Caskev.GridToolkit
             openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
             direction.Normalize();
             direction = direction == Vector2.zero ? Vector2.right : direction;
-            return ExtractCircleArcFilled(map, start, length, includeStart, includeWalls, openingAngle, direction);
+            return ExtractCircleArcFilled(grid, start, length, includeStart, includeWalls, openingAngle, direction);
         }
         /// <summary>
         /// Get tiles in a cone starting from a tile.<br/>
         /// Note that the order of the tiles into the returned array is not guaranteed.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="start">The start tile</param>
         /// <param name="endPosition">The destination virtual coordinates (do not need to be into grid range)</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesInACone<T>(T[,] map, T start, Vector2Int endPosition, float openingAngle, bool includeStart = true, bool includeWalls = true) where T : ITile
+        public static T[] GetTilesInACone<T>(T[,] grid, T start, Vector2Int endPosition, float openingAngle, bool includeStart = true, bool includeWalls = true) where T : ITile
         {
             openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
             Vector2 direction = endPosition - new Vector2(start.X, start.Y);
-            return ExtractCircleArcFilled(map, start, Mathf.CeilToInt(direction.magnitude), includeStart, includeWalls, openingAngle, direction);
+            return ExtractCircleArcFilled(grid, start, Mathf.CeilToInt(direction.magnitude), includeStart, includeWalls, openingAngle, direction);
         }
 
         /// <summary>
         /// Get all visible tiles from a start tile's cone of vision<br/>
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="destinationTile">The destination tile</param>
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
@@ -649,76 +649,73 @@ namespace Caskev.GridToolkit
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesOnALine<T>(T[,] map, T startTile, T destinationTile, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeWalls = true) where T : ITile
+        public static T[] GetTilesOnALine<T>(T[,] grid, T startTile, T destinationTile, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeWalls = true) where T : ITile
         {
             Vector2Int endPos = new Vector2Int(destinationTile.X, destinationTile.Y);
-            return GetTilesOnALine(map, startTile, endPos, allowDiagonals, favorVertical, includeStart, includeWalls);
+            return GetTilesOnALine(grid, startTile, endPos, allowDiagonals, favorVertical, includeStart, includeWalls);
         }
         /// <summary>
         /// Get all visible tiles from a start tile's cone of vision<br/>
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="length">The length of the line</param>
         /// <param name="directionAngle">The angle of the line from the start tile</param>
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesOnALine<T>(T[,] map, T startTile, int length, float directionAngle, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeWalls = true) where T : ITile
+        public static T[] GetTilesOnALine<T>(T[,] grid, T startTile, int length, float directionAngle, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeWalls = true) where T : ITile
         {
-            float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
+            float magnitude = new Vector2Int(grid.GetLength(0), grid.GetLength(1)).magnitude;
             if (length > magnitude || Mathf.Approximately(length, 0f))
             {
                 length = Mathf.CeilToInt(magnitude);
             }
             Vector2Int endPos = new Vector2Int(Mathf.RoundToInt(startTile.X + Mathf.Cos(directionAngle * Mathf.Deg2Rad) * length), Mathf.RoundToInt(startTile.Y + Mathf.Sin(directionAngle * Mathf.Deg2Rad) * length));
-            return GetTilesOnALine(map, startTile, endPos, allowDiagonals, favorVertical, includeStart, includeWalls);
+            return GetTilesOnALine(grid, startTile, endPos, allowDiagonals, favorVertical, includeStart, includeWalls);
         }
         /// <summary>
         /// Get all visible tiles from a start tile's cone of vision<br/>
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="length">The length of the line</param>
         /// <param name="direction">The direction of the line from the start tile</param>
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesOnALine<T>(T[,] map, T startTile, int length, Vector2 direction, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeWalls = true) where T : ITile
+        public static T[] GetTilesOnALine<T>(T[,] grid, T startTile, int length, Vector2 direction, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeWalls = true) where T : ITile
         {
-            float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
+            float magnitude = new Vector2Int(grid.GetLength(0), grid.GetLength(1)).magnitude;
             if (length > magnitude || Mathf.Approximately(length, 0f))
             {
                 length = Mathf.CeilToInt(magnitude);
             }
             Vector2Int endPos = Vector2Int.RoundToInt(new Vector2(startTile.X, startTile.Y) + (direction.normalized * length));
-            return GetTilesOnALine(map, startTile, endPos, allowDiagonals, favorVertical, includeStart, includeWalls);
+            return GetTilesOnALine(grid, startTile, endPos, allowDiagonals, favorVertical, includeStart, includeWalls);
         }
         /// <summary>
         /// Get all visible tiles from a start tile's cone of vision<br/>
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="endPosition">The destination virtual coordinates (do not need to be into grid range)</param>
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesOnALine<T>(T[,] map, T startTile, Vector2Int endPosition, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeWalls = true) where T : ITile
+        public static T[] GetTilesOnALine<T>(T[,] grid, T startTile, Vector2Int endPosition, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeWalls = true) where T : ITile
         {
             HashSet<T> hashSet = new HashSet<T>();
-            Raycasting.Raycast(map, startTile, endPosition, allowDiagonals, favorVertical, includeStart, false, includeWalls, out bool isClear, ref hashSet);
+            Raycasting.Raycast(grid, startTile, endPosition, allowDiagonals, favorVertical, includeStart, false, includeWalls, out bool isClear, ref hashSet);
             return hashSet.ToArray();
         }
 
@@ -726,13 +723,13 @@ namespace Caskev.GridToolkit
         /// Get neighbour of a tile if it exists
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="tile">A tile</param>
         /// <param name="neighbourDirectionAngle">The neighbour direction angle in degrees [0-360]. 0 represents a direction pointing to the right in 2D coordinates</param>
         /// <param name="neighbour">The neighbour of a tile</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
         /// <returns>Returns true if the neighbour exists, false otherwise</returns>
-        public static bool GetTileNeighbour<T>(T[,] map, T tile, float neighbourDirectionAngle, out T neighbour, bool includeWalls = true) where T : ITile
+        public static bool GetTileNeighbour<T>(T[,] grid, T tile, float neighbourDirectionAngle, out T neighbour, bool includeWalls = true) where T : ITile
         {
             float radians = neighbourDirectionAngle * Mathf.Deg2Rad;
 
@@ -743,26 +740,26 @@ namespace Caskev.GridToolkit
                 Mathf.RoundToInt(dx),
                 Mathf.RoundToInt(dy)
             );
-            return GetTileNeighbour(map, tile, direction, out neighbour, includeWalls);
+            return GetTileNeighbour(grid, tile, direction, out neighbour, includeWalls);
         }
         /// <summary>
         /// Get neighbour of a tile if it exists
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="tile">A tile</param>
         /// <param name="neighbourDirection">The direction from the tile to the desired neighbour</param>
         /// <param name="neighbour">The neighbour of a tile</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
         /// <returns>Returns true if the neighbour exists, false otherwise</returns>
-        public static bool GetTileNeighbour<T>(T[,] map, T tile, Vector2Int neighbourDirection, out T neighbour, bool includeWalls = true) where T : ITile
+        public static bool GetTileNeighbour<T>(T[,] grid, T tile, Vector2Int neighbourDirection, out T neighbour, bool includeWalls = true) where T : ITile
         {
             int x = neighbourDirection.x > 0 ? tile.X + 1 : (neighbourDirection.x < 0 ? tile.X - 1 : tile.X);
             int y = neighbourDirection.y > 0 ? tile.Y + 1 : (neighbourDirection.y < 0 ? tile.Y - 1 : tile.Y);
 
-            if (GridUtils.AreCoordsIntoGrid(map, x, y))
+            if (GridUtils.AreCoordsIntoGrid(grid, x, y))
             {
-                T nei = GridUtils.GetTile(map, x, y);
+                T nei = GridUtils.GetTile(grid, x, y);
                 if (includeWalls || nei.IsWalkable)
                 {
                     neighbour = nei;
@@ -776,11 +773,11 @@ namespace Caskev.GridToolkit
         /// Get the eight neighbours of a tile when they exist
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="tile">A tile</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default true</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTileNeighbours<T>(T[,] map, T tile, bool includeWalls) where T : ITile
+        public static T[] GetTileNeighbours<T>(T[,] grid, T tile, bool includeWalls) where T : ITile
         {
             List<T> neis = new List<T>();
             for (int i = -1; i < 2; i++)
@@ -791,9 +788,9 @@ namespace Caskev.GridToolkit
                     {
                         continue;
                     }
-                    if (GridUtils.AreCoordsIntoGrid(map, tile.X + i, tile.Y + j))
+                    if (GridUtils.AreCoordsIntoGrid(grid, tile.X + i, tile.Y + j))
                     {
-                        T nei = GridUtils.GetTile(map, tile.X + i, tile.Y + j);
+                        T nei = GridUtils.GetTile(grid, tile.X + i, tile.Y + j);
                         if (includeWalls || nei.IsWalkable)
                         {
                             neis.Add(nei);
@@ -807,40 +804,40 @@ namespace Caskev.GridToolkit
         /// Get the four orthogonals neighbours of a tile when they exist
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="tile">A tile</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default true</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTileOrthogonalsNeighbours<T>(T[,] map, T tile, bool includeWalls) where T : ITile
+        public static T[] GetTileOrthogonalsNeighbours<T>(T[,] grid, T tile, bool includeWalls) where T : ITile
         {
             List<T> neis = new List<T>();
-            if (GridUtils.AreCoordsIntoGrid(map, tile.X - 1, tile.Y + 0))
+            if (GridUtils.AreCoordsIntoGrid(grid, tile.X - 1, tile.Y + 0))
             {
-                T nei = GridUtils.GetTile(map, tile.X - 1, tile.Y + 0);
+                T nei = GridUtils.GetTile(grid, tile.X - 1, tile.Y + 0);
                 if (includeWalls || nei.IsWalkable)
                 {
                     neis.Add(nei);
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, tile.X + 1, tile.Y + 0))
+            if (GridUtils.AreCoordsIntoGrid(grid, tile.X + 1, tile.Y + 0))
             {
-                T nei = GridUtils.GetTile(map, tile.X + 1, tile.Y + 0);
+                T nei = GridUtils.GetTile(grid, tile.X + 1, tile.Y + 0);
                 if (includeWalls || nei.IsWalkable)
                 {
                     neis.Add(nei);
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, tile.X + 0, tile.Y - 1))
+            if (GridUtils.AreCoordsIntoGrid(grid, tile.X + 0, tile.Y - 1))
             {
-                T nei = GridUtils.GetTile(map, tile.X + 0, tile.Y - 1);
+                T nei = GridUtils.GetTile(grid, tile.X + 0, tile.Y - 1);
                 if (includeWalls || nei.IsWalkable)
                 {
                     neis.Add(nei);
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, tile.X + 0, tile.Y + 1))
+            if (GridUtils.AreCoordsIntoGrid(grid, tile.X + 0, tile.Y + 1))
             {
-                T nei = GridUtils.GetTile(map, tile.X + 0, tile.Y + 1);
+                T nei = GridUtils.GetTile(grid, tile.X + 0, tile.Y + 1);
                 if (includeWalls || nei.IsWalkable)
                 {
                     neis.Add(nei);
@@ -852,41 +849,41 @@ namespace Caskev.GridToolkit
         /// Get the four diagonals neighbours of a tile when they exist
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="tile">A tile</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default true</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTileDiagonalsNeighbours<T>(T[,] map, T tile, bool includeWalls) where T : ITile
+        public static T[] GetTileDiagonalsNeighbours<T>(T[,] grid, T tile, bool includeWalls) where T : ITile
         {
             List<T> neis = new List<T>();
 
-            if (GridUtils.AreCoordsIntoGrid(map, tile.X - 1, tile.Y - 1))
+            if (GridUtils.AreCoordsIntoGrid(grid, tile.X - 1, tile.Y - 1))
             {
-                T nei = GridUtils.GetTile(map, tile.X - 1, tile.Y - 1);
+                T nei = GridUtils.GetTile(grid, tile.X - 1, tile.Y - 1);
                 if (includeWalls || nei.IsWalkable)
                 {
                     neis.Add(nei);
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, tile.X - 1, tile.Y + 1))
+            if (GridUtils.AreCoordsIntoGrid(grid, tile.X - 1, tile.Y + 1))
             {
-                T nei = GridUtils.GetTile(map, tile.X - 1, tile.Y + 1);
+                T nei = GridUtils.GetTile(grid, tile.X - 1, tile.Y + 1);
                 if (includeWalls || nei.IsWalkable)
                 {
                     neis.Add(nei);
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, tile.X + 1, tile.Y - 1))
+            if (GridUtils.AreCoordsIntoGrid(grid, tile.X + 1, tile.Y - 1))
             {
-                T nei = GridUtils.GetTile(map, tile.X + 1, tile.Y - 1);
+                T nei = GridUtils.GetTile(grid, tile.X + 1, tile.Y - 1);
                 if (includeWalls || nei.IsWalkable)
                 {
                     neis.Add(nei);
                 }
             }
-            if (GridUtils.AreCoordsIntoGrid(map, tile.X + 1, tile.Y + 1))
+            if (GridUtils.AreCoordsIntoGrid(grid, tile.X + 1, tile.Y + 1))
             {
-                T nei = GridUtils.GetTile(map, tile.X + 1, tile.Y + 1);
+                T nei = GridUtils.GetTile(grid, tile.X + 1, tile.Y + 1);
                 if (includeWalls || nei.IsWalkable)
                 {
                     neis.Add(nei);
@@ -899,100 +896,100 @@ namespace Caskev.GridToolkit
         /// Is this tile in a rectangle or not.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="tile">A tile</param>
         /// <param name="center">The center tile of the rectangle</param>
         /// <param name="rectangleExtends">The Vector2Int representing the extends of the rectangle from the center</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileInARectangle<T>(T[,] map, T tile, T center, Vector2Int rectangleExtends) where T : ITile
+        public static bool IsTileInARectangle<T>(T[,] grid, T tile, T center, Vector2Int rectangleExtends) where T : ITile
         {
-            return IsInARectangle(map, tile, center, rectangleExtends);
+            return IsInARectangle(grid, tile, center, rectangleExtends);
         }
         /// <summary>
         /// Is this tile on a rectangle outline or not.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="tile">A tile</param>
         /// <param name="center">The center tile of the rectangle</param>
         /// <param name="rectangleExtends">The Vector2Int representing the extends of the rectangle from the center</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileOnARectangleOutline<T>(T[,] map, T tile, T center, Vector2Int rectangleExtends) where T : ITile
+        public static bool IsTileOnARectangleOutline<T>(T[,] grid, T tile, T center, Vector2Int rectangleExtends) where T : ITile
         {
-            return IsOnRectangleOutline(map, tile, center, rectangleExtends);
+            return IsOnRectangleOutline(grid, tile, center, rectangleExtends);
         }
 
         /// <summary>
         /// Is this tile in a circle or not.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="tile">A tile</param>
         /// <param name="center">The center tile of the rectangle</param>
         /// <param name="radius">The circle radius</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileInACircle<T>(T[,] map, T tile, T center, int radius) where T : ITile
+        public static bool IsTileInACircle<T>(T[,] grid, T tile, T center, int radius) where T : ITile
         {
-            return IsOnCircleArcFilled(map, tile, center, radius, 360f, Vector2.right);
+            return IsOnCircleArcFilled(grid, tile, center, radius, 360f, Vector2.right);
         }
         /// <summary>
         /// Is this tile on a circle outline or not.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="tile">A tile</param>
         /// <param name="center">The center tile of the rectangle</param>
         /// <param name="radius">The circle radius</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileOnACircleOutline<T>(T[,] map, T tile, T center, int radius) where T : ITile
+        public static bool IsTileOnACircleOutline<T>(T[,] grid, T tile, T center, int radius) where T : ITile
         {
-            return IsOnCircleArcOutline(map, tile, center, radius, 360f, Vector2.right);
+            return IsOnCircleArcOutline(grid, tile, center, radius, 360f, Vector2.right);
         }
 
         /// <summary>
         /// Is this tile on a cone or not.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="tile">A tile</param>
         /// <param name="center">The center tile of the rectangle</param>
         /// <param name="destinationTile">The destination tile</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileInACone<T>(T[,] map, T tile, T center, T destinationTile, float openingAngle) where T : ITile
+        public static bool IsTileInACone<T>(T[,] grid, T tile, T center, T destinationTile, float openingAngle) where T : ITile
         {
-            return IsTileInACone(map, tile, center, new Vector2Int(destinationTile.X, destinationTile.Y), openingAngle);
+            return IsTileInACone(grid, tile, center, new Vector2Int(destinationTile.X, destinationTile.Y), openingAngle);
         }
         /// <summary>
         /// Is this tile on a cone or not.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="tile">A tile</param>
         /// <param name="center">The center tile of the rectangle</param>
         /// <param name="endPosition">The destination virtual coordinates (do not need to be into grid range)</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileInACone<T>(T[,] map, T tile, T center, Vector2Int endPosition, float openingAngle) where T : ITile
+        public static bool IsTileInACone<T>(T[,] grid, T tile, T center, Vector2Int endPosition, float openingAngle) where T : ITile
         {
             openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
             Vector2 direction = endPosition - new Vector2(center.X, center.Y);
-            return IsOnCircleArcFilled(map, tile, center, Mathf.CeilToInt(direction.magnitude), openingAngle, direction);
+            return IsOnCircleArcFilled(grid, tile, center, Mathf.CeilToInt(direction.magnitude), openingAngle, direction);
         }
         /// <summary>
         /// Is this tile on a cone or not.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="tile">A tile</param>
         /// <param name="center">The center tile of the rectangle</param>
         /// <param name="length">The length of the cone</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="directionAngle">The cone direction angle in degrees. 0 represents a direction pointing to the right in 2D coordinates</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileInACone<T>(T[,] map, T tile, T center, int length, float openingAngle, float directionAngle) where T : ITile
+        public static bool IsTileInACone<T>(T[,] grid, T tile, T center, int length, float openingAngle, float directionAngle) where T : ITile
         {
-            float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
+            float magnitude = new Vector2Int(grid.GetLength(0), grid.GetLength(1)).magnitude;
             if (length > magnitude || Mathf.Approximately(length, 0f))
             {
                 length = Mathf.CeilToInt(magnitude);
@@ -1001,22 +998,22 @@ namespace Caskev.GridToolkit
             float radians = directionAngle * Mathf.Deg2Rad;
             float dx = Mathf.Cos(radians);
             float dy = Mathf.Sin(radians);
-            return IsOnCircleArcFilled(map, tile, center, length, openingAngle, new Vector2(dx, dy));
+            return IsOnCircleArcFilled(grid, tile, center, length, openingAngle, new Vector2(dx, dy));
         }
         /// <summary>
         /// Is this tile on a cone or not.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="tile">A tile</param>
         /// <param name="center">The center tile of the rectangle</param>
         /// <param name="length">The length of the cone</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="direction">The Vector2 representing the cone direction. Note that an 'empty' Vector2 (Vector2.zero) will be treated as Vector2.right</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileInACone<T>(T[,] map, T tile, T center, int length, float openingAngle, Vector2 direction) where T : ITile
+        public static bool IsTileInACone<T>(T[,] grid, T tile, T center, int length, float openingAngle, Vector2 direction) where T : ITile
         {
-            float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
+            float magnitude = new Vector2Int(grid.GetLength(0), grid.GetLength(1)).magnitude;
             if (length > magnitude || Mathf.Approximately(length, 0f))
             {
                 length = Mathf.CeilToInt(magnitude);
@@ -1024,29 +1021,30 @@ namespace Caskev.GridToolkit
             direction.Normalize();
             direction = direction == Vector2.zero ? Vector2.right : direction;
             openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
-            return IsOnCircleArcFilled(map, tile, center, length, openingAngle, direction);
+            return IsOnCircleArcFilled(grid, tile, center, length, openingAngle, direction);
         }
 
         /// <summary>
         /// Is a tile on a line
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="tile">A tile</param>
         /// <param name="start">The start tile of the line</param>
         /// <param name="destinationTile">The destination tile of the line</param>
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileOnALine<T>(T[,] map, T tile, T start, T destinationTile, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
+        public static bool IsTileOnALine<T>(T[,] grid, T tile, T start, T destinationTile, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
         {
             Vector2Int endPosition = new Vector2Int(destinationTile.X, destinationTile.Y);
-            return IsTileOnALine(map, start, tile, endPosition, allowDiagonals, favorVertical);
+            return IsTileOnALine(grid, start, tile, endPosition, allowDiagonals, favorVertical);
         }
         /// <summary>
         /// Is a tile on a line
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="tile">A tile</param>
         /// <param name="start">The start tile of the line</param>
         /// <param name="length">The length of the line</param>
@@ -1054,20 +1052,21 @@ namespace Caskev.GridToolkit
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileOnALine<T>(T[,] map, T tile, T start, int length, float directionAngle, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
+        public static bool IsTileOnALine<T>(T[,] grid, T tile, T start, int length, float directionAngle, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
         {
-            float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
+            float magnitude = new Vector2Int(grid.GetLength(0), grid.GetLength(1)).magnitude;
             if (length > magnitude || Mathf.Approximately(length, 0f))
             {
                 length = Mathf.CeilToInt(magnitude);
             }
             Vector2Int endPosition = new Vector2Int(Mathf.RoundToInt(start.X + Mathf.Cos(directionAngle * Mathf.Deg2Rad) * length), Mathf.RoundToInt(start.Y + Mathf.Sin(directionAngle * Mathf.Deg2Rad) * length));
-            return IsTileOnALine(map, start, tile, endPosition, allowDiagonals, favorVertical);
+            return IsTileOnALine(grid, start, tile, endPosition, allowDiagonals, favorVertical);
         }
         /// <summary>
         /// Is a tile on a line
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="tile">A tile</param>
         /// <param name="start">The center tile of the rectangle</param>
         /// <param name="length">The length of the line</param>
@@ -1075,29 +1074,30 @@ namespace Caskev.GridToolkit
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileOnALine<T>(T[,] map, T tile, T start, int length, Vector2 direction, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
+        public static bool IsTileOnALine<T>(T[,] grid, T tile, T start, int length, Vector2 direction, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
         {
-            float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
+            float magnitude = new Vector2Int(grid.GetLength(0), grid.GetLength(1)).magnitude;
             if (length > magnitude || Mathf.Approximately(length, 0f))
             {
                 length = Mathf.CeilToInt(magnitude);
             }
             Vector2Int endPosition = Vector2Int.RoundToInt(new Vector2(start.X, start.Y) + (direction.normalized * length));
-            return IsTileOnALine(map, start, tile, endPosition, allowDiagonals, favorVertical);
+            return IsTileOnALine(grid, start, tile, endPosition, allowDiagonals, favorVertical);
         }
         /// <summary>
         /// Is a tile on a line
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="tile">A tile</param>
         /// <param name="start">The start tile of the line</param>
         /// <param name="endPosition">The line destination virtual coordinates (do not need to be into grid range)</param>
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileOnALine<T>(T[,] map, T start, T tile, Vector2Int endPosition, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
+        public static bool IsTileOnALine<T>(T[,] grid, T start, T tile, Vector2Int endPosition, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
         {
-            return Raycasting.IsTileOnALine(map, start, tile, endPosition, allowDiagonals, favorVertical, false);
+            return Raycasting.IsTileOnALine(grid, start, tile, endPosition, allowDiagonals, favorVertical, false);
         }
 
         /// <summary>
@@ -1107,6 +1107,7 @@ namespace Caskev.GridToolkit
         /// <param name="neighbour">The tile to check as a neighbour</param>
         /// <param name="center">A tile</param>
         /// <param name="neighbourDirectionAngle">The cone direction angle in degrees  [0-360]. 0 represents a direction pointing to the right in 2D coordinates</param>
+        /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
         /// <returns>A boolean value</returns>
         public static bool IsTileNeighbor<T>(T neighbour, T center, float neighbourDirectionAngle, bool includeWalls = true) where T : ITile
         {
@@ -1128,6 +1129,7 @@ namespace Caskev.GridToolkit
         /// <param name="neighbour">The tile to check as a neighbour</param>
         /// <param name="center">A tile</param>
         /// <param name="neighbourDirection">The position of the expected neighbour from the tile</param>
+        /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
         /// <returns>A boolean value</returns>
         public static bool IsTileNeighbor<T>(T neighbour, T center, Vector2Int neighbourDirection, bool includeWalls = true) where T : ITile
         {
@@ -1145,6 +1147,7 @@ namespace Caskev.GridToolkit
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
         /// <param name="neighbour">The tile to check as a neighbour</param>
         /// <param name="center">A tile</param>
+        /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
         /// <returns>A boolean value</returns>
         public static bool IsTileOrthogonalNeighbor<T>(T neighbour, T center, bool includeWalls = true) where T : ITile
         {
@@ -1160,6 +1163,7 @@ namespace Caskev.GridToolkit
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
         /// <param name="neighbour">The tile to check as a neighbour</param>
         /// <param name="center">A tile</param>
+        /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
         /// <returns>A boolean value</returns>
         public static bool IsTileDiagonalNeighbor<T>(T neighbour, T center, bool includeWalls = true) where T : ITile
         {
@@ -1175,6 +1179,7 @@ namespace Caskev.GridToolkit
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
         /// <param name="neighbour">The tile to check as a neighbour</param>
         /// <param name="center">A tile</param>
+        /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
         /// <returns>A boolean value</returns>
         public static bool IsTileAnyNeighbor<T>(T neighbour, T center, bool includeWalls = true) where T : ITile
         {
@@ -1190,7 +1195,7 @@ namespace Caskev.GridToolkit
     /// </summary>
     public class Raycasting
     {
-        internal static bool IsTileOnALine<T>(T[,] map, T startTile, T tile, Vector2Int endPosition, bool allowDiagonals, bool favorVertical, bool breakOnWalls) where T : ITile
+        internal static bool IsTileOnALine<T>(T[,] grid, T startTile, T tile, Vector2Int endPosition, bool allowDiagonals, bool favorVertical, bool breakOnWalls) where T : ITile
         {
             if (GridUtils.TileEquals(startTile, tile))
             {
@@ -1232,12 +1237,12 @@ namespace Caskev.GridToolkit
                     p.y += sign_y;
                     iy++;
                 }
-                bool isNextTileIntoGrid = GridUtils.AreCoordsIntoGrid(map, p.x, p.y);
+                bool isNextTileIntoGrid = GridUtils.AreCoordsIntoGrid(grid, p.x, p.y);
                 if (!isNextTileIntoGrid)
                 {
                     break;
                 }
-                T nextTile = GridUtils.GetTile(map, p.x, p.y);
+                T nextTile = GridUtils.GetTile(grid, p.x, p.y);
                 bool isNextTileWalkable = nextTile != null && nextTile.IsWalkable;
                 if (breakOnWalls && (nextTile == null || !nextTile.IsWalkable))
                 {
@@ -1254,7 +1259,7 @@ namespace Caskev.GridToolkit
             }
             return false;
         }
-        internal static void Raycast<T>(T[,] map, T startTile, Vector2Int endPosition, bool allowDiagonals, bool favorVertical, bool includeStart, bool breakOnWalls, bool includeWalls, out bool isClear, ref HashSet<T> results) where T : ITile
+        internal static void Raycast<T>(T[,] grid, T startTile, Vector2Int endPosition, bool allowDiagonals, bool favorVertical, bool includeStart, bool breakOnWalls, bool includeWalls, out bool isClear, ref HashSet<T> results) where T : ITile
         {
             Vector2Int p0 = new Vector2Int(startTile.X, startTile.Y);
             Vector2Int p1 = endPosition;
@@ -1267,7 +1272,7 @@ namespace Caskev.GridToolkit
             Vector2Int p = new Vector2Int(p0.x, p0.y);
             if (includeStart)
             {
-                results.Add(GridUtils.GetTile(map, p.x, p.y));
+                results.Add(GridUtils.GetTile(grid, p.x, p.y));
             }
             isClear = true;
             for (int ix = 0, iy = 0; ix < nx || iy < ny;)
@@ -1297,12 +1302,12 @@ namespace Caskev.GridToolkit
                     p.y += sign_y;
                     iy++;
                 }
-                bool isNextTileIntoGrid = GridUtils.AreCoordsIntoGrid(map, p.x, p.y);
+                bool isNextTileIntoGrid = GridUtils.AreCoordsIntoGrid(grid, p.x, p.y);
                 if (!isNextTileIntoGrid)
                 {
                     break;
                 }
-                T tile = GridUtils.GetTile(map, p.x, p.y);
+                T tile = GridUtils.GetTile(grid, p.x, p.y);
                 bool isNextTileWalkable = tile != null && tile.IsWalkable;
                 if (!isNextTileWalkable)
                 {
@@ -1316,10 +1321,10 @@ namespace Caskev.GridToolkit
                 {
                     continue;
                 }
-                results.Add(GridUtils.GetTile(map, p.x, p.y));
+                results.Add(GridUtils.GetTile(grid, p.x, p.y));
             }
         }
-        private static void ConeCast<T>(T[,] map, T center, int radius, float openingAngle, Vector2 direction, ref bool isClear, bool includeStart, ref HashSet<T> resultList) where T : ITile
+        private static void ConeCast<T>(T[,] grid, T center, int radius, float openingAngle, Vector2 direction, ref bool isClear, bool includeStart, ref HashSet<T> resultList) where T : ITile
         {
             bool lineClear = true;
             direction.Normalize();
@@ -1328,7 +1333,7 @@ namespace Caskev.GridToolkit
             int F_M = 1 - radius;
             int d_e = 3;
             int d_ne = -(radius << 1) + 5;
-            RaycastToMirrorPositions(map, center, x, y, openingAngle, direction, ref lineClear, includeStart, ref resultList);
+            RaycastToMirrorPositions(grid, center, x, y, openingAngle, direction, ref lineClear, includeStart, ref resultList);
             if (!lineClear)
             {
                 isClear = false;
@@ -1348,20 +1353,20 @@ namespace Caskev.GridToolkit
                 d_e += 2;
                 d_ne += 2;
                 x += 1;
-                RaycastToMirrorPositions(map, center, x, y, openingAngle, direction, ref isClear, includeStart, ref resultList);
+                RaycastToMirrorPositions(grid, center, x, y, openingAngle, direction, ref isClear, includeStart, ref resultList);
                 if (!lineClear)
                 {
                     isClear = false;
                 }
             }
         }
-        private static void RaycastToMirrorPositions<T>(T[,] map, T centerTile, int x, int y, float openingAngle, Vector2 direction, ref bool isClear, bool includeStart, ref HashSet<T> resultList) where T : ITile
+        private static void RaycastToMirrorPositions<T>(T[,] grid, T centerTile, int x, int y, float openingAngle, Vector2 direction, ref bool isClear, bool includeStart, ref HashSet<T> resultList) where T : ITile
         {
             bool lineClear = true;
             Vector2Int nei = new Vector2Int(centerTile.X + x, centerTile.Y + y);
             if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
             {
-                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, ref resultList);
+                Raycast(grid, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, ref resultList);
             }
             if (!lineClear)
             {
@@ -1370,7 +1375,7 @@ namespace Caskev.GridToolkit
             nei = new Vector2Int(centerTile.X - x, centerTile.Y + y);
             if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
             {
-                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, ref resultList);
+                Raycast(grid, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, ref resultList);
             }
             if (!lineClear)
             {
@@ -1379,7 +1384,7 @@ namespace Caskev.GridToolkit
             nei = new Vector2Int(centerTile.X + x, centerTile.Y - y);
             if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
             {
-                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, ref resultList);
+                Raycast(grid, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, ref resultList);
                 if (!lineClear)
                 {
                     isClear = false;
@@ -1388,7 +1393,7 @@ namespace Caskev.GridToolkit
             nei = new Vector2Int(centerTile.X - x, centerTile.Y - y);
             if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
             {
-                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, ref resultList);
+                Raycast(grid, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, ref resultList);
                 if (!lineClear)
                 {
                     isClear = false;
@@ -1397,7 +1402,7 @@ namespace Caskev.GridToolkit
             nei = new Vector2Int(centerTile.X + y, centerTile.Y + x);
             if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
             {
-                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, ref resultList);
+                Raycast(grid, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, ref resultList);
                 if (!lineClear)
                 {
                     isClear = false;
@@ -1406,7 +1411,7 @@ namespace Caskev.GridToolkit
             nei = new Vector2Int(centerTile.X - y, centerTile.Y + x);
             if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
             {
-                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, ref resultList);
+                Raycast(grid, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, ref resultList);
                 if (!lineClear)
                 {
                     isClear = false;
@@ -1415,7 +1420,7 @@ namespace Caskev.GridToolkit
             nei = new Vector2Int(centerTile.X + y, centerTile.Y - x);
             if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
             {
-                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, ref resultList);
+                Raycast(grid, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, ref resultList);
                 if (!lineClear)
                 {
                     isClear = false;
@@ -1424,7 +1429,7 @@ namespace Caskev.GridToolkit
             nei = new Vector2Int(centerTile.X - y, centerTile.Y - x);
             if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
             {
-                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, ref resultList);
+                Raycast(grid, centerTile, new Vector2Int(nei.x, nei.y), true, false, includeStart, true, true, out lineClear, ref resultList);
                 if (!lineClear)
                 {
                     isClear = false;
@@ -1436,62 +1441,62 @@ namespace Caskev.GridToolkit
         /// Is the line of sight clear between two tiles
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="destinationTile">The destination tile</param>
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <returns>A boolean value</returns>
-        public static bool IsLineOfSightClear<T>(T[,] map, T startTile, T destinationTile, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
+        public static bool IsLineOfSightClear<T>(T[,] grid, T startTile, T destinationTile, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
         {
-            GetLineOfSight(map, out bool isClear, startTile, destinationTile, allowDiagonals, favorVertical, false);
+            GetLineOfSight(grid, out bool isClear, startTile, destinationTile, allowDiagonals, favorVertical, false);
             return isClear;
         }
         /// <summary>
         /// Is the line of sight clear between two tiles
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="length">The length of the line</param>
         /// <param name="directionAngle">The angle of the line from the start tile</param>
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <returns>A boolean value</returns>
-        public static bool IsLineOfSightClear<T>(T[,] map, T startTile, int length, float directionAngle, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
+        public static bool IsLineOfSightClear<T>(T[,] grid, T startTile, int length, float directionAngle, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
         {
-            GetLineOfSight(map, out bool isClear, startTile, length, directionAngle, allowDiagonals, favorVertical, false);
+            GetLineOfSight(grid, out bool isClear, startTile, length, directionAngle, allowDiagonals, favorVertical, false);
             return isClear;
         }
         /// <summary>
         /// Is the line of sight clear between two tiles
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="length">The length of the line</param>
         /// <param name="direction">The direction of the line from the start tile</param>
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <returns>A boolean value</returns>
-        public static bool IsLineOfSightClear<T>(T[,] map, T startTile, int length, Vector2 direction, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
+        public static bool IsLineOfSightClear<T>(T[,] grid, T startTile, int length, Vector2 direction, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
         {
-            GetLineOfSight(map, out bool isClear, startTile, length, direction, allowDiagonals, favorVertical, false);
+            GetLineOfSight(grid, out bool isClear, startTile, length, direction, allowDiagonals, favorVertical, false);
             return isClear;
         }
         /// <summary>
         /// Is the line of sight clear between two tiles
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="endPosition">The destination virtual coordinates (do not need to be into grid range)</param>
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <returns>A boolean value</returns>
-        public static bool IsLineOfSightClear<T>(T[,] map, T startTile, Vector2Int endPosition, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
+        public static bool IsLineOfSightClear<T>(T[,] grid, T startTile, Vector2Int endPosition, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
         {
-            GetLineOfSight(map, out bool isClear, startTile, endPosition, allowDiagonals, favorVertical, false);
+            GetLineOfSight(grid, out bool isClear, startTile, endPosition, allowDiagonals, favorVertical, false);
             return isClear;
         }
 
@@ -1499,58 +1504,58 @@ namespace Caskev.GridToolkit
         /// Is the line of sight clear between two tiles
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="destinationTile">The destination tile</param>
         /// <returns>A boolean value</returns>
-        public static bool IsConeOfVisionClear<T>(T[,] map, T startTile, float openingAngle, T destinationTile) where T : ITile
+        public static bool IsConeOfVisionClear<T>(T[,] grid, T startTile, float openingAngle, T destinationTile) where T : ITile
         {
-            GetConeOfVision(map, out bool clear, startTile, openingAngle, destinationTile, true);
+            GetConeOfVision(grid, out bool clear, startTile, openingAngle, destinationTile, true);
             return clear;
         }
         /// <summary>
         /// Is the line of sight clear between two tiles
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="length">The length of the cone</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="directionAngle">The angle of the line from the start tile</param>
         /// <returns>A boolean value</returns>
-        public static bool IsConeOfVisionClear<T>(T[,] map, T startTile, int length, float openingAngle, float directionAngle) where T : ITile
+        public static bool IsConeOfVisionClear<T>(T[,] grid, T startTile, int length, float openingAngle, float directionAngle) where T : ITile
         {
-            GetConeOfVision(map, out bool clear, startTile, length, openingAngle, directionAngle, true);
+            GetConeOfVision(grid, out bool clear, startTile, length, openingAngle, directionAngle, true);
             return clear;
         }
         /// <summary>
         /// Is the line of sight clear between two tiles
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="length">The length of the cone</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="direction">The direction of the line from the start tile</param>
         /// <returns>A boolean value</returns>
-        public static bool IsConeOfVisionClear<T>(T[,] map, T startTile, int length, float openingAngle, Vector2 direction) where T : ITile
+        public static bool IsConeOfVisionClear<T>(T[,] grid, T startTile, int length, float openingAngle, Vector2 direction) where T : ITile
         {
-            GetConeOfVision(map, out bool clear, startTile, length, openingAngle, direction, true);
+            GetConeOfVision(grid, out bool clear, startTile, length, openingAngle, direction, true);
             return clear;
         }
         /// <summary>
         /// Is the line of sight clear between two tiles
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="endPosition">The destination virtual coordinates (do not need to be into grid range)</param>
         /// <returns>A boolean value</returns>
-        public static bool IsConeOfVisionClear<T>(T[,] map, T startTile, float openingAngle, Vector2Int endPosition) where T : ITile
+        public static bool IsConeOfVisionClear<T>(T[,] grid, T startTile, float openingAngle, Vector2Int endPosition) where T : ITile
         {
-            GetConeOfVision(map, out bool clear, startTile, openingAngle, endPosition, true);
+            GetConeOfVision(grid, out bool clear, startTile, openingAngle, endPosition, true);
             return clear;
         }
 
@@ -1558,24 +1563,23 @@ namespace Caskev.GridToolkit
         /// Get all tiles on a line of sight from a start tile.<br/>
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="destinationTile">The destination tile</param>
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
         /// <returns>A boolean value</returns>
-        public static T[] GetLineOfSight<T>(T[,] map, T startTile, T destinationTile, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
+        public static T[] GetLineOfSight<T>(T[,] grid, T startTile, T destinationTile, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
         {
             Vector2Int endPos = new Vector2Int(destinationTile.X, destinationTile.Y);
-            return GetLineOfSight(map, startTile, endPos, allowDiagonals, favorVertical, includeStart);
+            return GetLineOfSight(grid, startTile, endPos, allowDiagonals, favorVertical, includeStart);
         }
         /// <summary>
         /// Get all tiles on a line of sight from a start tile.<br/>
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="length">The length of the line</param>
         /// <param name="directionAngle">The angle of the line from the start tile</param>
@@ -1583,21 +1587,21 @@ namespace Caskev.GridToolkit
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetLineOfSight<T>(T[,] map, T startTile, int length, float directionAngle, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
+        public static T[] GetLineOfSight<T>(T[,] grid, T startTile, int length, float directionAngle, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
         {
-            float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
+            float magnitude = new Vector2Int(grid.GetLength(0), grid.GetLength(1)).magnitude;
             if (length > magnitude || Mathf.Approximately(length, 0f))
             {
                 length = Mathf.CeilToInt(magnitude);
             }
             Vector2Int endPos = new Vector2Int(Mathf.RoundToInt(startTile.X + Mathf.Cos(directionAngle * Mathf.Deg2Rad) * length), Mathf.RoundToInt(startTile.Y + Mathf.Sin(directionAngle * Mathf.Deg2Rad) * length));
-            return GetLineOfSight(map, startTile, endPos, allowDiagonals, favorVertical, includeStart);
+            return GetLineOfSight(grid, startTile, endPos, allowDiagonals, favorVertical, includeStart);
         }
         /// <summary>
         /// Get all tiles on a line of sight from a start tile.<br/>
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="length">The length of the line</param>
         /// <param name="direction">The direction of the line from the start tile</param>
@@ -1605,38 +1609,38 @@ namespace Caskev.GridToolkit
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetLineOfSight<T>(T[,] map, T startTile, int length, Vector2 direction, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
+        public static T[] GetLineOfSight<T>(T[,] grid, T startTile, int length, Vector2 direction, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
         {
-            float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
+            float magnitude = new Vector2Int(grid.GetLength(0), grid.GetLength(1)).magnitude;
             if (length > magnitude || Mathf.Approximately(length, 0f))
             {
                 length = Mathf.CeilToInt(magnitude);
             }
             Vector2Int endPos = Vector2Int.RoundToInt(new Vector2(startTile.X, startTile.Y) + (direction.normalized * length));
-            return GetLineOfSight(map, startTile, endPos, allowDiagonals, favorVertical, includeStart);
+            return GetLineOfSight(grid, startTile, endPos, allowDiagonals, favorVertical, includeStart);
         }
         /// <summary>
         /// Get all tiles on a line of sight from a start tile.<br/>
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="endPosition">The destination virtual coordinates (do not need to be into grid range)</param>
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetLineOfSight<T>(T[,] map, T startTile, Vector2Int endPosition, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
+        public static T[] GetLineOfSight<T>(T[,] grid, T startTile, Vector2Int endPosition, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
         {
             HashSet<T> hashSet = new HashSet<T>();
-            Raycast(map, startTile, endPosition, allowDiagonals, favorVertical, includeStart, true, false, out bool isClear, ref hashSet);
+            Raycast(grid, startTile, endPosition, allowDiagonals, favorVertical, includeStart, true, false, out bool isClear, ref hashSet);
             return hashSet.ToArray();
         }
         /// <summary>
         /// Get all tiles on a line of sight from a start tile.<br/>
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="isClear">Is the line of sight clear (no non-walkable tile encountered)</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="destinationTile">The destination tile</param>
@@ -1644,16 +1648,16 @@ namespace Caskev.GridToolkit
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <returns>A boolean value</returns>
-        public static T[] GetLineOfSight<T>(T[,] map, out bool isClear, T startTile, T destinationTile, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
+        public static T[] GetLineOfSight<T>(T[,] grid, out bool isClear, T startTile, T destinationTile, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
         {
             Vector2Int endPos = new Vector2Int(destinationTile.X, destinationTile.Y);
-            return GetLineOfSight(map, out isClear, startTile, endPos, allowDiagonals, favorVertical, includeStart);
+            return GetLineOfSight(grid, out isClear, startTile, endPos, allowDiagonals, favorVertical, includeStart);
         }
         /// <summary>
         /// Get all tiles on a line of sight from a start tile.<br/>
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="isClear">Is the line of sight clear (no non-walkable tile encountered)</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="length">The length of the line</param>
@@ -1662,21 +1666,21 @@ namespace Caskev.GridToolkit
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetLineOfSight<T>(T[,] map, out bool isClear, T startTile, int length, float directionAngle, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
+        public static T[] GetLineOfSight<T>(T[,] grid, out bool isClear, T startTile, int length, float directionAngle, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
         {
-            float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
+            float magnitude = new Vector2Int(grid.GetLength(0), grid.GetLength(1)).magnitude;
             if (length > magnitude || Mathf.Approximately(length, 0f))
             {
                 length = Mathf.CeilToInt(magnitude);
             }
             Vector2Int endPos = new Vector2Int(Mathf.RoundToInt(startTile.X + Mathf.Cos(directionAngle * Mathf.Deg2Rad) * length), Mathf.RoundToInt(startTile.Y + Mathf.Sin(directionAngle * Mathf.Deg2Rad) * length));
-            return GetLineOfSight(map, out isClear, startTile, endPos, allowDiagonals, favorVertical, includeStart);
+            return GetLineOfSight(grid, out isClear, startTile, endPos, allowDiagonals, favorVertical, includeStart);
         }
         /// <summary>
         /// Get all tiles on a line of sight from a start tile.<br/>
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="isClear">Is the line of sight clear (no non-walkable tile encountered)</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="length">The length of the line</param>
@@ -1684,35 +1688,33 @@ namespace Caskev.GridToolkit
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetLineOfSight<T>(T[,] map, out bool isClear, T startTile, int length, Vector2 direction, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
+        public static T[] GetLineOfSight<T>(T[,] grid, out bool isClear, T startTile, int length, Vector2 direction, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
         {
-            float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
+            float magnitude = new Vector2Int(grid.GetLength(0), grid.GetLength(1)).magnitude;
             if (length > magnitude || Mathf.Approximately(length, 0f))
             {
                 length = Mathf.CeilToInt(magnitude);
             }
             Vector2Int endPos = Vector2Int.RoundToInt(new Vector2(startTile.X, startTile.Y) + (direction.normalized * length));
-            return GetLineOfSight(map, out isClear, startTile, endPos, allowDiagonals, favorVertical, includeStart);
+            return GetLineOfSight(grid, out isClear, startTile, endPos, allowDiagonals, favorVertical, includeStart);
         }
         /// <summary>
         /// Get all tiles on a line of sight from a start tile.<br/>
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="isClear">Is the line of sight clear (no non-walkable tile encountered)</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="endPosition">The destination virtual coordinates (do not need to be into grid range)</param>
         /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
         /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetLineOfSight<T>(T[,] map, out bool isClear, T startTile, Vector2Int endPosition, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
+        public static T[] GetLineOfSight<T>(T[,] grid, out bool isClear, T startTile, Vector2Int endPosition, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
         {
             HashSet<T> hashSet = new HashSet<T>();
-            Raycast(map, startTile, endPosition, allowDiagonals, favorVertical, includeStart, true, false, out isClear, ref hashSet);
+            Raycast(grid, startTile, endPosition, allowDiagonals, favorVertical, includeStart, true, false, out isClear, ref hashSet);
             return hashSet.ToArray();
         }
 
@@ -1721,13 +1723,13 @@ namespace Caskev.GridToolkit
         /// Note that the order of the tiles into the returned array is not guaranteed.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="destinationTile">The destination tile at the end of the cone</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetConeOfVision<T>(T[,] map, T startTile, float openingAngle, T destinationTile, bool includeStart = true) where T : ITile
+        public static T[] GetConeOfVision<T>(T[,] grid, T startTile, float openingAngle, T destinationTile, bool includeStart = true) where T : ITile
         {
             openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
             Vector2Int startPos = new Vector2Int(startTile.X, startTile.Y);
@@ -1735,7 +1737,7 @@ namespace Caskev.GridToolkit
             Vector2 direction = endPos - startPos;
             HashSet<T> lines = new HashSet<T>();
             bool isClear = true;
-            ConeCast(map, startTile, Mathf.CeilToInt(direction.magnitude), openingAngle, direction, ref isClear, includeStart, ref lines);
+            ConeCast(grid, startTile, Mathf.CeilToInt(direction.magnitude), openingAngle, direction, ref isClear, includeStart, ref lines);
             return lines.ToArray();
         }
         /// <summary>
@@ -1743,17 +1745,17 @@ namespace Caskev.GridToolkit
         /// Note that the order of the tiles into the returned array is not guaranteed.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="length">The length of the line</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="directionAngle">The angle of the line from the start tile</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetConeOfVision<T>(T[,] map, T startTile, int length, float openingAngle, float directionAngle, bool includeStart = true) where T : ITile
+        public static T[] GetConeOfVision<T>(T[,] grid, T startTile, int length, float openingAngle, float directionAngle, bool includeStart = true) where T : ITile
         {
             openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
-            float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
+            float magnitude = new Vector2Int(grid.GetLength(0), grid.GetLength(1)).magnitude;
             if (length > magnitude || Mathf.Approximately(length, 0f))
             {
                 length = Mathf.CeilToInt(magnitude);
@@ -1763,7 +1765,7 @@ namespace Caskev.GridToolkit
             Vector2 direction = endPos - startPos;
             HashSet<T> lines = new HashSet<T>();
             bool isClear = true;
-            ConeCast(map, startTile, length, openingAngle, direction, ref isClear, includeStart, ref lines);
+            ConeCast(grid, startTile, length, openingAngle, direction, ref isClear, includeStart, ref lines);
             return lines.ToArray();
         }
         /// <summary>
@@ -1771,24 +1773,24 @@ namespace Caskev.GridToolkit
         /// Note that the order of the tiles into the returned array is not guaranteed.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="length">The length of the line</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="direction">The direction of the line from the start tile</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetConeOfVision<T>(T[,] map, T startTile, int length, float openingAngle, Vector2 direction, bool includeStart = true) where T : ITile
+        public static T[] GetConeOfVision<T>(T[,] grid, T startTile, int length, float openingAngle, Vector2 direction, bool includeStart = true) where T : ITile
         {
             openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
-            float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
+            float magnitude = new Vector2Int(grid.GetLength(0), grid.GetLength(1)).magnitude;
             if (length > magnitude || Mathf.Approximately(length, 0f))
             {
                 length = Mathf.CeilToInt(magnitude);
             }
             HashSet<T> lines = new HashSet<T>();
             bool isClear = true;
-            ConeCast(map, startTile, length, openingAngle, direction, ref isClear, includeStart, ref lines);
+            ConeCast(grid, startTile, length, openingAngle, direction, ref isClear, includeStart, ref lines);
             return lines.ToArray();
         }
         /// <summary>
@@ -1796,20 +1798,20 @@ namespace Caskev.GridToolkit
         /// Note that the order of the tiles into the returned array is not guaranteed.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="endPosition">The destination virtual coordinates (do not need to be into grid range)</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetConeOfVision<T>(T[,] map, T startTile, float openingAngle, Vector2Int endPosition, bool includeStart = true) where T : ITile
+        public static T[] GetConeOfVision<T>(T[,] grid, T startTile, float openingAngle, Vector2Int endPosition, bool includeStart = true) where T : ITile
         {
             openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
             Vector2Int startPos = new Vector2Int(startTile.X, startTile.Y);
             Vector2 direction = endPosition - startPos;
             HashSet<T> lines = new HashSet<T>();
             bool isClear = true;
-            ConeCast(map, startTile, Mathf.FloorToInt(direction.magnitude), openingAngle, direction, ref isClear, includeStart, ref lines);
+            ConeCast(grid, startTile, Mathf.FloorToInt(direction.magnitude), openingAngle, direction, ref isClear, includeStart, ref lines);
             return lines.ToArray();
         }
         /// <summary>
@@ -1817,14 +1819,14 @@ namespace Caskev.GridToolkit
         /// Note that the order of the tiles into the returned array is not guaranteed.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="isClear">Is the line of sight clear (no non-walkable tile encountered)</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="destinationTile">The destination tile at the end of the cone</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetConeOfVision<T>(T[,] map, out bool isClear, T startTile, float openingAngle, T destinationTile, bool includeStart = true) where T : ITile
+        public static T[] GetConeOfVision<T>(T[,] grid, out bool isClear, T startTile, float openingAngle, T destinationTile, bool includeStart = true) where T : ITile
         {
             openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
             Vector2Int startPos = new Vector2Int(startTile.X, startTile.Y);
@@ -1833,7 +1835,7 @@ namespace Caskev.GridToolkit
             Vector2 direction = endPos - startPos;
             HashSet<T> lines = new HashSet<T>();
             isClear = true;
-            ConeCast(map, startTile, Mathf.FloorToInt(direction.magnitude), openingAngle, direction, ref isClear, includeStart, ref lines);
+            ConeCast(grid, startTile, Mathf.FloorToInt(direction.magnitude), openingAngle, direction, ref isClear, includeStart, ref lines);
             return lines.ToArray();
         }
         /// <summary>
@@ -1841,7 +1843,7 @@ namespace Caskev.GridToolkit
         /// Note that the order of the tiles into the returned array is not guaranteed.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="isClear">Is the line of sight clear (no non-walkable tile encountered)</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="length">The length of the line</param>
@@ -1849,10 +1851,10 @@ namespace Caskev.GridToolkit
         /// <param name="directionAngle">The angle of the line from the start tile</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetConeOfVision<T>(T[,] map, out bool isClear, T startTile, int length, float openingAngle, float directionAngle, bool includeStart = true) where T : ITile
+        public static T[] GetConeOfVision<T>(T[,] grid, out bool isClear, T startTile, int length, float openingAngle, float directionAngle, bool includeStart = true) where T : ITile
         {
             openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
-            float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
+            float magnitude = new Vector2Int(grid.GetLength(0), grid.GetLength(1)).magnitude;
             if (length > magnitude || Mathf.Approximately(length, 0f))
             {
                 length = Mathf.CeilToInt(magnitude);
@@ -1862,7 +1864,7 @@ namespace Caskev.GridToolkit
             Vector2 direction = endPos - startPos;
             HashSet<T> lines = new HashSet<T>();
             isClear = true;
-            ConeCast(map, startTile, length, openingAngle, direction, ref isClear, includeStart, ref lines);
+            ConeCast(grid, startTile, length, openingAngle, direction, ref isClear, includeStart, ref lines);
             return lines.ToArray();
         }
         /// <summary>
@@ -1870,7 +1872,7 @@ namespace Caskev.GridToolkit
         /// Note that the order of the tiles into the returned array is not guaranteed.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="isClear">Is the line of sight clear (no non-walkable tile encountered)</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="length">The length of the line</param>
@@ -1878,17 +1880,17 @@ namespace Caskev.GridToolkit
         /// <param name="direction">The direction of the line from the start tile</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetConeOfVision<T>(T[,] map, out bool isClear, T startTile, int length, float openingAngle, Vector2 direction, bool includeStart = true) where T : ITile
+        public static T[] GetConeOfVision<T>(T[,] grid, out bool isClear, T startTile, int length, float openingAngle, Vector2 direction, bool includeStart = true) where T : ITile
         {
             openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
-            float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
+            float magnitude = new Vector2Int(grid.GetLength(0), grid.GetLength(1)).magnitude;
             if (length > magnitude || Mathf.Approximately(length, 0f))
             {
                 length = Mathf.CeilToInt(magnitude);
             }
             HashSet<T> lines = new HashSet<T>();
             isClear = true;
-            ConeCast(map, startTile, length, openingAngle, direction, ref isClear, includeStart, ref lines);
+            ConeCast(grid, startTile, length, openingAngle, direction, ref isClear, includeStart, ref lines);
             return lines.ToArray();
         }
         /// <summary>
@@ -1896,46 +1898,46 @@ namespace Caskev.GridToolkit
         /// Note that the order of the tiles into the returned array is not guaranteed.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="isClear">Is the line of sight clear (no non-walkable tile encountered)</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="endPosition">The destination virtual coordinates (do not need to be into grid range)</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetConeOfVision<T>(T[,] map, out bool isClear, T startTile, float openingAngle, Vector2Int endPosition, bool includeStart = true) where T : ITile
+        public static T[] GetConeOfVision<T>(T[,] grid, out bool isClear, T startTile, float openingAngle, Vector2Int endPosition, bool includeStart = true) where T : ITile
         {
             openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
             Vector2Int startPos = new Vector2Int(startTile.X, startTile.Y);
             Vector2 direction = endPosition - startPos;
             HashSet<T> lines = new HashSet<T>();
             isClear = true;
-            ConeCast(map, startTile, Mathf.CeilToInt(direction.magnitude), openingAngle, direction, ref isClear, includeStart, ref lines);
+            ConeCast(grid, startTile, Mathf.CeilToInt(direction.magnitude), openingAngle, direction, ref isClear, includeStart, ref lines);
             return lines.ToArray();
         }
     }
 
     /// <summary>
     /// Allows you to calculate paths between tiles.  
-    /// This API offers a method which generates and returns a direction map.A direction map can be seen as a "layer" on top of the user grid that indicates, for each accessible tile, the direction to the next tile, ultimately leading to the target tile.  
-    /// A direction map holds all the paths to a target tile from all the accessible tiles on the grid.
+    /// This API offers a method which generates and returns a direction grid.A direction grid can be seen as a "layer" on top of the user grid that indicates, for each accessible tile, the direction to the next tile, ultimately leading to the target tile.  
+    /// A direction grid holds all the paths to a target tile from all the accessible tiles on the grid.
     /// Storing this DirectionMap object allows you to reconstruct paths between tiles without having to recalculate them every time, which can be costly in terms of performance.
     /// </summary>
     public class Pathfinding
     {
-        private static bool GetTile<T>(T[,] map, int x, int y, out T tile) where T : ITile
+        private static bool GetTile<T>(T[,] grid, int x, int y, out T tile) where T : ITile
         {
-            if (x > -1 && y > -1 && x < GridUtils.GetHorizontalLength(map) && y < GridUtils.GetVerticalLength(map))
+            if (x > -1 && y > -1 && x < GridUtils.GetHorizontalLength(grid) && y < GridUtils.GetVerticalLength(grid))
             {
-                tile = GridUtils.GetTile(map, x, y);
+                tile = GridUtils.GetTile(grid, x, y);
                 return true;
             }
             tile = default;
             return false;
         }
-        private static bool GetLeftNeighbour<T>(T[,] map, int x, int y, out T nei) where T : ITile
+        private static bool GetLeftNeighbour<T>(T[,] grid, int x, int y, out T nei) where T : ITile
         {
-            if (GetTile(map, x - 1, y, out nei))
+            if (GetTile(grid, x - 1, y, out nei))
             {
                 if (nei != null && nei.IsWalkable)
                 {
@@ -1944,9 +1946,9 @@ namespace Caskev.GridToolkit
             }
             return false;
         }
-        private static bool GetRightNeighbour<T>(T[,] map, int x, int y, out T nei) where T : ITile
+        private static bool GetRightNeighbour<T>(T[,] grid, int x, int y, out T nei) where T : ITile
         {
-            if (GetTile(map, x + 1, y, out nei))
+            if (GetTile(grid, x + 1, y, out nei))
             {
                 if (nei != null && nei.IsWalkable)
                 {
@@ -1955,9 +1957,9 @@ namespace Caskev.GridToolkit
             }
             return false;
         }
-        private static bool GetBottomNeighbour<T>(T[,] map, int x, int y, out T nei) where T : ITile
+        private static bool GetBottomNeighbour<T>(T[,] grid, int x, int y, out T nei) where T : ITile
         {
-            if (GetTile(map, x, y - 1, out nei))
+            if (GetTile(grid, x, y - 1, out nei))
             {
                 if (nei != null && nei.IsWalkable)
                 {
@@ -1966,9 +1968,9 @@ namespace Caskev.GridToolkit
             }
             return false;
         }
-        private static bool GetTopNeighbour<T>(T[,] map, int x, int y, out T nei) where T : ITile
+        private static bool GetTopNeighbour<T>(T[,] grid, int x, int y, out T nei) where T : ITile
         {
-            if (GetTile(map, x, y + 1, out nei))
+            if (GetTile(grid, x, y + 1, out nei))
             {
                 if (nei != null && nei.IsWalkable)
                 {
@@ -1977,9 +1979,9 @@ namespace Caskev.GridToolkit
             }
             return false;
         }
-        private static bool GetLeftBottomNeighbour<T>(T[,] map, int x, int y, out T nei) where T : ITile
+        private static bool GetLeftBottomNeighbour<T>(T[,] grid, int x, int y, out T nei) where T : ITile
         {
-            if (GetTile(map, x - 1, y - 1, out nei))
+            if (GetTile(grid, x - 1, y - 1, out nei))
             {
                 if (nei != null && nei.IsWalkable)
                 {
@@ -1988,9 +1990,9 @@ namespace Caskev.GridToolkit
             }
             return false;
         }
-        private static bool GetLeftTopNeighbour<T>(T[,] map, int x, int y, out T nei) where T : ITile
+        private static bool GetLeftTopNeighbour<T>(T[,] grid, int x, int y, out T nei) where T : ITile
         {
-            if (GetTile(map, x - 1, y + 1, out nei))
+            if (GetTile(grid, x - 1, y + 1, out nei))
             {
                 if (nei != null && nei.IsWalkable)
                 {
@@ -1999,9 +2001,9 @@ namespace Caskev.GridToolkit
             }
             return false;
         }
-        private static bool GetRightBottomNeighbour<T>(T[,] map, int x, int y, out T nei) where T : ITile
+        private static bool GetRightBottomNeighbour<T>(T[,] grid, int x, int y, out T nei) where T : ITile
         {
-            if (GetTile(map, x + 1, y - 1, out nei))
+            if (GetTile(grid, x + 1, y - 1, out nei))
             {
                 if (nei != null && nei.IsWalkable)
                 {
@@ -2010,9 +2012,9 @@ namespace Caskev.GridToolkit
             }
             return false;
         }
-        private static bool GetRightTopNeighbour<T>(T[,] map, int x, int y, out T nei) where T : ITile
+        private static bool GetRightTopNeighbour<T>(T[,] grid, int x, int y, out T nei) where T : ITile
         {
-            if (GetTile(map, x + 1, y + 1, out nei))
+            if (GetTile(grid, x + 1, y + 1, out nei))
             {
                 if (nei != null && nei.IsWalkable)
                 {
@@ -2021,72 +2023,72 @@ namespace Caskev.GridToolkit
             }
             return false;
         }
-        private static void GetTileOrthographicNeighbours<T>(ref List<T> nodes, T[,] map, int x, int y) where T : ITile
+        private static void GetTileOrthographicNeighbours<T>(ref List<T> nodes, T[,] grid, int x, int y) where T : ITile
         {
             T nei;
 
-            bool leftWalkable = GetLeftNeighbour(map, x, y, out nei);
+            bool leftWalkable = GetLeftNeighbour(grid, x, y, out nei);
             if (leftWalkable)
             {
                 nodes.Add(nei);
             }
-            bool rightWalkable = GetRightNeighbour(map, x, y, out nei);
+            bool rightWalkable = GetRightNeighbour(grid, x, y, out nei);
             if (rightWalkable)
             {
                 nodes.Add(nei);
             }
-            bool bottomWalkable = GetBottomNeighbour(map, x, y, out nei);
+            bool bottomWalkable = GetBottomNeighbour(grid, x, y, out nei);
             if (bottomWalkable)
             {
                 nodes.Add(nei);
             }
-            bool topWalkable = GetTopNeighbour(map, x, y, out nei);
+            bool topWalkable = GetTopNeighbour(grid, x, y, out nei);
             if (topWalkable)
             {
                 nodes.Add(nei);
             }
         }
-        private static void GetTileNeighbours<T>(ref List<T> nodes, T[,] map, int x, int y) where T : ITile
+        private static void GetTileNeighbours<T>(ref List<T> nodes, T[,] grid, int x, int y) where T : ITile
         {
             T nei;
 
-            bool leftWalkable = GetLeftNeighbour(map, x, y, out nei);
+            bool leftWalkable = GetLeftNeighbour(grid, x, y, out nei);
             if (leftWalkable)
             {
                 nodes.Add(nei);
             }
-            bool rightWalkable = GetRightNeighbour(map, x, y, out nei);
+            bool rightWalkable = GetRightNeighbour(grid, x, y, out nei);
             if (rightWalkable)
             {
                 nodes.Add(nei);
             }
-            bool bottomWalkable = GetBottomNeighbour(map, x, y, out nei);
+            bool bottomWalkable = GetBottomNeighbour(grid, x, y, out nei);
             if (bottomWalkable)
             {
                 nodes.Add(nei);
             }
-            bool topWalkable = GetTopNeighbour(map, x, y, out nei);
+            bool topWalkable = GetTopNeighbour(grid, x, y, out nei);
             if (topWalkable)
             {
                 nodes.Add(nei);
             }
 
-            bool leftBottomWalkable = GetLeftBottomNeighbour(map, x, y, out nei);
+            bool leftBottomWalkable = GetLeftBottomNeighbour(grid, x, y, out nei);
             if (leftBottomWalkable)
             {
                 nodes.Add(nei);
             }
-            bool rightBottomWalkable = GetRightBottomNeighbour(map, x, y, out nei);
+            bool rightBottomWalkable = GetRightBottomNeighbour(grid, x, y, out nei);
             if (rightBottomWalkable)
             {
                 nodes.Add(nei);
             }
-            bool leftTopWalkable = GetLeftTopNeighbour(map, x, y, out nei);
+            bool leftTopWalkable = GetLeftTopNeighbour(grid, x, y, out nei);
             if (leftTopWalkable)
             {
                 nodes.Add(nei);
             }
-            bool rightTopWalkable = GetRightTopNeighbour(map, x, y, out nei);
+            bool rightTopWalkable = GetRightTopNeighbour(grid, x, y, out nei);
             if (rightTopWalkable)
             {
                 nodes.Add(nei);
@@ -2320,7 +2322,7 @@ namespace Caskev.GridToolkit
             return reversedPath;
         }
         /// <summary>
-        /// Returns the Directionmap serialized as a byte array.
+        /// Returns the DirectionMap serialized as a byte array.
         /// </summary>
         /// <returns>A byte array representing the serialized DirectionMap</returns>
         public byte[] ToByteArray()
@@ -2340,7 +2342,7 @@ namespace Caskev.GridToolkit
             return bytes;
         }
         /// <summary>
-        /// Returns the Directionmap serialized as a byte array.
+        /// Returns the DirectionMap serialized as a byte array.
         /// </summary>
         /// <param name="progress">An optional IProgress object to get the serialization progression</param>
         /// <param name="cancelToken">An optional CancellationToken object to cancel the serialization</param>
@@ -2460,32 +2462,6 @@ namespace Caskev.GridToolkit
             if (dx == 1 && dy == 1) return NextTileDirection.UP_RIGHT;
 
             return NextTileDirection.NONE;
-        }
-        internal static NextTileDirection Vector2IntToNextNodeDirection(Vector2Int dir)
-        {
-            switch (dir)
-            {
-                case Vector2Int v when v == Vector2Int.zero:
-                    return NextTileDirection.SELF;
-                case Vector2Int v when v == Vector2Int.up:
-                    return NextTileDirection.UP;
-                case Vector2Int v when v == Vector2Int.down:
-                    return NextTileDirection.DOWN;
-                case Vector2Int v when v == Vector2Int.left:
-                    return NextTileDirection.LEFT;
-                case Vector2Int v when v == Vector2Int.right:
-                    return NextTileDirection.RIGHT;
-                case Vector2Int v when v == new Vector2Int(-1, 1):
-                    return NextTileDirection.UP_LEFT;
-                case Vector2Int v when v == new Vector2Int(1, 1):
-                    return NextTileDirection.UP_RIGHT;
-                case Vector2Int v when v == new Vector2Int(-1, -1):
-                    return NextTileDirection.DOWN_LEFT;
-                case Vector2Int v when v == new Vector2Int(1, -1):
-                    return NextTileDirection.DOWN_RIGHT;
-                default:
-                    return NextTileDirection.NONE;
-            }
         }
         internal static Vector2Int NextNodeDirectionToVector2Int(NextTileDirection dir)
         {
