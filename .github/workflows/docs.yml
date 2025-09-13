@@ -27,7 +27,7 @@ jobs:
           sudo apt-get install -y doxygen graphviz
 
       - name: Build docs
-        run: doxygen Documentation/Doxyfile
+        run: doxygen .github/workflows/Doxyfile
 
       # Publier le dossier docs/html comme artefact Pages
       - name: Upload Pages artifact
