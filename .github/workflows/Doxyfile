@@ -2,7 +2,7 @@
 PROJECT_NAME           = "Unity Grid Toolkit"
 PROJECT_BRIEF          = "Utilitary API to proceed operations on abstract grids such as tile extraction, raycasting, and pathfinding."
 OUTPUT_DIRECTORY       = docs
-INPUT                  = Runtime .github/worflows/MainPage.dox
+INPUT                  = Runtime README.md .github/workflows/MainPage.dox
 FILE_PATTERNS          = *.cs *.md
 RECURSIVE              = YES
 
@@ -19,7 +19,7 @@ GENERATE_HTML          = YES
 HTML_OUTPUT            = html
 GENERATE_TREEVIEW      = YES
 FULL_PATH_NAMES        = NO
-USE_MDFILE_AS_MAINPAGE = .github/worflows/MainPage.dox
+USE_MDFILE_AS_MAINPAGE = .github/workflows/MainPage.dox
 
 # --- Graphs (facultatif mais utile) ---
 HAVE_DOT               = YES
@@ -31,5 +31,4 @@ DOT_IMAGE_FORMAT       = svg
 WARN_IF_UNDOCUMENTED   = YES
 QUIET                  = YES
 MARKDOWN_SUPPORT       = YES
-EXTENSION_MAPPING      = md=markdown
 TOC_INCLUDE_HEADINGS   = 1
