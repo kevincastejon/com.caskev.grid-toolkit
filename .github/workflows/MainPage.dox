@@ -1,0 +1,5 @@
+/** \mainpage ReadMe
+ *
+ * \section readme_body
+ * \include README.md
+ */
