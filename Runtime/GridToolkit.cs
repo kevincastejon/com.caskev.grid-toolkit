@@ -10,6 +10,9 @@ using UnityEngine;
 /// </summary>
 namespace Caskev.GridToolkit
 {
+    /// <summary>
+    /// An enumeration representing the possible directions to move to reach a neighboring tile
+    /// </summary>
     public enum NextTileDirection : byte
     {
         NONE,
@@ -2219,6 +2222,7 @@ namespace Caskev.GridToolkit
         /// <summary>
         /// Is the tile is accessible from the target into this this DirectionMap. Usefull to check if the tile is usable as a parameter for this DirectionMap's methods.
         /// </summary>
+        /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="tile">The tile to check</param>
         /// <returns>A boolean value</returns>
         public bool IsTileAccessible<T>(T[,] grid, T tile) where T : ITile
