@@ -1,4 +1,3 @@
-/** \mainpage ReadMe
- *
- * \include README.md
- */
+# ReadMe
+
+\include ../../README.md
