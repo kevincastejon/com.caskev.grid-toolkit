@@ -21,6 +21,7 @@ HTML_OUTPUT            = html
 GENERATE_TREEVIEW      = YES
 FULL_PATH_NAMES        = NO
 USE_MDFILE_AS_MAINPAGE = README.md
+LAYOUT_FILE = .github/workflows/DoxygenLayout.xml
 
 # --- Graphs (facultatif mais utile) ---
 HAVE_DOT               = YES
