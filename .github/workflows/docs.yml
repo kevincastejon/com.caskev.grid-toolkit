@@ -3,8 +3,7 @@ name: Build & Deploy Doxygen
 on:
   push:
     branches: [ main ]
-
-# Permissions requises par Pages modernes
+    
 permissions:
   contents: read
   pages: write
@@ -31,8 +30,7 @@ jobs:
 
       - name: Build docs
         run: doxygen .github/workflows/Doxyfile
-
-      # Publier le dossier docs/html comme artefact Pages
+        
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

@@ -25,7 +25,7 @@ using KevinCastejon.GridToolkit;
 When working with two-dimensional arrays there is two ways of storing tiles, first rows then lines or the opposite.  
 This is called the **Major Order**. The most common major order used in C languages (and the one used in this library) is the row major order, meaning that the first index of the array represents the row index and the second index represents the column index.
 
-It can be counter intuitive as the row index actually indicates the vertical position of the tile in the grid, and the column index indicates the horizontal position of the tile in the grid.
+Be aware that the row index actually indicates the vertical position of the tile in the grid, and the column index indicates the horizontal position of the tile in the grid, as it can be counter intuitive.
 For more information you can refer to this [Wikipedia article](https://en.wikipedia.org/wiki/Row-_and_column-major_order).
 
 ---
