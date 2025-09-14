@@ -26,6 +26,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y doxygen graphviz
 
+      - name: Add mainpage title to README
+        run: sed -i '1s/^/# ReadMe \n\n/' README.md
+
       - name: Build docs
         run: doxygen .github/workflows/Doxyfile
 
