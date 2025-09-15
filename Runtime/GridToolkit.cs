@@ -27,6 +27,22 @@ namespace Caskev.GridToolkit
         DOWN_RIGHT,
     }
     /// <summary>
+    /// Represents the pathfinding diagonals permissiveness.<br/>
+    /// When going diagonally from a tile <b>A</b> to tile <b>B</b> in 2D grid, there are two more tile involved, the ones that are both facing neighbours of the <b>A</b> and <b>B</b> tiles. You can allow diagonals movement depending on the walkable status of these tiles.<br/>
+    /// <b>NONE :</b> no diagonal movement allowed<br/>
+    /// <b>DIAGONAL_2FREE :</b> only diagonal movements, with two walkable facing neighbours common to the start and destination tiles, are allowed<br/>
+    /// <b>DIAGONAL_1FREE :</b> only diagonal movements, with one or more walkable facing neighbour common to the start and destination tiles, are allowed<br/>
+    /// <b>ALL_DIAGONALS :</b> all diagonal movements allowed<br/>
+    /// \image html DiagonalsPolicySchema.png height=200px
+    /// </summary>
+    public enum DiagonalsPolicy
+    {
+        NONE,
+        DIAGONAL_2FREE,
+        DIAGONAL_1FREE,
+        ALL_DIAGONALS,
+    }
+    /// <summary>
     /// An interface that the user-defined tile object has to implement in order to work with most of this library's methods
     /// </summary>
     public interface ITile
@@ -2051,7 +2067,7 @@ namespace Caskev.GridToolkit
                 nodes.Add(nei);
             }
         }
-        private static void GetTileNeighbours<T>(ref List<T> nodes, T[,] grid, int x, int y) where T : ITile
+        private static void GetTileNeighbours<T>(ref List<T> nodes, T[,] grid, int x, int y, DiagonalsPolicy diagonalsPolicy) where T : ITile
         {
             T nei;
 
@@ -2077,24 +2093,40 @@ namespace Caskev.GridToolkit
             }
 
             bool leftBottomWalkable = GetLeftBottomNeighbour(grid, x, y, out nei);
-            if (leftBottomWalkable)
+            if (leftBottomWalkable && IsDiagonalPolicyCompliant(diagonalsPolicy, leftWalkable, bottomWalkable))
             {
                 nodes.Add(nei);
             }
             bool rightBottomWalkable = GetRightBottomNeighbour(grid, x, y, out nei);
-            if (rightBottomWalkable)
+            if (rightBottomWalkable && IsDiagonalPolicyCompliant(diagonalsPolicy, rightWalkable, bottomWalkable))
             {
                 nodes.Add(nei);
             }
             bool leftTopWalkable = GetLeftTopNeighbour(grid, x, y, out nei);
-            if (leftTopWalkable)
+            if (leftTopWalkable && IsDiagonalPolicyCompliant(diagonalsPolicy, leftWalkable, topWalkable))
             {
                 nodes.Add(nei);
             }
             bool rightTopWalkable = GetRightTopNeighbour(grid, x, y, out nei);
-            if (rightTopWalkable)
+            if (rightTopWalkable && IsDiagonalPolicyCompliant(diagonalsPolicy, rightWalkable, topWalkable))
             {
                 nodes.Add(nei);
+            }
+        }
+        private static bool IsDiagonalPolicyCompliant(DiagonalsPolicy policy, bool valueA, bool valueB)
+        {
+            switch (policy)
+            {
+                case DiagonalsPolicy.NONE:
+                    return false;
+                case DiagonalsPolicy.DIAGONAL_2FREE:
+                    return valueA && valueB;
+                case DiagonalsPolicy.DIAGONAL_1FREE:
+                    return valueA || valueB;
+                case DiagonalsPolicy.ALL_DIAGONALS:
+                    return true;
+                default:
+                    return false;
             }
         }
         /// <summary>
@@ -2106,7 +2138,7 @@ namespace Caskev.GridToolkit
         /// <param name="progress">An optional IProgress object to get the generation progression</param>
         /// <param name="cancelToken">An optional CancellationToken object to cancel the generation</param>
         /// <returns>A DirectionMap object</returns>
-        public static Task<DirectionMap> GenerateDirectionMapAsync<T>(T[,] grid, T targetTile, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : ITile
+        public static Task<DirectionMap> GenerateDirectionMapAsync<T>(T[,] grid, T targetTile, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : ITile
         {
             Task<DirectionMap> task = Task.Run(() =>
             {
@@ -2137,7 +2169,14 @@ namespace Caskev.GridToolkit
                     }
                     progress?.Report((float)visitedCount / totalSize);
                     current = frontier.Dequeue();
-                    GetTileOrthographicNeighbours(ref neighbourgs, grid, current.X, current.Y);
+                    if (diagonalsPolicy != DiagonalsPolicy.NONE)
+                    {
+                        GetTileNeighbours(ref neighbourgs, grid, current.X, current.Y, diagonalsPolicy);
+                    }
+                    else
+                    {
+                        GetTileOrthographicNeighbours(ref neighbourgs, grid, current.X, current.Y);
+                    }
                     foreach (T neiTile in neighbourgs)
                     {
                         neighborIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, neiTile.X, neiTile.Y);
@@ -2162,7 +2201,7 @@ namespace Caskev.GridToolkit
         /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="targetTile">The target tile for the paths calculation</param>
         /// <returns>A DirectionMap object</returns>
-        public static DirectionMap GenerateDirectionMap<T>(T[,] grid, T targetTile) where T : ITile
+        public static DirectionMap GenerateDirectionMap<T>(T[,] grid, T targetTile, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE) where T : ITile
         {
             if (targetTile == null || !targetTile.IsWalkable)
             {
@@ -2185,7 +2224,14 @@ namespace Caskev.GridToolkit
             while (frontier.Count > 0)
             {
                 current = frontier.Dequeue();
-                GetTileOrthographicNeighbours(ref neighbourgs, grid, current.X, current.Y);
+                if (diagonalsPolicy != DiagonalsPolicy.NONE)
+                {
+                    GetTileNeighbours(ref neighbourgs, grid, current.X, current.Y, diagonalsPolicy);
+                }
+                else
+                {
+                    GetTileOrthographicNeighbours(ref neighbourgs, grid, current.X, current.Y);
+                }
                 foreach (T neiTile in neighbourgs)
                 {
                     neighborIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, neiTile.X, neiTile.Y);
