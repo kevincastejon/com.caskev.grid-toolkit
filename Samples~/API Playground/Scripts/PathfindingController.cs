@@ -19,6 +19,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
         }
         [SerializeField] private Transform _arrowPrefab;
         [SerializeField] private TextMeshProUGUI _progressWindow;
+        [SerializeField] private TMP_Dropdown _diagonalsPolicy;
         [SerializeField] private TextMeshProUGUI _hoveredTileLabel;
         [SerializeField] private GridController _grid;
         private DirectionMap _directionMap;
@@ -47,6 +48,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
         {
             _targetTile = _grid.CenterTile;
             _startTile = _grid.StartTile;
+            _diagonalsPolicy.onValueChanged.AddListener((x) => GenerateDirectionMap());
             GenerateDirectionMap();
         }
         private void Update()
@@ -86,7 +88,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
         }
         private void GenerateDirectionMap()
         {
-            _directionMap = Pathfinding.GenerateDirectionMap(_grid.Map, _targetTile);
+            _directionMap = Pathfinding.GenerateDirectionMap(_grid.Map, _targetTile, (DiagonalsPolicy)_diagonalsPolicy.value);
             DestroyArrows();
             GenerateArrowsFromDirectionMap();
             bool isAccessible = _directionMap.IsTileAccessible(_grid.Map, _startTile);
@@ -118,7 +120,8 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
                 {
                     Transform arrow = Instantiate(_arrowPrefab);
                     _arrows.Add(arrow);
-                    arrow.position = new(j, i);
+                    arrow.position = _grid.TileMap.CellToWorld(new Vector3Int(j, i)) + new Vector3(_grid.TileMap.transform.localScale.x / 2, _grid.TileMap.transform.localScale.y / 2) + (_grid.TileMap.transform.parent.localScale.y < 0 ? Vector3.down * _grid.TileMap.transform.localScale.y : Vector3.zero); ;
+                    arrow.localScale = _grid.transform.localScale;
                     float angle = 0f;
                     bool hasDirection = _directionMap.IsTileAccessible(_grid.Map, _grid.Map[i, j]);
                     if (hasDirection)
@@ -127,13 +130,13 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
                         switch (nextDirection)
                         {
                             case NextTileDirection.RIGHT: angle = 0f; break;
-                            case NextTileDirection.UP: angle = 90f; break;
+                            case NextTileDirection.UP: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -90f : 90f; break;
                             case NextTileDirection.LEFT: angle = 180f; break;
-                            case NextTileDirection.DOWN: angle = -90f; break;
-                            case NextTileDirection.UP_RIGHT: angle = 45f; break;
-                            case NextTileDirection.UP_LEFT: angle = 135f; break;
-                            case NextTileDirection.DOWN_LEFT: angle = -135f; break;
-                            case NextTileDirection.DOWN_RIGHT: angle = -45f; break;
+                            case NextTileDirection.DOWN: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 90f : -90f; break;
+                            case NextTileDirection.UP_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -45f : 45f; break;
+                            case NextTileDirection.UP_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -135f : 135f; break;
+                            case NextTileDirection.DOWN_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 135f : -135f; break;
+                            case NextTileDirection.DOWN_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 45f : -45f; break;
                             case NextTileDirection.NONE: break;
                             case NextTileDirection.SELF: default: hasDirection = false; break;
                         }

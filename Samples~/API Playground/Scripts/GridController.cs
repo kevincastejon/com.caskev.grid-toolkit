@@ -38,6 +38,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
         public Tile StartTile { get => _startTile; }
         public Tile ClampedHoveredTile { get => _clampedHoveredTile; }
         public bool MouseEnabled { get => _mouseEnabled; set => _mouseEnabled = value; }
+        public Tilemap TileMap => _tileMap; 
 
         private void Awake()
         {
@@ -76,18 +77,19 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
                 _clampedHoveredTile = null;
                 return;
             }
-            Vector2Int mouseWorldPos = (Vector2Int)_tileMap.WorldToCell(_camera.ScreenToWorldPoint(Input.mousePosition));
-            Vector2Int clampedMouseWorldPos = new Vector2Int(Mathf.Clamp(mouseWorldPos.x, 0, _tileMap.size.x - 1), Mathf.Clamp(mouseWorldPos.y, 0, _tileMap.size.y - 1));
-            if (mouseWorldPos.x >= 0 && mouseWorldPos.x < _tileMap.size.x && mouseWorldPos.y >= 0 && mouseWorldPos.y < _tileMap.size.y)
+            Vector3Int hoveredCoordinates = _tileMap.WorldToCell(_camera.ScreenToWorldPoint(Input.mousePosition));
+            Vector3Int clampedHoveredCoordinates = new Vector3Int(Mathf.Clamp(hoveredCoordinates.x, 0, _tileMap.size.x - 1), Mathf.Clamp(hoveredCoordinates.y, 0, _tileMap.size.y - 1));
+            if (hoveredCoordinates.x >= 0 && hoveredCoordinates.x < _tileMap.size.x && hoveredCoordinates.y >= 0 && hoveredCoordinates.y < _tileMap.size.y)
             {
-                Tile tile = _map[mouseWorldPos.y, mouseWorldPos.x];
+                Tile tile = _map[Mathf.FloorToInt(hoveredCoordinates.y), Mathf.FloorToInt(hoveredCoordinates.x)];
                 if (_hoveredTile == null || !GridUtils.TileEquals(tile, _hoveredTile))
                 {
                     _hoveredTile = tile;
                     _justEnteredTile = true;
                     if (_selectionOutline)
                     {
-                        _selectionOutline.position = (Vector3Int)mouseWorldPos;
+                        _selectionOutline.localScale = _tileMap.transform.localScale;
+                        _selectionOutline.position = _tileMap.CellToWorld(hoveredCoordinates) + new Vector3(_tileMap.transform.localScale.x / 2, _tileMap.transform.localScale.y / 2);
                     }
                 }
             }
@@ -95,14 +97,15 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
             {
                 _hoveredTile = null;
             }
-            Tile clampedTile = _map[clampedMouseWorldPos.y, clampedMouseWorldPos.x];
+            Tile clampedTile = _map[Mathf.FloorToInt(clampedHoveredCoordinates.y), Mathf.FloorToInt(clampedHoveredCoordinates.x)];
             if (_clampedHoveredTile == null || !GridUtils.TileEquals(clampedTile, _clampedHoveredTile))
             {
                 _clampedHoveredTile = clampedTile;
                 _justEnteredClampedTile = true;
                 if (_clampedSelectionOutline)
                 {
-                    _clampedSelectionOutline.position = (Vector3Int)clampedMouseWorldPos;
+                    _clampedSelectionOutline.localScale = _tileMap.transform.localScale;
+                    _clampedSelectionOutline.position = _tileMap.CellToWorld(clampedHoveredCoordinates) + new Vector3(_tileMap.transform.localScale.x / 2, _tileMap.transform.localScale.y / 2) + (_tileMap.transform.parent.localScale.y < 0 ? Vector3.down* _tileMap.transform.localScale.y : Vector3.zero);
                 }
             }
         }
