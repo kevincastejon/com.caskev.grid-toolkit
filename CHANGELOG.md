@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.0] - 2025-09-16
+### Added
+- Diagonal movements support on pathfinding.
+
 ## [0.1.0] - 2025-09-12
 ### Added
 - Full API unit tests.
