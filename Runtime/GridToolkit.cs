@@ -33,7 +33,7 @@ namespace Caskev.GridToolkit
     /// <b>DIAGONAL_2FREE :</b> only diagonal movements, with two walkable facing neighbours common to the start and destination tiles, are allowed<br/>
     /// <b>DIAGONAL_1FREE :</b> only diagonal movements, with one or more walkable facing neighbour common to the start and destination tiles, are allowed<br/>
     /// <b>ALL_DIAGONALS :</b> all diagonal movements allowed<br/>
-    /// \image html DiagonalsPolicySchema.png height=200px
+    /// \image html "./DiagonalsPolicySchematic.png" height=500
     /// </summary>
     public enum DiagonalsPolicy
     {
@@ -2135,6 +2135,7 @@ namespace Caskev.GridToolkit
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
         /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="targetTile">The target tile for the paths calculation</param>
+        /// <param name="diagonalsPolicy">The diagonal movements policy for the paths calculation</param>
         /// <param name="progress">An optional IProgress object to get the generation progression</param>
         /// <param name="cancelToken">An optional CancellationToken object to cancel the generation</param>
         /// <returns>A DirectionMap object</returns>
@@ -2200,6 +2201,7 @@ namespace Caskev.GridToolkit
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
         /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="targetTile">The target tile for the paths calculation</param>
+        /// <param name="diagonalsPolicy">The diagonal movements policy for the paths calculation</param>
         /// <returns>A DirectionMap object</returns>
         public static DirectionMap GenerateDirectionMap<T>(T[,] grid, T targetTile, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE) where T : ITile
         {

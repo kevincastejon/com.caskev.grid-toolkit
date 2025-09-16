@@ -169,11 +169,17 @@ Storing this DirectionMap object allows you to reconstruct paths between tiles w
 
 By default, paths are calculated with orthogonal movements only (up, down, left, right). This is the most efficient way to calculate paths.
 You can allow diagonal movements but you have to decide the tolerance regarding the walls common neibours.
-You can use the **DiagonalsPolicy** optional parameter, in any pathfinding method, to allow and tune diagonal movements.
+You can use the **DiagonalsPolicy** optional parameter, in any pathfinding calculation method, to allow and tune diagonal movements.
 
 Take a look at this schematic to understand how it works:
 
-![DiagonalsPolicy](DiagonalsPolicySchematic.png)
+![](DiagonalsPolicySchematic.png)
+
+---
+
+#### Asynchronous
+
+Every pathfinding calculation method has an asynchronous variant, that returns a **Task**, with additional optional parameters to handle cancellation and be notified of progress.
 
 ---
 
