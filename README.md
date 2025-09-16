@@ -16,7 +16,7 @@ What is a *tile* ? Any object (custom class, struct, component, ...) that implem
 
 This API is using a namespace so you have to add a using instruction to the scripts that will need this library:
 ```cs
-using KevinCastejon.GridToolkit;
+using Caskev.GridToolkit;
 ```
 
 ---
