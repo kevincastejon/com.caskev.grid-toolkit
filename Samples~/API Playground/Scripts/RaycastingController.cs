@@ -14,6 +14,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
             LINE_OF_SIGHT,
             CONE_OF_VISION,
         }
+        [SerializeField] private GameObject _uiContent;
         [SerializeField] private Image _lineClearLED;
         [SerializeField] private Image _coneClearLED;
         [SerializeField] private TMP_Dropdown _demoTypeDropDown;
@@ -28,41 +29,34 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
         [SerializeField] private int _length = 5;
         [SerializeField] private float _direction = 0f;
         [SerializeField] private float _angle = 90f;
-        [SerializeField] private GridController _grid;
+        private GridController _grid;
         private Image[] _allLeds;
         private DemoType _demoType;
         private Tile _centerTile;
         private bool _walling;
         private bool _startWalkableValue;
+        private bool _isQuitting = false;
 
-        private void SetCurrentDemoType(DemoType value)
+        private void OnEnable()
         {
-            if (_demoType == value)
+            _uiContent.SetActive(true);
+            if (_centerTile != null)
+            {
+                Start();
+            }
+        }
+        private void OnDisable()
+        {
+            if (_isQuitting)
             {
                 return;
             }
-            _demoType = value;
-            HideAllLeds();
-            switch (_demoType)
-            {
-                case DemoType.LINE_OF_SIGHT:
-                    _angleSlider.transform.parent.gameObject.SetActive(false);
-                    _allowDiagonalsToggle.gameObject.SetActive(true);
-                    _favorVerticalToggle.gameObject.SetActive(true);
-                    _lineClearLED.transform.parent.gameObject.SetActive(true);
-                    break;
-                case DemoType.CONE_OF_VISION:
-                    _angleSlider.transform.parent.gameObject.SetActive(true);
-                    _allowDiagonalsToggle.gameObject.SetActive(false);
-                    _favorVerticalToggle.gameObject.SetActive(false);
-                    _coneClearLED.transform.parent.gameObject.SetActive(true);
-                    break;
-                default:
-                    break;
-            }
+            _uiContent.SetActive(false);
+            _grid.ClearWalkables();
         }
         private void Awake()
         {
+            _grid = FindAnyObjectByType<GridController>();
             _allLeds = new Image[] { _lineClearLED, _coneClearLED };
             _allowDiagonalsToggle.isOn = _allowDiagonals;
             _favorVerticalToggle.isOn = _favorVertical;
@@ -70,6 +64,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
             _directionSlider.value = _direction;
             _angleSlider.value = _angle;
             _demoTypeDropDown.value = (int)_demoType;
+            _centerTile = _grid.CenterTile;
 
             _allowDiagonalsToggle.onValueChanged.AddListener((x) =>
             {
@@ -98,7 +93,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
         }
         private void Start()
         {
-            _centerTile = _grid.CenterTile;
+            _grid.StartTileEnabled = false;
             Raycast();
         }
         private void Update()
@@ -127,6 +122,36 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
                 Raycast();
             }
         }
+        private void OnApplicationQuit()
+        {
+            _isQuitting = true;
+        }
+        private void SetCurrentDemoType(DemoType value)
+        {
+            if (_demoType == value)
+            {
+                return;
+            }
+            _demoType = value;
+            HideAllLeds();
+            switch (_demoType)
+            {
+                case DemoType.LINE_OF_SIGHT:
+                    _angleSlider.transform.parent.gameObject.SetActive(false);
+                    _allowDiagonalsToggle.gameObject.SetActive(true);
+                    _favorVerticalToggle.gameObject.SetActive(true);
+                    _lineClearLED.transform.parent.gameObject.SetActive(true);
+                    break;
+                case DemoType.CONE_OF_VISION:
+                    _angleSlider.transform.parent.gameObject.SetActive(true);
+                    _allowDiagonalsToggle.gameObject.SetActive(false);
+                    _favorVerticalToggle.gameObject.SetActive(false);
+                    _coneClearLED.transform.parent.gameObject.SetActive(true);
+                    break;
+                default:
+                    break;
+            }
+        }
         private void Raycast()
         {
             switch (_demoType)
@@ -143,12 +168,14 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
         }
         private void RaycastLine()
         {
-            _grid.Refresh(_centerTile, Raycasting.GetLineOfSight(_grid.Map, out bool isClear, _centerTile, _length, _direction, _allowDiagonals, _favorVertical, false));
+            _grid.TintCenter(_centerTile);
+            _grid.TintHighlightedTiles(Raycasting.GetLineOfSight(_grid.Map, out bool isClear, _centerTile, _length, _direction, _allowDiagonals, _favorVertical, false));
             _lineClearLED.color = isClear ? Color.green : Color.red;
         }
         private void RaycastCone()
         {
-            _grid.Refresh(_centerTile, Raycasting.GetConeOfVision(_grid.Map, out bool isClear, _centerTile, _length, _angle, _direction, false));
+            _grid.TintCenter(_centerTile);
+            _grid.TintHighlightedTiles(Raycasting.GetConeOfVision(_grid.Map, out bool isClear, _centerTile, _length, _angle, _direction, false));
             _coneClearLED.color = isClear ? Color.green : Color.red;
         }
         private void HideAllLeds()

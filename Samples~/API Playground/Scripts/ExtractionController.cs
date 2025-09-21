@@ -22,6 +22,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
             NEIGHBORS_DIAGONALS,
             NEIGHBORS_ALL,
         }
+        [SerializeField] private GameObject _uiContent;
         [SerializeField] private Image _circleLED;
         [SerializeField] private Image _circleOutlineLED;
         [SerializeField] private Image _rectangleLED;
@@ -48,12 +49,103 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
         [SerializeField] private float _direction = 0f;
         [SerializeField] private float _angle = 90f;
         [SerializeField] private Vector2Int _size = Vector2Int.one * 5;
-        [SerializeField] private GridController _grid;
+        private GridController _grid;
         private Image[] _allLeds;
         private DemoType _demoType;
         private Tile _centerTile;
         private Tile _ledTile;
-
+        private bool _isQuitting = false;
+        private void OnEnable()
+        {
+            _uiContent.SetActive(true);
+            if (_centerTile != null)
+            {
+                Start();
+            }
+        }
+        private void OnDisable()
+        {
+            if (_isQuitting)
+            {
+                return;
+            }
+            _uiContent.SetActive(false);
+            _grid.ClearWalkables();
+        }
+        private void Awake()
+        {
+            _grid = FindAnyObjectByType<GridController>();
+            _allLeds = new Image[] { _circleLED, _circleOutlineLED, _rectangleLED, _rectangleOutlineLED, _coneLED, _lineLED, _neiLED, _neiOrthoLED, _neiDiagoLED, _neiAnyLED };
+            _allowDiagonalsToggle.isOn = _allowDiagonals;
+            _favorVerticalToggle.isOn = _favorVertical;
+            _radiusSlider.value = _radius;
+            _directionSlider.value = _direction;
+            _angleSlider.value = _angle;
+            _rectangleSizeXSlider.value = _size.x;
+            _rectangleSizeYSlider.value = _size.y;
+            _demoTypeDropDown.value = (int)_demoType;
+            _centerTile = _grid.CenterTile;
+            _allowDiagonalsToggle.onValueChanged.AddListener((x) =>
+            {
+                _allowDiagonals = x; Extract();
+            });
+            _favorVerticalToggle.onValueChanged.AddListener((x) =>
+            {
+                _favorVertical = x; Extract();
+            });
+            _radiusSlider.onValueChanged.AddListener((x) =>
+            {
+                _radius = Mathf.FloorToInt(x); Extract();
+            });
+            _directionSlider.onValueChanged.AddListener((x) =>
+            {
+                _direction = x; Extract();
+            });
+            _angleSlider.onValueChanged.AddListener((x) =>
+            {
+                _angle = x; Extract();
+            });
+            _rectangleSizeXSlider.onValueChanged.AddListener((x) =>
+            {
+                _size.x = Mathf.FloorToInt(x); Extract();
+            });
+            _rectangleSizeYSlider.onValueChanged.AddListener((x) =>
+            {
+                _size.y = Mathf.FloorToInt(x); Extract();
+            });
+            _demoTypeDropDown.onValueChanged.AddListener((x) =>
+            {
+                SetCurrentDemoType((DemoType)x); Extract();
+            });
+        }
+        private void Start()
+        {
+            _grid.StartTileEnabled = false;
+            Extract();
+        }
+        private void Update()
+        {
+            _hoveredTileLabel.text = _grid.ClampedHoveredTile == null ? "" : ("X:" + _grid.ClampedHoveredTile.X + " Y:" + _grid.ClampedHoveredTile.Y);
+            if ((_grid.JustEnteredClampedTile && Input.GetMouseButton(1)) || (Input.GetMouseButtonDown(1) && _grid.ClampedHoveredTile != _centerTile))
+            {
+                _centerTile = _grid.ClampedHoveredTile;
+                Extract();
+            }
+            else if ((_grid.JustEnteredClampedTile && Input.GetMouseButton(2)) || (Input.GetMouseButtonDown(2) && _grid.ClampedHoveredTile != _ledTile))
+            {
+                _ledTile = _grid.ClampedHoveredTile;
+                RefreshCurrentLED();
+            }
+            else if (Input.GetMouseButtonUp(2) || _grid.ClampedHoveredTile == null)
+            {
+                _ledTile = null;
+                TurnOffCurrentLed();
+            }
+        }
+        private void OnApplicationQuit()
+        {
+            _isQuitting = true;
+        }
         private void SetCurrentDemoType(DemoType value)
         {
             if (_demoType == value)
@@ -178,75 +270,6 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
                     break;
             }
         }
-        private void Awake()
-        {
-            _allLeds = new Image[] { _circleLED, _circleOutlineLED, _rectangleLED, _rectangleOutlineLED, _coneLED, _lineLED, _neiLED, _neiOrthoLED, _neiDiagoLED, _neiAnyLED };
-            _allowDiagonalsToggle.isOn = _allowDiagonals;
-            _favorVerticalToggle.isOn = _favorVertical;
-            _radiusSlider.value = _radius;
-            _directionSlider.value = _direction;
-            _angleSlider.value = _angle;
-            _rectangleSizeXSlider.value = _size.x;
-            _rectangleSizeYSlider.value = _size.y;
-            _demoTypeDropDown.value = (int)_demoType;
-
-            _allowDiagonalsToggle.onValueChanged.AddListener((x) =>
-            {
-                _allowDiagonals = x; Extract();
-            });
-            _favorVerticalToggle.onValueChanged.AddListener((x) =>
-            {
-                _favorVertical = x; Extract();
-            });
-            _radiusSlider.onValueChanged.AddListener((x) =>
-            {
-                _radius = Mathf.FloorToInt(x); Extract();
-            });
-            _directionSlider.onValueChanged.AddListener((x) =>
-            {
-                _direction = x; Extract();
-            });
-            _angleSlider.onValueChanged.AddListener((x) =>
-            {
-                _angle = x; Extract();
-            });
-            _rectangleSizeXSlider.onValueChanged.AddListener((x) =>
-            {
-                _size.x = Mathf.FloorToInt(x); Extract();
-            });
-            _rectangleSizeYSlider.onValueChanged.AddListener((x) =>
-            {
-                _size.y = Mathf.FloorToInt(x); Extract();
-            });
-            _demoTypeDropDown.onValueChanged.AddListener((x) =>
-            {
-                SetCurrentDemoType((DemoType)x); Extract();
-            });
-        }
-        private void Start()
-        {
-            _centerTile = _grid.CenterTile;
-            Extract();
-        }
-        private void Update()
-        {
-            _hoveredTileLabel.text = _grid.ClampedHoveredTile == null ? "" : ("X:" + _grid.ClampedHoveredTile.X + " Y:" + _grid.ClampedHoveredTile.Y);
-            if ((_grid.JustEnteredClampedTile && Input.GetMouseButton(1)) || (Input.GetMouseButtonDown(1) && _grid.ClampedHoveredTile != _centerTile))
-            {
-                _centerTile = _grid.ClampedHoveredTile;
-                Extract();
-            }
-            else if ((_grid.JustEnteredClampedTile && Input.GetMouseButton(2)) || (Input.GetMouseButtonDown(2) && _grid.ClampedHoveredTile != _ledTile))
-            {
-                _ledTile = _grid.ClampedHoveredTile;
-                RefreshCurrentLED();
-            }
-            else if (Input.GetMouseButtonUp(2) || _grid.ClampedHoveredTile == null)
-            {
-                _ledTile = null;
-                TurnOffCurrentLed();
-            }
-        }
         private void Extract()
         {
             switch (_demoType)
@@ -325,44 +348,54 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
         }
         private void ExtractCircle()
         {
-            _grid.Refresh(_centerTile, Extraction.GetTilesInACircle(_grid.Map, _centerTile, _radius, false, false));
+            _grid.TintCenter(_centerTile);
+            _grid.TintHighlightedTiles(Extraction.GetTilesInACircle(_grid.Map, _centerTile, _radius, false, false));
         }
         private void ExtractCircleOutline()
         {
-            _grid.Refresh(_centerTile, Extraction.GetTilesOnACircleOutline(_grid.Map, _centerTile, _radius, false));
+            _grid.TintCenter(_centerTile);
+            _grid.TintHighlightedTiles(Extraction.GetTilesOnACircleOutline(_grid.Map, _centerTile, _radius, false));
         }
         private void ExtractRectangle()
         {
-            _grid.Refresh(_centerTile, Extraction.GetTilesInARectangle(_grid.Map, _centerTile, _size, false, false));
+            _grid.TintCenter(_centerTile);
+            _grid.TintHighlightedTiles(Extraction.GetTilesInARectangle(_grid.Map, _centerTile, _size, false, false));
         }
         private void ExtractRectangleOutline()
         {
-            _grid.Refresh(_centerTile, Extraction.GetTilesOnARectangleOutline(_grid.Map, _centerTile, _size, false));
+            _grid.TintCenter(_centerTile);
+            _grid.TintHighlightedTiles(Extraction.GetTilesOnARectangleOutline(_grid.Map, _centerTile, _size, false));
         }
         private void ExtractCone()
         {
-            _grid.Refresh(_centerTile, Extraction.GetTilesInACone(_grid.Map, _centerTile, _radius, _angle, _direction, false, false));
+            _grid.TintCenter(_centerTile);
+            _grid.TintHighlightedTiles(Extraction.GetTilesInACone(_grid.Map, _centerTile, _radius, _angle, _direction, false, false));
         }
         private void ExtractLine()
         {
-            _grid.Refresh(_centerTile, Extraction.GetTilesOnALine(_grid.Map, _centerTile, _radius, _direction, _allowDiagonals, _favorVertical, false, false/*, false*/));
+            _grid.TintCenter(_centerTile);
+            _grid.TintHighlightedTiles(Extraction.GetTilesOnALine(_grid.Map, _centerTile, _radius, _direction, _allowDiagonals, _favorVertical, false, false/*, false*/));
         }
         private void ExtractNeighbor()
         {
             Extraction.GetTileNeighbour(_grid.Map, _centerTile, _direction, out Tile neighbor, false);
-            _grid.Refresh(_centerTile, new Tile[] { neighbor });
+            _grid.TintCenter(_centerTile);
+            _grid.TintHighlightedTiles(new Tile[] { neighbor });
         }
         private void ExtractOrthoNeighbors()
         {
-            _grid.Refresh(_centerTile, Extraction.GetTileOrthogonalsNeighbours(_grid.Map, _centerTile, false));
+            _grid.TintCenter(_centerTile);
+            _grid.TintHighlightedTiles(Extraction.GetTileOrthogonalsNeighbours(_grid.Map, _centerTile, false));
         }
         private void ExtractDiagonalsNeighbors()
         {
-            _grid.Refresh(_centerTile, Extraction.GetTileDiagonalsNeighbours(_grid.Map, _centerTile, false));
+            _grid.TintCenter(_centerTile);
+            _grid.TintHighlightedTiles(Extraction.GetTileDiagonalsNeighbours(_grid.Map, _centerTile, false));
         }
         private void ExtractNeighbors()
         {
-            _grid.Refresh(_centerTile, Extraction.GetTileNeighbours(_grid.Map, _centerTile, false));
+            _grid.TintCenter(_centerTile);
+            _grid.TintHighlightedTiles(Extraction.GetTileNeighbours(_grid.Map, _centerTile, false));
         }
         private void TurnOffCurrentLed()
         {

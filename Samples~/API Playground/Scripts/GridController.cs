@@ -7,6 +7,7 @@ using Caskev.GridToolkit;
 
 namespace GridToolkitWorkingProject.Demos.APIPlayground
 {
+    [DefaultExecutionOrder(-100)]
     public class GridController : MonoBehaviour
     {
         [SerializeField] private Transform _selectionOutline;
@@ -22,13 +23,14 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
         private Tile[,] _map;
         private Tile _centerTile;
         private Tile _startTile;
-        private Tile[] _highlightedTiles;
-        private Tile[] _pathTiles;
+        private Tile[] _highlightedTiles = new Tile[0];
+        private Tile[] _pathTiles = new Tile[0];
         private Tile _hoveredTile;
         private Tile _clampedHoveredTile;
         private bool _justEnteredTile;
         private bool _justEnteredClampedTile;
         private bool _mouseEnabled = true;
+        private bool _startTileEnabled = true;
 
         public Tile[,] Map { get => _map; }
         public Tile HoveredTile { get => _hoveredTile; }
@@ -38,7 +40,26 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
         public Tile StartTile { get => _startTile; }
         public Tile ClampedHoveredTile { get => _clampedHoveredTile; }
         public bool MouseEnabled { get => _mouseEnabled; set => _mouseEnabled = value; }
-        public Tilemap TileMap => _tileMap; 
+        public Tilemap TileMap => _tileMap;
+        public bool StartTileEnabled
+        {
+            get => _startTileEnabled;
+            set
+            {
+                _startTileEnabled = value;
+                if (!_startTileEnabled && _startTile != null)
+                {
+                    if (_highlightedTiles.Contains(_startTile))
+                    {
+                        _tileMap.SetColor(new Vector3Int(_startTile.X, _startTile.Y), _highlightedColor);
+                    }
+                    else
+                    {
+                        _tileMap.SetColor(new Vector3Int(_startTile.X, _startTile.Y), _floorColor);
+                    }
+                }
+            }
+        }
 
         private void Awake()
         {
@@ -105,7 +126,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
                 if (_clampedSelectionOutline)
                 {
                     _clampedSelectionOutline.localScale = _tileMap.transform.localScale;
-                    _clampedSelectionOutline.position = _tileMap.CellToWorld(clampedHoveredCoordinates) + new Vector3(_tileMap.transform.localScale.x / 2, _tileMap.transform.localScale.y / 2) + (_tileMap.transform.parent.localScale.y < 0 ? Vector3.down* _tileMap.transform.localScale.y : Vector3.zero);
+                    _clampedSelectionOutline.position = _tileMap.CellToWorld(clampedHoveredCoordinates) + new Vector3(_tileMap.transform.localScale.x / 2, _tileMap.transform.localScale.y / 2) + (_tileMap.transform.parent.localScale.y < 0 ? Vector3.down * _tileMap.transform.localScale.y : Vector3.zero);
                 }
             }
         }
@@ -116,16 +137,16 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
             tile.IsWalkable = isWalkable;
             _tileMap.SetColor(new Vector3Int(tile.X, tile.Y), isWalkable ? _floorColor : _wallColor);
         }
-        public void Refresh(Tile center = null, Tile[] highlightedTiles = null, Tile[] pathTiles = null, Tile start = null)
+        public void ClearWalkables()
         {
-            TintCenter(center);
-            TintStart(start);
-            TintHighlightedTiles(highlightedTiles);
-            TintPathTiles(pathTiles);
+            ClearHighlightedTiles();
+            ClearPathTiles();
+            ClearCenter();
+            ClearStart();
         }
-        private void TintCenter(Tile tile)
+        public void TintCenter(Tile tile)
         {
-            if (tile == null || _centerTile == tile)
+            if (tile == null)
             {
                 return;
             }
@@ -133,17 +154,20 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
             _centerTile = tile;
             _tileMap.SetColor(new Vector3Int(_centerTile.X, _centerTile.Y), _centerColor);
         }
-        private void TintStart(Tile tile)
+        public void TintStart(Tile tile)
         {
-            if (tile == null || _startTile == tile)
+            if (tile == null)
             {
                 return;
             }
             ClearStart();
             _startTile = tile;
-            _tileMap.SetColor(new Vector3Int(_startTile.X, _startTile.Y), _startColor);
+            if (_startTileEnabled)
+            {
+                _tileMap.SetColor(new Vector3Int(_startTile.X, _startTile.Y), _startColor);
+            }
         }
-        private void TintHighlightedTiles(Tile[] highlightedTiles)
+        public void TintHighlightedTiles(Tile[] highlightedTiles)
         {
             if (highlightedTiles == null)
             {
@@ -153,13 +177,13 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
             _highlightedTiles = highlightedTiles;
             for (int i = 0; i < _highlightedTiles.Length; i++)
             {
-                if (_highlightedTiles[i] != _startTile)
+                if (!_startTileEnabled || _highlightedTiles[i] != _startTile)
                 {
                     _tileMap.SetColor(new Vector3Int(_highlightedTiles[i].X, _highlightedTiles[i].Y), _highlightedColor);
                 }
             }
         }
-        private void TintPathTiles(Tile[] pathTiles)
+        public void TintPathTiles(Tile[] pathTiles)
         {
             if (pathTiles == null)
             {
@@ -172,9 +196,17 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
                 _tileMap.SetColor(new Vector3Int(_pathTiles[i].X, _pathTiles[i].Y), _pathColor);
             }
         }
-        private void ClearCenter()
+        public void ClearCenter()
         {
-            if (_highlightedTiles != null && _highlightedTiles.Contains(_centerTile))
+            if (_centerTile == null)
+            {
+                return;
+            }
+            if (_pathTiles.Contains(_centerTile))
+            {
+                _tileMap.SetColor(new Vector3Int(_centerTile.X, _centerTile.Y), _pathColor);
+            }
+            else if (_highlightedTiles.Contains(_centerTile))
             {
                 _tileMap.SetColor(new Vector3Int(_centerTile.X, _centerTile.Y), _highlightedColor);
             }
@@ -189,10 +221,19 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
                     _tileMap.SetColor(new Vector3Int(_centerTile.X, _centerTile.Y), _wallColor);
                 }
             }
+            _centerTile = null;
         }
-        private void ClearStart()
+        public void ClearStart()
         {
-            if (_highlightedTiles != null && _highlightedTiles.Contains(_startTile))
+            if (_startTile == null)
+            {
+                return;
+            }
+            if (_pathTiles.Contains(_centerTile))
+            {
+                _tileMap.SetColor(new Vector3Int(_startTile.X, _startTile.Y), _pathColor);
+            }
+            else if (_highlightedTiles.Contains(_startTile))
             {
                 _tileMap.SetColor(new Vector3Int(_startTile.X, _startTile.Y), _highlightedColor);
             }
@@ -207,30 +248,26 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
                     _tileMap.SetColor(new Vector3Int(_startTile.X, _startTile.Y), _wallColor);
                 }
             }
+            _startTile = null;
         }
-        private void ClearHighlightedTiles()
+        public void ClearHighlightedTiles()
         {
-            if (_highlightedTiles != null)
+            for (int i = 0; i < _highlightedTiles.Length; i++)
             {
-                for (int i = 0; i < _highlightedTiles.Length; i++)
+                if (!_pathTiles.Contains(_highlightedTiles[i]) && _highlightedTiles[i] != _centerTile && (!_startTileEnabled || _highlightedTiles[i] != _startTile))
                 {
-                    if (_highlightedTiles[i] != _centerTile && _highlightedTiles[i] != _startTile)
-                    {
-                        _tileMap.SetColor(new Vector3Int(_highlightedTiles[i].X, _highlightedTiles[i].Y), _floorColor);
-                    }
+                    _tileMap.SetColor(new Vector3Int(_highlightedTiles[i].X, _highlightedTiles[i].Y), _floorColor);
                 }
-                _highlightedTiles = null;
             }
+            _highlightedTiles = new Tile[0];
         }
-        private void ClearPathTiles()
+        public void ClearPathTiles()
         {
-            if (_pathTiles != null)
-            {
                 for (int i = 0; i < _pathTiles.Length; i++)
                 {
                     if (_pathTiles[i] != _centerTile && _pathTiles[i] != _startTile)
                     {
-                        if (_highlightedTiles != null && _highlightedTiles.Contains(_pathTiles[i]))
+                        if (_highlightedTiles.Contains(_pathTiles[i]))
                         {
                             _tileMap.SetColor(new Vector3Int(_pathTiles[i].X, _pathTiles[i].Y), _highlightedColor);
                         }
@@ -240,8 +277,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
                         }
                     }
                 }
-                _pathTiles = null;
-            }
+            _pathTiles = new Tile[0];
         }
     }
 }
