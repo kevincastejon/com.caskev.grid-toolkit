@@ -1,3 +1,5 @@
+using Codice.Utils;
+using PriorityQueueUnityPort;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
@@ -42,7 +44,7 @@ namespace Caskev.GridToolkit
         DIAGONAL_1FREE,
         ALL_DIAGONALS,
     }
-    public class DijkstraTile
+    public struct DijkstraTile
     {
         private NextTileDirection _nextTileDirection;
         private float _distance;
@@ -2285,7 +2287,7 @@ namespace Caskev.GridToolkit
         /// <param name="progress">An optional IProgress object to get the generation progression</param>
         /// <param name="cancelToken">An optional CancellationToken object to cancel the generation</param>
         /// <returns>A DirectionMap object</returns>
-        public static Task<DijkstraMap> GenerateDijkstraMapAsync<T>(T[,] grid, T targetTile, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : ITile
+        public static Task<DijkstraMap> GenerateDijkstraMapAsync<T>(T[,] grid, T targetTile, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE, float diagonalsWeight = 1.414f, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : IWeightedTile
         {
             Task<DijkstraMap> task = Task.Run(() =>
             {
@@ -2303,11 +2305,12 @@ namespace Caskev.GridToolkit
                 visited[targetIndex] = true;
                 dijkstraMap[targetIndex].NextTileDirection = NextTileDirection.SELF;
                 dijkstraMap[targetIndex].Distance = 0f;
-                Queue<T> frontier = new Queue<T>();
-                frontier.Enqueue(targetTile);
+                PriorityQueue<T, float> frontier = new();
+                frontier.Enqueue(targetTile, 0f);
                 List<T> neighbourgs = new();
                 T current = default;
                 int neighborIndex = -1;
+                int currentIndex = -1;
                 int visitedCount = 0;
                 while (frontier.Count > 0)
                 {
@@ -2328,12 +2331,15 @@ namespace Caskev.GridToolkit
                     foreach (T neiTile in neighbourgs)
                     {
                         neighborIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, neiTile.X, neiTile.Y);
-                        if (!visited[neighborIndex])
+                        currentIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, current.X, current.Y);
+                        bool isDiagonal = current.X != neiTile.X && current.Y != neiTile.Y;
+                        float newDistance = dijkstraMap[currentIndex].Distance + neiTile.Weight * (isDiagonal ? diagonalsWeight : 1f);
+                        if (!visited[neighborIndex] || newDistance < dijkstraMap[neighborIndex].Distance)
                         {
                             visitedCount++;
                             visited[neighborIndex] = true;
-                            //dijkstraMap[neighborIndex] = GridUtils.GetDirectionTo(neiTile, current);
-                            frontier.Enqueue(neiTile);
+                            dijkstraMap[neighborIndex] = new(GridUtils.GetDirectionTo(neiTile, current), newDistance);
+                            frontier.Enqueue(neiTile, newDistance);
                         }
                     }
                     neighbourgs.Clear();
@@ -2350,7 +2356,7 @@ namespace Caskev.GridToolkit
         /// <param name="targetTile">The target tile for the paths calculation</param>
         /// <param name="diagonalsPolicy">The diagonal movements policy for the paths calculation</param>
         /// <returns>A DijkstraMap object</returns>
-        public static DijkstraMap GenerateDijkstraMap<T>(T[,] grid, T targetTile, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE) where T : ITile
+        public static DijkstraMap GenerateDijkstraMap<T>(T[,] grid, T targetTile, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE, float diagonalsWeight = 1.414f) where T : IWeightedTile
         {
             if (targetTile == null || !targetTile.IsWalkable)
             {
@@ -2366,11 +2372,12 @@ namespace Caskev.GridToolkit
             visited[targetIndex] = true;
             dijkstraMap[targetIndex].NextTileDirection = NextTileDirection.SELF;
             dijkstraMap[targetIndex].Distance = 0f;
-            Queue<T> frontier = new Queue<T>();
-            frontier.Enqueue(targetTile);
+            PriorityQueue<T, float> frontier = new();
+            frontier.Enqueue(targetTile, 0f);
             List<T> neighbourgs = new();
             T current = default;
             int neighborIndex = -1;
+            int currentIndex = -1;
             int visitedCount = 0;
             while (frontier.Count > 0)
             {
@@ -2386,12 +2393,15 @@ namespace Caskev.GridToolkit
                 foreach (T neiTile in neighbourgs)
                 {
                     neighborIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, neiTile.X, neiTile.Y);
-                    if (!visited[neighborIndex])
+                    currentIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, current.X, current.Y);
+                    bool isDiagonal = current.X != neiTile.X && current.Y != neiTile.Y;
+                    float newDistance = dijkstraMap[currentIndex].Distance + neiTile.Weight * (isDiagonal ? diagonalsWeight : 1f);
+                    if (!visited[neighborIndex] || newDistance < dijkstraMap[neighborIndex].Distance)
                     {
                         visitedCount++;
                         visited[neighborIndex] = true;
-                        //dijkstraMap[neighborIndex] = GridUtils.GetDirectionTo(neiTile, current);
-                        frontier.Enqueue(neiTile);
+                        dijkstraMap[neighborIndex] = new(GridUtils.GetDirectionTo(neiTile, current), newDistance);
+                        frontier.Enqueue(neiTile, newDistance);
                     }
                 }
                 neighbourgs.Clear();
@@ -2711,6 +2721,23 @@ namespace Caskev.GridToolkit
             return _dijkstraMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)].NextTileDirection;
         }
         /// <summary>
+        /// Get the distance from the specified tile to the target.
+        /// </summary>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
+        /// <param name="includeTarget">Include the target tile into the resulting array or not</param>
+        /// <returns>An array of tiles</returns>
+        public float GetDistanceToTarget<T>(T[,] grid, T startTile) where T : IWeightedTile
+        {
+            if (!IsTileAccessible(grid, startTile))
+            {
+                throw new Exception("Do not call DijkstraMap method with an inaccessible tile");
+            }
+            int tileFlatIndex = GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), startTile.X, startTile.Y);
+            return _dijkstraMap[tileFlatIndex].Distance;
+        }
+        /// <summary>
         /// Get all the tiles on the path from a tile to the target.
         /// </summary>
         /// <param name="grid">A two-dimensional array of tiles</param>
@@ -2770,7 +2797,7 @@ namespace Caskev.GridToolkit
         /// <returns>A byte array representing the serialized DijkstraMap</returns>
         public byte[] ToByteArray()
         {
-            int bytesCount = sizeof(int) + sizeof(int) + sizeof(byte) * _dijkstraMap.Length;
+            int bytesCount = sizeof(int) + sizeof(int) + ((sizeof(byte) + sizeof(float)) * _dijkstraMap.Length);
             byte[] bytes = new byte[bytesCount];
             int byteIndex = 0;
             BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _target);
@@ -2796,7 +2823,7 @@ namespace Caskev.GridToolkit
         {
             Task<byte[]> task = Task.Run(() =>
             {
-                int bytesCount = sizeof(int) + sizeof(int) + sizeof(byte) * _dijkstraMap.Length;
+                int bytesCount = sizeof(int) + sizeof(int) + ((sizeof(byte) + sizeof(float)) * _dijkstraMap.Length);
                 byte[] bytes = new byte[bytesCount];
                 int byteIndex = 0;
                 BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _target);

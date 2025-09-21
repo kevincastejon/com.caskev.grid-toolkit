@@ -4,13 +4,14 @@ using Caskev.GridToolkit;
 
 namespace GridToolkitTests
 {
-    public class TestTile : ITile
+    public class TestTile : IWeightedTile
     {
         public bool IsWalkable { get; set; }
         public int X { get; }
         public int Y { get; }
-        public TestTile(int x, int y, bool walkable = true) { X = x; Y = y; IsWalkable = walkable; }
-        public override string ToString() => $"({X},{Y}) W:{IsWalkable}";
+        public float Weight { get; }
+        public TestTile(int x, int y, bool walkable = true, float weight = 1f) { X = x; Y = y; IsWalkable = walkable; Weight = weight; }
+        public override string ToString() => $"({X},{Y}) Walkable:{IsWalkable} Weight:{Weight}";
     }
 
     public static class GridFactory
