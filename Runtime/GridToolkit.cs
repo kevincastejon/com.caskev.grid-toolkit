@@ -44,7 +44,7 @@ namespace Caskev.GridToolkit
         DIAGONAL_1FREE,
         ALL_DIAGONALS,
     }
-    public struct DijkstraTile
+    internal struct DijkstraTile
     {
         private NextTileDirection _nextTileDirection;
         private float _distance;
@@ -55,8 +55,8 @@ namespace Caskev.GridToolkit
             _distance = distance;
         }
 
-        public NextTileDirection NextTileDirection { get => _nextTileDirection; internal set => _nextTileDirection = value; }
-        public float Distance { get => _distance; internal set => _distance = value; }
+        internal NextTileDirection NextTileDirection { get => _nextTileDirection; set => _nextTileDirection = value; }
+        internal float Distance { get => _distance; set => _distance = value; }
     }
     /// <summary>
     /// A simple tile with coordinates and walkable status.
@@ -2284,6 +2284,7 @@ namespace Caskev.GridToolkit
         /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="targetTile">The target tile for the paths calculation</param>
         /// <param name="diagonalsPolicy">The diagonal movements policy for the paths calculation</param>
+        /// <param name="diagonalsWeight">The diagonal movements cost for the paths calculation</param>
         /// <param name="progress">An optional IProgress object to get the generation progression</param>
         /// <param name="cancelToken">An optional CancellationToken object to cancel the generation</param>
         /// <returns>A DirectionMap object</returns>
@@ -2355,6 +2356,7 @@ namespace Caskev.GridToolkit
         /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="targetTile">The target tile for the paths calculation</param>
         /// <param name="diagonalsPolicy">The diagonal movements policy for the paths calculation</param>
+        /// <param name="diagonalsWeight">The diagonal movements cost for the paths calculation</param>
         /// <returns>A DijkstraMap object</returns>
         public static DijkstraMap GenerateDijkstraMap<T>(T[,] grid, T targetTile, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE, float diagonalsWeight = 1.414f) where T : IWeightedTile
         {
