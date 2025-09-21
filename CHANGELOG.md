@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.0] - 2025-09-22
+### Added
+- Dijkstra map feature with tiles and diagonal movement weights parameters.
+
 ## [0.2.0] - 2025-09-16
 ### Added
 - Diagonal movements support on pathfinding.

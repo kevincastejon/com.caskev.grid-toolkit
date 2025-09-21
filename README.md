@@ -9,10 +9,11 @@ Utilitary API to proceed operations on abstract grids such as tile extraction, r
 
 All you need to use this API is a bi-dimensional array of tiles ordered in row major order (see below).
 
-What is a *tile* ? Any object (custom class, struct, component, ...) that implements the very light **ITile** interface of this library (**ITile3D** for the 3D API). This interface requires three properties getters:
+What is a *tile* ? Any object (custom class, struct, component, ...) that implements the very light **ITile** (**IWeightedTile** for *DijkstraMap*) interface of this library. This interface requires three properties getters:
 - *bool* **IsWalkable** . Must return if the tile can be walk/see throught (for pathfinding/raycasting)
 - *int* **X** . Must return the horizontal position of the tile into the grid
 - *int* **Y** . Must return the vertical position of the tile into the grid
+- *float* **Weight** . Only for *IWeightedTile* Must return the cost movement to enter this tile (minimum 1f).
 
 This API is using a namespace so you have to add a using instruction to the scripts that will need this library:
 ```cs
@@ -157,15 +158,18 @@ bool isConeClear = Raycasting.IsConeOfVisionClear(grid, startTile, destinationTi
 
 ---
 Allows you to calculate paths between tiles.  
-This API offers a method which generates and returns a direction map. A direction map can be seen as a "layer" on top of the user grid that indicates, for each accessible tile, the direction to the next tile, ultimately leading to the target tile.  
-A direction map holds all the paths to a target tile from all the accessible tiles on the grid.  
-Storing this DirectionMap object allows you to reconstruct paths between tiles without having to recalculate them every time, which would be costly in terms of performance.  
+This API offers several methods which generates and returns paths maps. A path map can be seen as a "layer" on top of the user grid that indicates, for each accessible tile, data that can be used to reconstruct the path to a target tile.
+A direction map holds all the direction data, ultimately leading to a target tile from all the accessible tiles on the grid.  
+A dijkstra map is the same but also hold the distance data for each tile to a target tile. The generation of the dijkstra map will also take tiles weights and diagonals weights into account (movement costs).
+Storing these maps objects allows you to reconstruct paths between tiles without having to recalculate them every time, which would be costly in terms of performance.  
 
-*Note that, obviously, any path calculation is valid as long as the user grid, and walkable states of the tiles, remains unchanged*
+*Note that, obviously, any path calculation is valid as long as the user grid, walkable states and weights of the tiles, remains unchanged*
 
 ---
 
 #### Diagonals Movements
+
+##### DiagonalPolicy
 
 By default, paths are calculated with orthogonal movements only (up, down, left, right). This is the most efficient way to calculate paths.
 You can allow diagonal movements but you have to decide the tolerance regarding the walls common neibours.
@@ -174,6 +178,12 @@ You can use the **DiagonalsPolicy** optional parameter, in any pathfinding calcu
 Take a look at this schematic to understand how it works:
 
 ![](DiagonalsPolicySchematic.png)
+
+##### DiagonalsWeight (Only available with *DijkstraMap*)
+
+When moving diagonally from one tile to another, there is actually more distance covered than when moving with orthogonal movement. 
+Mathematically, when the orthogonal distance between two adjacent tiles is 1, then the diagonal distance between two diagonnally adjacent tiles is roughly 1.414. The detailed calculation is **Sqrt(x_distance²+y_distance²)**. 
+Although it is the most commonly used diagonal movement cost value, you can decide to use any value superior or equal to 1.
 
 ---
 
@@ -185,7 +195,7 @@ Every pathfinding calculation method has an asynchronous variant, that returns a
 
 #### DirectionMap
 
-You can generate a **DirectionMap** object that holds pre-calculated paths data.  
+You can generate a **DirectionMap** object that holds pre-calculated direction data.  
 This way of doing pathfinding is useful for some usages (like Tower Defenses and more) because it calculates once all the paths between one tile, called the "**target**", and all the accessible tiles from it.
 
 To generate the **DirectionMap** object, use the **GenerateDirectionMap** method that needs the *grid* and the *target* tile from which to calculate the paths, as parameters.
@@ -252,4 +262,25 @@ You can deserialize a byte array to a **DirectionMap**. Usefull for loading bake
 - **FromByteArray**
 ```cs
 DirectionMap directionMap = DirectionMap.FromByteArray(grid, serializedDirectionMap);
+```
+#### DijkstraMap
+
+You can generate a **DijkstraMap** object that holds pre-calculated direction and distance data.  
+This type of map differs from the **DirectionMap** in that it allows tiles to have weights, that can be seen as movement cost, and that it also stores the distance from all accessible tiles to the target tile.
+
+To generate the **DijkstraMap** object, use the **GenerateDijkstraMap** method that needs the *grid* and the *target* tile from which to calculate the paths, as parameters.
+
+```cs
+DijkstraMap dijkstraMap = Pathfinding.GenerateDijkstraMap(grid, targetTile);
+```
+
+Once the **DijkstraMap** object is generated, you can use its several and almost "*cost free*" methods and properties, which are the same as the **DirectionMap** ones, plus this one method below.
+
+---
+
+You can get the distance between the target and a tile.
+
+- **GetDistanceToTarget**
+```cs
+float distance = dijsktraMap.GetDistanceToTarget(grid, tile);
 ```

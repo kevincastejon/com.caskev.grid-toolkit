@@ -2159,7 +2159,7 @@ namespace Caskev.GridToolkit
             }
         }
         /// <summary>
-        /// Generates asynchronously a DirectionMap object that will contain all the pre-calculated paths data between a target tile and all the accessible tiles from this target
+        /// Generates asynchronously a DirectionMap object that will contain all the pre-calculated direction data between a target tile and all the accessible tiles from this target
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
         /// <param name="grid">A two-dimensional array of tiles</param>
@@ -2225,7 +2225,7 @@ namespace Caskev.GridToolkit
             return task;
         }
         /// <summary>
-        /// Generates a DirectionMap object that will contain all the pre-calculated paths data between a target tile and all the accessible tiles from this target
+        /// Generates a DirectionMap object that will contain all the pre-calculated direction data between a target tile and all the accessible tiles from this target
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
         /// <param name="grid">A two-dimensional array of tiles</param>
@@ -2278,7 +2278,7 @@ namespace Caskev.GridToolkit
             return new DirectionMap(directionMap, targetIndex);
         }
         /// <summary>
-        /// Generates asynchronously a DijkstraMap object that will contain all the pre-calculated paths data between a target tile and all the accessible tiles from this target
+        /// Generates asynchronously a DijkstraMap object that will contain all the pre-calculated direction and distance data between a target tile and all the accessible tiles from this target
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
         /// <param name="grid">A two-dimensional array of tiles</param>
@@ -2349,7 +2349,7 @@ namespace Caskev.GridToolkit
             return task;
         }
         /// <summary>
-        /// Generates a DijkstraMap object that will contain all the pre-calculated paths data between a target tile and all the accessible tiles from this target
+        /// Generates a DijkstraMap object that will contain all the pre-calculated direction and distance data between a target tile and all the accessible tiles from this target
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
         /// <param name="grid">A two-dimensional array of tiles</param>
@@ -2410,7 +2410,7 @@ namespace Caskev.GridToolkit
         }
     }
     /// <summary>
-    /// You can generate a DirectionMap object that holds pre-calculated paths data.
+    /// You can generate a DirectionMap object that holds pre-calculated direction and distance data.
     /// This way of doing pathfinding is useful for some usages(like Tower Defenses and more) because it calculates once all the paths between one tile, called the "target", and all the accessible tiles from it.
     /// To generate the DirectionMap object, use the GenerateDirectionMap method that needs the* grid* and the target tile from which to calculate the paths, as parameters.
     /// <i>Note that, obviously, any path calculation is valid as long as the user grid, and walkable states of the tiles, remains unchanged</i>
@@ -2724,17 +2724,15 @@ namespace Caskev.GridToolkit
         /// Get the distance from the specified tile to the target.
         /// </summary>
         /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="includeTarget">Include the target tile into the resulting array or not</param>
-        /// <returns>An array of tiles</returns>
-        public float GetDistanceToTarget<T>(T[,] grid, T startTile) where T : IWeightedTile
+        /// <param name="tile">The tile from which to get the distance to the target tile used to generate this dijkstra map</param>
+        /// <returns>The float distance from the specified tile to the target tile used to generate this dijkstra map</returns>
+        public float GetDistanceToTarget<T>(T[,] grid, T tile) where T : IWeightedTile
         {
-            if (!IsTileAccessible(grid, startTile))
+            if (!IsTileAccessible(grid, tile))
             {
                 throw new Exception("Do not call DijkstraMap method with an inaccessible tile");
             }
-            int tileFlatIndex = GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), startTile.X, startTile.Y);
+            int tileFlatIndex = GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y);
             return _dijkstraMap[tileFlatIndex].Distance;
         }
         /// <summary>
