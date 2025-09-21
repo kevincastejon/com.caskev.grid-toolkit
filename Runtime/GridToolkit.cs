@@ -86,7 +86,7 @@ namespace Caskev.GridToolkit
         }
     }
     /// <summary>
-    /// An interface that the user-defined tile object has to implement in order to work with most of this library's methods
+    /// A tile with coordinates, walkable status and weight.
     /// </summary>
     public interface IWeightedTile : ITile
     {
