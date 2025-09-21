@@ -4,6 +4,8 @@
 
 Utilitary API to proceed operations on abstract grids such as tile extraction, raycasting, and pathfinding.
 
+[API References](https://kevincastejon.github.io/com.caskev.unity-grid-toolkit/namespaces.html)
+
 ---
 ## Usage
 
@@ -182,7 +184,7 @@ Take a look at this schematic to understand how it works:
 ##### DiagonalsWeight (Only available with *DijkstraMap*)
 
 When moving diagonally from one tile to another, there is actually more distance covered than when moving with orthogonal movement. 
-Mathematically, when the orthogonal distance between two adjacent tiles is 1, then the diagonal distance between two diagonnally adjacent tiles is roughly 1.414. The detailed calculation is **Sqrt(x_distance²+y_distance²)**. 
+Mathematically, when the orthogonal distance between two adjacent tiles is 1, then the diagonal distance between two diagonnally adjacent tiles is roughly 1.414. The detailed calculation is **Sqrt(x_distanceÂ²+y_distanceÂ²)**. 
 Although it is the most commonly used diagonal movement cost value, you can decide to use any value superior or equal to 1.
 
 ---
