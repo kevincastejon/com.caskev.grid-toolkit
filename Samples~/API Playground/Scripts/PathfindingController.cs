@@ -1,4 +1,5 @@
 ﻿using Caskev.GridToolkit;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -23,6 +24,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
         [SerializeField] private TMP_Dropdown _diagonalsPolicy;
         [SerializeField] private Slider _diagonalsWeight;
         [SerializeField] private TextMeshProUGUI _hoveredTileLabel;
+        private CanvasGroup _canvasGroup;
         private GridController _grid;
         private DirectionMap _directionMap;
         private DijkstraMap _dijkstraMap;
@@ -59,6 +61,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
         }
         private void Awake()
         {
+            _canvasGroup = GetComponentInParent<CanvasGroup>();
             _grid = FindAnyObjectByType<GridController>();
             _targetTile = _grid.CenterTile;
             _startTile = _grid.StartTile;
@@ -114,6 +117,13 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
                 _cts.Cancel();
             }
         }
+        public void CancelOperation()
+        {
+            if (_cts != null)
+            {
+                _cts.Cancel();
+            }
+        }
         private void UpdateParameters()
         {
             _diagonalsWeight.transform.parent.gameObject.SetActive(((PathfindingType)_pathfindingType.value) != PathfindingType.DIRECTION_MAP && ((DiagonalsPolicy)_diagonalsPolicy.value) != DiagonalsPolicy.NONE);
@@ -133,9 +143,25 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
                     break;
             }
         }
-        private void GenerateDijkstraMap()
+        private async void GenerateDijkstraMap()
         {
-            _dijkstraMap = Pathfinding.GenerateDijkstraMap(_grid.Map, _targetTile, (DiagonalsPolicy)_diagonalsPolicy.value, _diagonalsWeight.value);
+            _canvasGroup.interactable = false;
+            _progressWindow.transform.parent.gameObject.SetActive(true);
+            _cts = new System.Threading.CancellationTokenSource();
+            try
+            {
+                _dijkstraMap = await Pathfinding.GenerateDijkstraMapAsync(_grid.Map, _targetTile, (DiagonalsPolicy)_diagonalsPolicy.value, _diagonalsWeight.value, new Progress<float>((x) => _progressWindow.text = (x * 100).ToString("F0") + "%"), _cts.Token);
+            }
+            catch (Exception e)
+            {
+                _progressWindow.transform.parent.gameObject.SetActive(false);
+                _canvasGroup.interactable = true;
+                _cts = null;
+                throw e;
+            }
+            _progressWindow.transform.parent.gameObject.SetActive(false);
+            _canvasGroup.interactable = true;
+            _cts = null;
             DestroyArrows();
             DestroyDistanceSprites();
             GenerateArrowsSprites();
@@ -150,9 +176,25 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
             _grid.TintPathTiles(path);
             _grid.TintStart(_startTile);
         }
-        private void GenerateDirectionMap()
+        private async void GenerateDirectionMap()
         {
-            _directionMap = Pathfinding.GenerateDirectionMap(_grid.Map, _targetTile, (DiagonalsPolicy)_diagonalsPolicy.value);
+            _canvasGroup.interactable = false;
+            _progressWindow.transform.parent.gameObject.SetActive(true);
+            _cts = new System.Threading.CancellationTokenSource();
+            try
+            {
+                _directionMap = await Pathfinding.GenerateDirectionMapAsync(_grid.Map, _targetTile, (DiagonalsPolicy)_diagonalsPolicy.value, new Progress<float>((x) => _progressWindow.text = (x * 100).ToString("F0") + "%"), _cts.Token);
+            }
+            catch (Exception e)
+            {
+                _progressWindow.transform.parent.gameObject.SetActive(false);
+                _canvasGroup.interactable = true;
+                _cts = null;
+                throw e;
+            }
+            _progressWindow.transform.parent.gameObject.SetActive(false);
+            _canvasGroup.interactable = true;
+            _cts = null;
             DestroyArrows();
             DestroyDistanceSprites();
             GenerateArrowsSprites();
@@ -167,7 +209,6 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
             _grid.TintPathTiles(path);
             _grid.TintStart(_startTile);
         }
-
         private void DestroyArrows()
         {
             foreach (Transform arrow in _arrowsSprites)
@@ -221,7 +262,6 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
             {
                 return;
             }
-            StringBuilder sb = new StringBuilder();
             for (int i = 0; i < _grid.Map.GetLength(0); i++)
             {
                 for (int j = 0; j < _grid.Map.GetLength(1); j++)
@@ -237,16 +277,16 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
                         NextTileDirection nextDirection = _dijkstraMap.GetNextTileDirectionFromTile(_grid.Map, _grid.Map[i, j]);
                         switch (nextDirection)
                         {
-                            case NextTileDirection.RIGHT: angle = 0f; sb.Append(" " + $"_dirs['→']".PadRight(10) + ","); break;
-                            case NextTileDirection.UP: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -90f : 90f; sb.Append(" " + $"_dirs['↓']".PadRight(10) + ","); break;
-                            case NextTileDirection.LEFT: angle = 180f; sb.Append(" " + $"_dirs['←']".PadRight(10) + ","); break;
-                            case NextTileDirection.DOWN: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 90f : -90f; sb.Append(" " + $"_dirs['↑']".PadRight(10) + ","); break;
-                            case NextTileDirection.UP_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -45f : 45f; sb.Append(" " + $"_dirs['↘']".PadRight(10) + ","); break;
-                            case NextTileDirection.UP_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -135f : 135f; sb.Append(" " + $"_dirs['↙']".PadRight(10) + ","); break;
-                            case NextTileDirection.DOWN_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 135f : -135f; sb.Append(" " + $"_dirs['↖']".PadRight(10) + ","); break;
-                            case NextTileDirection.DOWN_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 45f : -45f; sb.Append(" " + $"_dirs['↗']".PadRight(10) + ","); break;
-                            case NextTileDirection.NONE: sb.Append(" " + $"_dirs['0']".PadRight(10) + ","); break;
-                            case NextTileDirection.SELF: default: hasDirection = false; sb.Append(" " + $"_dirs['.']".PadRight(10) + ","); break;
+                            case NextTileDirection.RIGHT: angle = 0f; break;
+                            case NextTileDirection.UP: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -90f : 90f; break;
+                            case NextTileDirection.LEFT: angle = 180f; break;
+                            case NextTileDirection.DOWN: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 90f : -90f; break;
+                            case NextTileDirection.UP_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -45f : 45f; break;
+                            case NextTileDirection.UP_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -135f : 135f; break;
+                            case NextTileDirection.DOWN_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 135f : -135f; break;
+                            case NextTileDirection.DOWN_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 45f : -45f; break;
+                            case NextTileDirection.NONE: break;
+                            case NextTileDirection.SELF: default: hasDirection = false; break;
                         }
                     }
                     Quaternion rot = Quaternion.Euler(0f, 0f, angle);
@@ -256,16 +296,10 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
                     }
                     else
                     {
-                        if (!_dijkstraMap.IsTileAccessible(_grid.Map, _grid.Map[i, j]))
-                        {
-                            sb.Append(" " + $"_dirs['0']".PadRight(10) + ",");
-                        }
                         arrow.gameObject.SetActive(false);
                     }
                 }
-                sb.Append("\n");
             }
-            Debug.Log(sb.ToString());
         }
         private void GenerateArrowsFromDirectionMap()
         {
@@ -318,7 +352,6 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
             {
                 return;
             }
-            StringBuilder sb = new StringBuilder();
             for (int i = 0; i < _grid.Map.GetLength(0); i++)
             {
                 for (int j = 0; j < _grid.Map.GetLength(1); j++)
@@ -330,18 +363,14 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
                     bool isWall = !_dijkstraMap.IsTileAccessible(_grid.Map, _grid.Map[i, j]);
                     if (isWall)
                     {
-                        sb.Append(" " + ((0f.ToString("F0") + "f").PadRight(10)) + ",");
                         distanceSprite.gameObject.SetActive(false);
                     }
                     else
                     {
-                        sb.Append(" " + (((_dijkstraMap.GetDistanceToTarget(_grid.Map, _grid.Map[i, j]).ToString("F8")).Replace(',', '.') + "f").PadRight(10)) + ",");
                         distanceSprite.GetComponent<TextMeshPro>().text = _dijkstraMap.GetDistanceToTarget(_grid.Map, _grid.Map[i, j]).ToString("F0");
                     }
                 }
-                sb.Append("\n");
             }
-            Debug.Log(sb.ToString());
         }
         private void GetPathFromMap()
         {

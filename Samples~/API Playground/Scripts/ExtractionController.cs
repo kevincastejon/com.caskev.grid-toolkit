@@ -76,14 +76,14 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
         {
             _grid = FindAnyObjectByType<GridController>();
             _allLeds = new Image[] { _circleLED, _circleOutlineLED, _rectangleLED, _rectangleOutlineLED, _coneLED, _lineLED, _neiLED, _neiOrthoLED, _neiDiagoLED, _neiAnyLED };
-            _allowDiagonalsToggle.isOn = _allowDiagonals;
-            _favorVerticalToggle.isOn = _favorVertical;
-            _radiusSlider.value = _radius;
-            _directionSlider.value = _direction;
-            _angleSlider.value = _angle;
-            _rectangleSizeXSlider.value = _size.x;
-            _rectangleSizeYSlider.value = _size.y;
-            _demoTypeDropDown.value = (int)_demoType;
+            _allowDiagonalsToggle.SetIsOnWithoutNotify(_allowDiagonals);
+            _favorVerticalToggle.SetIsOnWithoutNotify(_favorVertical);
+            _radiusSlider.SetValueWithoutNotify(_radius);
+            _directionSlider.SetValueWithoutNotify(_direction);
+            _angleSlider.SetValueWithoutNotify(_angle);
+            _rectangleSizeXSlider.SetValueWithoutNotify(_size.x);
+            _rectangleSizeYSlider.SetValueWithoutNotify(_size.y);
+            _demoTypeDropDown.SetValueWithoutNotify((int)_demoType);
             _centerTile = _grid.CenterTile;
             _allowDiagonalsToggle.onValueChanged.AddListener((x) =>
             {
@@ -159,7 +159,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
                 case DemoType.EXTRACT_CIRCLE:
                     _radiusSlider.transform.parent.gameObject.SetActive(true);
                     _radiusSlider.minValue = 1;
-                    _radiusSlider.value = Mathf.Max(_radiusSlider.value, 1);
+                    _radiusSlider.SetValueWithoutNotify(Mathf.Max(_radiusSlider.value, 1));
                     _rectangleSizeXSlider.transform.parent.gameObject.SetActive(false);
                     _rectangleSizeYSlider.transform.parent.gameObject.SetActive(false);
                     _directionSlider.transform.parent.gameObject.SetActive(false);
@@ -172,7 +172,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
                 case DemoType.EXTRACT_CIRCLE_OUTLINE:
                     _radiusSlider.transform.parent.gameObject.SetActive(true);
                     _radiusSlider.minValue = 1;
-                    _radiusSlider.value = Mathf.Max(_radiusSlider.value, 1);
+                    _radiusSlider.SetValueWithoutNotify(Mathf.Max(_radiusSlider.value, 1));
                     _rectangleSizeXSlider.transform.parent.gameObject.SetActive(false);
                     _rectangleSizeYSlider.transform.parent.gameObject.SetActive(false);
                     _directionSlider.transform.parent.gameObject.SetActive(false);

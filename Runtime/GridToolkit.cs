@@ -2309,9 +2309,11 @@ namespace Caskev.GridToolkit
                 PriorityQueue<T, float> frontier = new();
                 frontier.Enqueue(targetTile, 0f);
                 List<T> neighbourgs = new();
-                T current = default;
-                int neighborIndex = -1;
-                int currentIndex = -1;
+                T current;
+                int neighborIndex;
+                int currentIndex;
+                bool isDiagonal;
+                float newDistance;
                 int visitedCount = 0;
                 while (frontier.Count > 0)
                 {
@@ -2333,8 +2335,8 @@ namespace Caskev.GridToolkit
                     {
                         neighborIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, neiTile.X, neiTile.Y);
                         currentIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, current.X, current.Y);
-                        bool isDiagonal = current.X != neiTile.X && current.Y != neiTile.Y;
-                        float newDistance = dijkstraMap[currentIndex].Distance + neiTile.Weight * (isDiagonal ? diagonalsWeight : 1f);
+                        isDiagonal = current.X != neiTile.X && current.Y != neiTile.Y;
+                        newDistance = dijkstraMap[currentIndex].Distance + neiTile.Weight * (isDiagonal ? diagonalsWeight : 1f);
                         if (!visited[neighborIndex] || newDistance < dijkstraMap[neighborIndex].Distance)
                         {
                             visitedCount++;
@@ -2377,10 +2379,11 @@ namespace Caskev.GridToolkit
             PriorityQueue<T, float> frontier = new();
             frontier.Enqueue(targetTile, 0f);
             List<T> neighbourgs = new();
-            T current = default;
-            int neighborIndex = -1;
-            int currentIndex = -1;
-            int visitedCount = 0;
+            T current;
+            int neighborIndex;
+            int currentIndex;
+            bool isDiagonal;
+            float newDistance;
             while (frontier.Count > 0)
             {
                 current = frontier.Dequeue();
@@ -2396,11 +2399,10 @@ namespace Caskev.GridToolkit
                 {
                     neighborIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, neiTile.X, neiTile.Y);
                     currentIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, current.X, current.Y);
-                    bool isDiagonal = current.X != neiTile.X && current.Y != neiTile.Y;
-                    float newDistance = dijkstraMap[currentIndex].Distance + neiTile.Weight * (isDiagonal ? diagonalsWeight : 1f);
+                    isDiagonal = current.X != neiTile.X && current.Y != neiTile.Y;
+                    newDistance = dijkstraMap[currentIndex].Distance + neiTile.Weight * (isDiagonal ? diagonalsWeight : 1f);
                     if (!visited[neighborIndex] || newDistance < dijkstraMap[neighborIndex].Distance)
                     {
-                        visitedCount++;
                         visited[neighborIndex] = true;
                         dijkstraMap[neighborIndex] = new(GridUtils.GetDirectionTo(neiTile, current), newDistance);
                         frontier.Enqueue(neiTile, newDistance);
