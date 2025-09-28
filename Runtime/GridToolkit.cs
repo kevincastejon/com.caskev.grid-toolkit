@@ -13,52 +13,6 @@ using UnityEngine;
 namespace Caskev.GridToolkit
 {
     /// <summary>
-    /// An enumeration representing the possible directions to move to reach a neighboring tile
-    /// </summary>
-    public enum NextTileDirection : byte
-    {
-        NONE,
-        SELF,
-        LEFT,
-        RIGHT,
-        DOWN,
-        UP,
-        UP_LEFT,
-        UP_RIGHT,
-        DOWN_LEFT,
-        DOWN_RIGHT,
-    }
-    /// <summary>
-    /// Represents the pathfinding diagonals permissiveness.<br/>
-    /// When going diagonally from a tile <b>A</b> to tile <b>B</b> in 2D grid, there are two more tile involved, the ones that are both facing neighbours of the <b>A</b> and <b>B</b> tiles. You can allow diagonals movement depending on the walkable status of these tiles.<br/>
-    /// <b>NONE :</b> no diagonal movement allowed<br/>
-    /// <b>DIAGONAL_2FREE :</b> only diagonal movements, with two walkable facing neighbours common to the start and destination tiles, are allowed<br/>
-    /// <b>DIAGONAL_1FREE :</b> only diagonal movements, with one or more walkable facing neighbour common to the start and destination tiles, are allowed<br/>
-    /// <b>ALL_DIAGONALS :</b> all diagonal movements allowed<br/>
-    /// \image html "./DiagonalsPolicySchematic.png" height=500
-    /// </summary>
-    public enum DiagonalsPolicy
-    {
-        NONE,
-        DIAGONAL_2FREE,
-        DIAGONAL_1FREE,
-        ALL_DIAGONALS,
-    }
-    internal struct DijkstraTile
-    {
-        private NextTileDirection _nextTileDirection;
-        private float _distance;
-
-        internal DijkstraTile(NextTileDirection nextTileDirection, float distance)
-        {
-            _nextTileDirection = nextTileDirection;
-            _distance = distance;
-        }
-
-        internal NextTileDirection NextTileDirection { get => _nextTileDirection; set => _nextTileDirection = value; }
-        internal float Distance { get => _distance; set => _distance = value; }
-    }
-    /// <summary>
     /// A simple tile with coordinates and walkable status.
     /// </summary>
     public interface ITile
@@ -96,6 +50,607 @@ namespace Caskev.GridToolkit
         public float Weight
         {
             get;
+        }
+    }
+    /// <summary>
+    /// An enumeration representing the possible directions to move to reach a neighboring tile
+    /// </summary>
+    public enum NextTileDirection : byte
+    {
+        NONE,
+        SELF,
+        LEFT,
+        RIGHT,
+        DOWN,
+        UP,
+        UP_LEFT,
+        UP_RIGHT,
+        DOWN_LEFT,
+        DOWN_RIGHT,
+    }
+    /// <summary>
+    /// Represents the pathfinding diagonals permissiveness.<br/>
+    /// When going diagonally from a tile <b>A</b> to tile <b>B</b> in 2D grid, there are two more tile involved, the ones that are both facing neighbours of the <b>A</b> and <b>B</b> tiles. You can allow diagonals movement depending on the walkable status of these tiles.<br/>
+    /// <b>NONE :</b> no diagonal movement allowed<br/>
+    /// <b>DIAGONAL_2FREE :</b> only diagonal movements, with two walkable facing neighbours common to the start and destination tiles, are allowed<br/>
+    /// <b>DIAGONAL_1FREE :</b> only diagonal movements, with one or more walkable facing neighbour common to the start and destination tiles, are allowed<br/>
+    /// <b>ALL_DIAGONALS :</b> all diagonal movements allowed<br/>
+    /// \image html "./DiagonalsPolicySchematic.png" height=500
+    /// </summary>
+    public enum DiagonalsPolicy
+    {
+        NONE,
+        DIAGONAL_2FREE,
+        DIAGONAL_1FREE,
+        ALL_DIAGONALS,
+    }
+    internal struct DirectionTile
+    {
+        private NextTileDirection _nextTileDirection;
+        private int _distance;
+
+        internal DirectionTile(NextTileDirection nextTileDirection, int distance)
+        {
+            _nextTileDirection = nextTileDirection;
+            _distance = distance;
+        }
+
+        internal NextTileDirection NextTileDirection { get => _nextTileDirection; set => _nextTileDirection = value; }
+        internal int Distance { get => _distance; set => _distance = value; }
+    }
+    internal struct DijkstraTile
+    {
+        private NextTileDirection _nextTileDirection;
+        private float _distance;
+
+        internal DijkstraTile(NextTileDirection nextTileDirection, float distance)
+        {
+            _nextTileDirection = nextTileDirection;
+            _distance = distance;
+        }
+
+        internal NextTileDirection NextTileDirection { get => _nextTileDirection; set => _nextTileDirection = value; }
+        internal float Distance { get => _distance; set => _distance = value; }
+    }
+    /// <summary>
+    /// You can generate a DirectionPaths object that holds pre-calculated direction and distance data.
+    /// This way of doing pathfinding is useful for some usages(like Tower Defenses and more) because it calculates once all the paths between one tile, called the "target", and all the accessible tiles from it.
+    /// To generate the DirectionPaths object, use the GenerateDirectionPaths method that needs the* grid* and the target tile from which to calculate the paths, as parameters.
+    /// <i>Note that, obviously, any path calculation is valid as long as the user grid, and walkable states of the tiles, remains unchanged</i>
+    /// </summary>
+    /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+    public class DirectionBase
+    {
+        internal readonly NextTileDirection[] _directionMap;
+        protected readonly int _target;
+
+        internal DirectionBase(NextTileDirection[] directionMap, int target)
+        {
+            _directionMap = directionMap;
+            _target = target;
+        }
+        /// <summary>
+        /// Is the tile is accessible from the target into this this DirectionPaths. Usefull to check if the tile is usable as a parameter for this DirectionPaths's methods.
+        /// </summary>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="tile">The tile to check</param>
+        /// <returns>A boolean value</returns>
+        public bool IsTileAccessible<T>(T[,] grid, T tile) where T : ITile
+        {
+            if (tile == null)
+            {
+                return false;
+            }
+            return _directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)] != NextTileDirection.NONE;
+        }
+        /// <summary>
+        /// Returns the tile that has been used as the target to generate this DirectionPaths
+        /// </summary>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <returns></returns>
+        public T GetTargetTile<T>(T[,] grid) where T : ITile
+        {
+            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _target);
+            return GridUtils.GetTile(grid, targetCoords.x, targetCoords.y);
+        }
+        /// <summary>
+        /// Get the next tile on the path between a tile and the target.
+        /// </summary>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="tile">A tile</param>
+        /// <returns>A tile object</returns>
+        public T GetNextTileFromTile<T>(T[,] grid, T tile) where T : ITile
+        {
+            if (!IsTileAccessible(grid, tile))
+            {
+                throw new Exception("Do not call DirectionPaths method with an inaccessible tile");
+            }
+            return GetNextTile(grid, tile);
+        }
+        /// <summary>
+        /// Get the next tile on the path between the target and a tile.
+        /// </summary>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="tile">The tile</param>
+        /// <returns>A Vector2Int direction</returns>
+        public NextTileDirection GetNextTileDirectionFromTile<T>(T[,] grid, T tile) where T : ITile
+        {
+            if (!IsTileAccessible(grid, tile))
+            {
+                throw new Exception("Do not call DirectionPaths method with an inaccessible tile");
+            }
+            return _directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)];
+        }
+        /// <summary>
+        /// Get all the tiles on the path from a tile to the target.
+        /// </summary>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
+        /// <param name="includeTarget">Include the target tile into the resulting array or not</param>
+        /// <returns>An array of tiles</returns>
+        public T[] GetPathToTarget<T>(T[,] grid, T startTile, bool includeStart = true, bool includeTarget = true) where T : ITile
+        {
+            if (!IsTileAccessible(grid, startTile))
+            {
+                throw new Exception("Do not call DirectionPaths method with an inaccessible tile");
+            }
+
+            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _target);
+            T target = GridUtils.GetTile(grid, targetCoords.x, targetCoords.y);
+
+            T tile = includeStart ? startTile : GetNextTile(grid, startTile);
+            bool targetReached = GridUtils.TileEquals(tile, target);
+            if (!includeTarget && targetReached)
+            {
+                return new T[0];
+            }
+            List<T> tiles = new List<T>() { tile };
+            while (!targetReached)
+            {
+                tile = GetNextTile(grid, tile);
+                targetReached = GridUtils.TileEquals(tile, target);
+                if (includeTarget || !targetReached)
+                {
+                    tiles.Add(tile);
+                }
+            }
+            return tiles.ToArray();
+        }
+        /// <summary>
+        /// Get all the tiles on the path from the target to a tile.
+        /// </summary>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="destinationTile">The destination tile</param>
+        /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
+        /// <param name="includeTarget">Include the target tile into the resulting array or not</param>
+        /// <returns>An array of tiles</returns>
+        public T[] GetPathFromTarget<T>(T[,] grid, T destinationTile, bool includeDestination = true, bool includeTarget = true) where T : ITile
+        {
+            T[] path = GetPathToTarget(grid, destinationTile, includeDestination, includeTarget);
+            T[] reversedPath = new T[path.Length];
+            for (int i = 0; i < path.Length; i++)
+            {
+                reversedPath[i] = path[path.Length - 1 - i];
+            }
+            return reversedPath;
+        }
+        protected T GetNextTile<T>(T[,] grid, T tile) where T : ITile
+        {
+            Vector2Int nextTileDirection = GridUtils.NextNodeDirectionToVector2Int(_directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)]);
+            Vector2Int nextTileCoords = new(tile.X + nextTileDirection.x, tile.Y + nextTileDirection.y);
+            return GridUtils.GetTile(grid, nextTileCoords.x, nextTileCoords.y);
+        }
+    }
+    public class DirectionPaths : DirectionBase
+    {
+        private int _maxDistance;
+        public int MaxDistance => _maxDistance;
+        internal DirectionPaths(int maxDistance, NextTileDirection[] directionMap, int target) : base(directionMap, target)
+        {
+            _maxDistance = maxDistance;
+        }
+    }
+    /// <summary>
+    /// You can generate a DirectionMap object that holds pre-calculated direction and distance data.
+    /// This way of doing pathfinding is useful for some usages(like Tower Defenses and more) because it calculates once all the paths between one tile, called the "target", and all the accessible tiles from it.
+    /// To generate the DirectionMap object, use the GenerateDirectionMap method that needs the* grid* and the target tile from which to calculate the paths, as parameters.
+    /// <i>Note that, obviously, any path calculation is valid as long as the user grid, and walkable states of the tiles, remains unchanged</i>
+    /// </summary>
+    /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+    public class DirectionMap : DirectionBase
+    {
+        internal DirectionMap(NextTileDirection[] directionMap, int target) : base(directionMap, target) { }
+        /// <summary>
+        /// Returns the DirectionMap serialized as a byte array.
+        /// </summary>
+        /// <returns>A byte array representing the serialized DirectionMap</returns>
+        public byte[] ToByteArray()
+        {
+            int bytesCount = sizeof(int) + sizeof(int) + sizeof(byte) * _directionMap.Length;
+            byte[] bytes = new byte[bytesCount];
+            int byteIndex = 0;
+            BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _target);
+            byteIndex += sizeof(int);
+            BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _directionMap.Length);
+            byteIndex += sizeof(int);
+            for (int i = 0; i < _directionMap.Length; i++)
+            {
+                bytes[byteIndex] = (byte)_directionMap[i];
+                byteIndex++;
+            }
+            return bytes;
+        }
+        /// <summary>
+        /// Returns the DirectionMap serialized as a byte array.
+        /// </summary>
+        /// <param name="progress">An optional IProgress object to get the serialization progression</param>
+        /// <param name="cancelToken">An optional CancellationToken object to cancel the serialization</param>
+        /// <returns>A byte array representing the serialized DirectionMap</returns>
+        public Task<byte[]> ToByteArrayAsync(IProgress<float> progress = null, CancellationToken cancelToken = default)
+        {
+            Task<byte[]> task = Task.Run(() =>
+            {
+                int bytesCount = sizeof(int) + sizeof(int) + sizeof(byte) * _directionMap.Length;
+                byte[] bytes = new byte[bytesCount];
+                int byteIndex = 0;
+                BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _target);
+                byteIndex += sizeof(int);
+                BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _directionMap.Length);
+                byteIndex += sizeof(int);
+                for (int i = 0; i < _directionMap.Length; i++)
+                {
+                    if (cancelToken.IsCancellationRequested)
+                    {
+                        return null;
+                    }
+                    progress.Report((float)i / _directionMap.Length);
+                    bytes[byteIndex] = (byte)_directionMap[i];
+                    byteIndex++;
+                }
+                return bytes;
+            });
+            return task;
+        }
+        /// <summary>
+        /// Returns a DirectionMap from a byte array that has been serialized with the ToByteArray method.
+        /// </summary>
+        /// <param name="grid">The user grid</param>
+        /// <param name="bytes">The serialized byte array</param>
+        /// <returns>The deserialized DirectionMap</returns>
+        public static DirectionMap FromByteArray<T>(T[,] grid, byte[] bytes) where T : ITile
+        {
+            if (grid == null)
+            {
+                throw new ArgumentException("The grid cannot be null");
+            }
+            int byteIndex = 0;
+            int target = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
+            byteIndex += sizeof(int);
+            int count = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
+            byteIndex += sizeof(int);
+            NextTileDirection[] directionMap = new NextTileDirection[count];
+            for (int i = 0; i < count; i++)
+            {
+                directionMap[i] = (NextTileDirection)bytes[byteIndex];
+                byteIndex++;
+            }
+            return new DirectionMap(directionMap, target);
+        }
+        /// <summary>
+        /// Returns a DirectionMap from a byte array that has been serialized with the ToByteArray method.
+        /// </summary>
+        /// <param name="grid">The user grid</param>
+        /// <param name="bytes">The serialized byte array</param>
+        /// <param name="progress">An optional IProgress object to get the deserialization progression</param>
+        /// <param name="cancelToken">An optional CancellationToken object to cancel the deserialization</param>
+        /// <returns>The deserialized DirectionMap</returns>
+        public static Task<DirectionMap> FromByteArrayAsync<T>(T[,] grid, byte[] bytes, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : ITile
+        {
+            Task<DirectionMap> task = Task.Run(() =>
+            {
+                if (grid == null)
+                {
+                    throw new ArgumentException("The grid cannot be null");
+                }
+                int byteIndex = 0;
+                int target = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
+                byteIndex += sizeof(int);
+                int count = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
+                byteIndex += sizeof(int);
+                NextTileDirection[] directionMap = new NextTileDirection[count];
+                for (int i = 0; i < count; i++)
+                {
+                    if (cancelToken.IsCancellationRequested)
+                    {
+                        return null;
+                    }
+                    progress.Report((float)i / count);
+                    directionMap[i] = (NextTileDirection)bytes[byteIndex];
+                    byteIndex++;
+                }
+                return new DirectionMap(directionMap, target);
+            });
+            return task;
+        }
+    }
+    public class DijkstraBase
+    {
+        internal readonly DijkstraTile[] _dijkstraMap;
+        protected readonly int _target;
+
+        internal DijkstraBase(DijkstraTile[] dijkstraMap, int target)
+        {
+            _dijkstraMap = dijkstraMap;
+            _target = target;
+        }
+        /// <summary>
+        /// Is the tile is accessible from the target into this this DijkstraPaths. Usefull to check if the tile is usable as a parameter for this DirectionMap's methods.
+        /// </summary>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="tile">The tile to check</param>
+        /// <returns>A boolean value</returns>
+        public bool IsTileAccessible<T>(T[,] grid, T tile) where T : IWeightedTile
+        {
+            if (tile == null)
+            {
+                return false;
+            }
+            return _dijkstraMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)].NextTileDirection != NextTileDirection.NONE;
+        }
+        /// <summary>
+        /// Returns the tile that has been used as the target to generate this DijkstraPaths
+        /// </summary>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <returns></returns>
+        public T GetTargetTile<T>(T[,] grid) where T : IWeightedTile
+        {
+            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _target);
+            return GridUtils.GetTile(grid, targetCoords.x, targetCoords.y);
+        }
+        /// <summary>
+        /// Get the next tile on the path between a tile and the target.
+        /// </summary>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="tile">A tile</param>
+        /// <returns>A tile object</returns>
+        public T GetNextTileFromTile<T>(T[,] grid, T tile) where T : IWeightedTile
+        {
+            if (!IsTileAccessible(grid, tile))
+            {
+                throw new Exception("Do not call DijkstraPaths method with an inaccessible tile");
+            }
+            return GetNextTile(grid, tile);
+        }
+        /// <summary>
+        /// Get the next tile on the path between the target and a tile.
+        /// </summary>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="tile">The tile</param>
+        /// <returns>A Vector2Int direction</returns>
+        public NextTileDirection GetNextTileDirectionFromTile<T>(T[,] grid, T tile) where T : IWeightedTile
+        {
+            if (!IsTileAccessible(grid, tile))
+            {
+                throw new Exception("Do not call DijkstraPaths method with an inaccessible tile");
+            }
+            return _dijkstraMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)].NextTileDirection;
+        }
+        /// <summary>
+        /// Get the distance from the specified tile to the target.
+        /// </summary>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="tile">The tile from which to get the distance to the target tile used to generate this dijkstra map</param>
+        /// <returns>The float distance from the specified tile to the target tile used to generate this dijkstra map</returns>
+        public float GetDistanceToTarget<T>(T[,] grid, T tile) where T : IWeightedTile
+        {
+            if (!IsTileAccessible(grid, tile))
+            {
+                throw new Exception("Do not call DijkstraPaths method with an inaccessible tile");
+            }
+            int tileFlatIndex = GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y);
+            return _dijkstraMap[tileFlatIndex].Distance;
+        }
+        /// <summary>
+        /// Get all the tiles on the path from a tile to the target.
+        /// </summary>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
+        /// <param name="includeTarget">Include the target tile into the resulting array or not</param>
+        /// <returns>An array of tiles</returns>
+        public T[] GetPathToTarget<T>(T[,] grid, T startTile, bool includeStart = true, bool includeTarget = true) where T : IWeightedTile
+        {
+            if (!IsTileAccessible(grid, startTile))
+            {
+                throw new Exception("Do not call DijkstraPaths method with an inaccessible tile");
+            }
+
+            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _target);
+            T target = GridUtils.GetTile(grid, targetCoords.x, targetCoords.y);
+
+            T tile = includeStart ? startTile : GetNextTile(grid, startTile);
+            bool targetReached = GridUtils.TileEquals(tile, target);
+            if (!includeTarget && targetReached)
+            {
+                return new T[0];
+            }
+            List<T> tiles = new List<T>() { tile };
+            while (!targetReached)
+            {
+                tile = GetNextTile(grid, tile);
+                targetReached = GridUtils.TileEquals(tile, target);
+                if (includeTarget || !targetReached)
+                {
+                    tiles.Add(tile);
+                }
+            }
+            return tiles.ToArray();
+        }
+        /// <summary>
+        /// Get all the tiles on the path from the target to a tile.
+        /// </summary>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="destinationTile">The destination tile</param>
+        /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
+        /// <param name="includeTarget">Include the target tile into the resulting array or not</param>
+        /// <returns>An array of tiles</returns>
+        public T[] GetPathFromTarget<T>(T[,] grid, T destinationTile, bool includeDestination = true, bool includeTarget = true) where T : IWeightedTile
+        {
+            T[] path = GetPathToTarget(grid, destinationTile, includeDestination, includeTarget);
+            T[] reversedPath = new T[path.Length];
+            for (int i = 0; i < path.Length; i++)
+            {
+                reversedPath[i] = path[path.Length - 1 - i];
+            }
+            return reversedPath;
+        }
+        protected T GetNextTile<T>(T[,] grid, T tile) where T : IWeightedTile
+        {
+            Vector2Int nextTileDirection = GridUtils.NextNodeDirectionToVector2Int(_dijkstraMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)].NextTileDirection);
+            Vector2Int nextTileCoords = new(tile.X + nextTileDirection.x, tile.Y + nextTileDirection.y);
+            return GridUtils.GetTile(grid, nextTileCoords.x, nextTileCoords.y);
+        }
+    }
+    public class DijkstraPaths : DijkstraBase
+    {
+        private float _maxDistance;
+        public float MaxDistance => _maxDistance;
+        internal DijkstraPaths(float maxDistance, DijkstraTile[] dijkstraMap, int target) : base(dijkstraMap, target)
+        {
+            _maxDistance = maxDistance;
+        }
+
+    }
+    /// <summary>
+    /// You can generate a DijkstraMap object that holds pre-calculated paths data.
+    /// This way of doing pathfinding is useful for some usages(like Tower Defenses and more) because it calculates once all the paths between one tile, called the "target", and all the accessible tiles from it.
+    /// To generate the DijkstraMap object, use the GenerateDijkstraMap method that needs the* grid* and the target tile from which to calculate the paths, as parameters.
+    /// <i>Note that, obviously, any path calculation is valid as long as the user grid, and walkable states of the tiles, remains unchanged</i>
+    /// </summary>
+    /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+    public class DijkstraMap : DijkstraBase
+    {
+        internal DijkstraMap(DijkstraTile[] dijkstraMap, int target) : base(dijkstraMap, target) { }
+        /// <summary>
+        /// Returns the DijkstraMap serialized as a byte array.
+        /// </summary>
+        /// <returns>A byte array representing the serialized DijkstraMap</returns>
+        public byte[] ToByteArray()
+        {
+            int bytesCount = sizeof(int) + sizeof(int) + ((sizeof(byte) + sizeof(float)) * _dijkstraMap.Length);
+            byte[] bytes = new byte[bytesCount];
+            int byteIndex = 0;
+            BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _target);
+            byteIndex += sizeof(int);
+            BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _dijkstraMap.Length);
+            byteIndex += sizeof(int);
+            for (int i = 0; i < _dijkstraMap.Length; i++)
+            {
+                bytes[byteIndex] = (byte)_dijkstraMap[i].NextTileDirection;
+                byteIndex++;
+                BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), BitConverter.SingleToInt32Bits(_dijkstraMap[i].Distance));
+                byteIndex += sizeof(float);
+            }
+            return bytes;
+        }
+        /// <summary>
+        /// Returns the DijkstraMap serialized as a byte array.
+        /// </summary>
+        /// <param name="progress">An optional IProgress object to get the serialization progression</param>
+        /// <param name="cancelToken">An optional CancellationToken object to cancel the serialization</param>
+        /// <returns>A byte array representing the serialized DijkstraMap</returns>
+        public Task<byte[]> ToByteArrayAsync(IProgress<float> progress = null, CancellationToken cancelToken = default)
+        {
+            Task<byte[]> task = Task.Run(() =>
+            {
+                int bytesCount = sizeof(int) + sizeof(int) + ((sizeof(byte) + sizeof(float)) * _dijkstraMap.Length);
+                byte[] bytes = new byte[bytesCount];
+                int byteIndex = 0;
+                BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _target);
+                byteIndex += sizeof(int);
+                BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _dijkstraMap.Length);
+                byteIndex += sizeof(int);
+                for (int i = 0; i < _dijkstraMap.Length; i++)
+                {
+                    if (cancelToken.IsCancellationRequested)
+                    {
+                        return null;
+                    }
+                    progress.Report((float)i / _dijkstraMap.Length);
+                    bytes[byteIndex] = (byte)_dijkstraMap[i].NextTileDirection;
+                    byteIndex++;
+                    BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), BitConverter.SingleToInt32Bits(_dijkstraMap[i].Distance));
+                    byteIndex += sizeof(float);
+                }
+                return bytes;
+            });
+            return task;
+        }
+        /// <summary>
+        /// Returns a DijkstraMap from a byte array that has been serialized with the ToByteArray method.
+        /// </summary>
+        /// <param name="grid">The user grid</param>
+        /// <param name="bytes">The serialized byte array</param>
+        /// <returns>The deserialized DijkstraMap</returns>
+        public static DijkstraMap FromByteArray<T>(T[,] grid, byte[] bytes) where T : IWeightedTile
+        {
+            if (grid == null)
+            {
+                throw new ArgumentException("The grid cannot be null");
+            }
+            int byteIndex = 0;
+            int target = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
+            byteIndex += sizeof(int);
+            int count = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
+            byteIndex += sizeof(int);
+            DijkstraTile[] dijkstraMap = new DijkstraTile[count];
+            for (int i = 0; i < count; i++)
+            {
+                dijkstraMap[i].NextTileDirection = (NextTileDirection)bytes[byteIndex];
+                byteIndex++;
+                dijkstraMap[i].Distance = BitConverter.Int32BitsToSingle(BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex)));
+                byteIndex += sizeof(float);
+            }
+            return new DijkstraMap(dijkstraMap, target);
+        }
+        /// <summary>
+        /// Returns a DijkstraMap from a byte array that has been serialized with the ToByteArray method.
+        /// </summary>
+        /// <param name="grid">The user grid</param>
+        /// <param name="bytes">The serialized byte array</param>
+        /// <param name="progress">An optional IProgress object to get the deserialization progression</param>
+        /// <param name="cancelToken">An optional CancellationToken object to cancel the deserialization</param>
+        /// <returns>The deserialized DijkstraMap</returns>
+        public static Task<DijkstraMap> FromByteArrayAsync<T>(T[,] grid, byte[] bytes, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : IWeightedTile
+        {
+            Task<DijkstraMap> task = Task.Run(() =>
+            {
+                if (grid == null)
+                {
+                    throw new ArgumentException("The grid cannot be null");
+                }
+                int byteIndex = 0;
+                int target = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
+                byteIndex += sizeof(int);
+                int count = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
+                byteIndex += sizeof(int);
+                DijkstraTile[] dijkstraMap = new DijkstraTile[count];
+                for (int i = 0; i < count; i++)
+                {
+                    if (cancelToken.IsCancellationRequested)
+                    {
+                        return null;
+                    }
+                    progress.Report((float)i / count);
+                    dijkstraMap[i].NextTileDirection = (NextTileDirection)bytes[byteIndex];
+                    byteIndex++;
+                    dijkstraMap[i].Distance = BitConverter.Int32BitsToSingle(BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex)));
+                    byteIndex += sizeof(float);
+                }
+                return new DijkstraMap(dijkstraMap, target);
+            });
+            return task;
         }
     }
     /// <summary>
@@ -1964,7 +2519,6 @@ namespace Caskev.GridToolkit
             return lines.ToArray();
         }
     }
-
     /// <summary>
     /// Allows you to calculate paths between tiles.  
     /// This API offers a method which generates and returns a direction grid.A direction grid can be seen as a "layer" on top of the user grid that indicates, for each accessible tile, the direction to the next tile, ultimately leading to the target tile.  
@@ -2157,6 +2711,66 @@ namespace Caskev.GridToolkit
                 default:
                     return false;
             }
+        }
+        public static Task<DirectionPaths> GenerateDirectionPathsAsync<T>(T[,] grid, T targetTile, int maxDistance, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : ITile
+        {
+            if (maxDistance < 1)
+            {
+                throw new Exception("The maxDistance parameter have to be strictly superior to 0");
+            }
+            Task<DirectionPaths> task = Task.Run(() =>
+            {
+                if (targetTile == null || !targetTile.IsWalkable)
+                {
+                    throw new Exception("Do not try to generate a DirectionPaths with an unwalkable (or null) tile as the target");
+                }
+                int width = grid.GetLength(0);
+                int height = grid.GetLength(1);
+                Vector2Int gridDimensions = new Vector2Int(width, height);
+                int totalSize = width * height;
+                NextTileDirection[] directionMap = new NextTileDirection[totalSize];
+                bool[] visited = new bool[totalSize];
+                int targetIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, targetTile.X, targetTile.Y);
+                visited[targetIndex] = true;
+                directionMap[targetIndex] = NextTileDirection.SELF;
+                Queue<T> frontier = new Queue<T>();
+                frontier.Enqueue(targetTile);
+                List<T> neighbourgs = new();
+                T current = default;
+                int neighborIndex = -1;
+                int visitedCount = 0;
+                while (frontier.Count > 0)
+                {
+                    if (cancelToken.IsCancellationRequested)
+                    {
+                        return null;
+                    }
+                    progress?.Report((float)visitedCount / totalSize);
+                    current = frontier.Dequeue();
+                    if (diagonalsPolicy != DiagonalsPolicy.NONE)
+                    {
+                        GetTileNeighbours(ref neighbourgs, grid, current.X, current.Y, diagonalsPolicy);
+                    }
+                    else
+                    {
+                        GetTileOrthographicNeighbours(ref neighbourgs, grid, current.X, current.Y);
+                    }
+                    foreach (T neiTile in neighbourgs)
+                    {
+                        neighborIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, neiTile.X, neiTile.Y);
+                        if (!visited[neighborIndex])
+                        {
+                            visitedCount++;
+                            visited[neighborIndex] = true;
+                            directionMap[neighborIndex] = GridUtils.GetDirectionTo(neiTile, current);
+                            frontier.Enqueue(neiTile);
+                        }
+                    }
+                    neighbourgs.Clear();
+                }
+                return new DirectionPaths(maxDistance, directionMap, targetIndex);
+            });
+            return task;
         }
         /// <summary>
         /// Generates asynchronously a DirectionMap object that will contain all the pre-calculated direction data between a target tile and all the accessible tiles from this target
@@ -2413,514 +3027,6 @@ namespace Caskev.GridToolkit
             return new DijkstraMap(dijkstraMap, targetIndex);
         }
     }
-    /// <summary>
-    /// You can generate a DirectionMap object that holds pre-calculated direction and distance data.
-    /// This way of doing pathfinding is useful for some usages(like Tower Defenses and more) because it calculates once all the paths between one tile, called the "target", and all the accessible tiles from it.
-    /// To generate the DirectionMap object, use the GenerateDirectionMap method that needs the* grid* and the target tile from which to calculate the paths, as parameters.
-    /// <i>Note that, obviously, any path calculation is valid as long as the user grid, and walkable states of the tiles, remains unchanged</i>
-    /// </summary>
-    /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-    public class DirectionMap
-    {
-        internal readonly NextTileDirection[] _directionMap;
-        private readonly int _target;
-
-        internal DirectionMap(NextTileDirection[] directionMap, int target)
-        {
-            _directionMap = directionMap;
-            _target = target;
-        }
-        /// <summary>
-        /// Is the tile is accessible from the target into this this DirectionMap. Usefull to check if the tile is usable as a parameter for this DirectionMap's methods.
-        /// </summary>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="tile">The tile to check</param>
-        /// <returns>A boolean value</returns>
-        public bool IsTileAccessible<T>(T[,] grid, T tile) where T : ITile
-        {
-            if (tile == null)
-            {
-                return false;
-            }
-            return _directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)] != NextTileDirection.NONE;
-        }
-        /// <summary>
-        /// Returns the tile that has been used as the target to generate this DirectionMap
-        /// </summary>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <returns></returns>
-        public T GetTargetTile<T>(T[,] grid) where T : ITile
-        {
-            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _target);
-            return GridUtils.GetTile(grid, targetCoords.x, targetCoords.y);
-        }
-        /// <summary>
-        /// Get the next tile on the path between a tile and the target.
-        /// </summary>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="tile">A tile</param>
-        /// <returns>A tile object</returns>
-        public T GetNextTileFromTile<T>(T[,] grid, T tile) where T : ITile
-        {
-            if (!IsTileAccessible(grid, tile))
-            {
-                throw new Exception("Do not call DirectionMap method with an inaccessible tile");
-            }
-            return GetNextTile(grid, tile);
-        }
-        /// <summary>
-        /// Get the next tile on the path between the target and a tile.
-        /// </summary>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="tile">The tile</param>
-        /// <returns>A Vector2Int direction</returns>
-        public NextTileDirection GetNextTileDirectionFromTile<T>(T[,] grid, T tile) where T : ITile
-        {
-            if (!IsTileAccessible(grid, tile))
-            {
-                throw new Exception("Do not call DirectionMap method with an inaccessible tile");
-            }
-            return _directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)];
-        }
-        /// <summary>
-        /// Get all the tiles on the path from a tile to the target.
-        /// </summary>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="includeTarget">Include the target tile into the resulting array or not</param>
-        /// <returns>An array of tiles</returns>
-        public T[] GetPathToTarget<T>(T[,] grid, T startTile, bool includeStart = true, bool includeTarget = true) where T : ITile
-        {
-            if (!IsTileAccessible(grid, startTile))
-            {
-                throw new Exception("Do not call DirectionMap method with an inaccessible tile");
-            }
-
-            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _target);
-            T target = GridUtils.GetTile(grid, targetCoords.x, targetCoords.y);
-
-            T tile = includeStart ? startTile : GetNextTile(grid, startTile);
-            bool targetReached = GridUtils.TileEquals(tile, target);
-            if (!includeTarget && targetReached)
-            {
-                return new T[0];
-            }
-            List<T> tiles = new List<T>() { tile };
-            while (!targetReached)
-            {
-                tile = GetNextTile(grid, tile);
-                targetReached = GridUtils.TileEquals(tile, target);
-                if (includeTarget || !targetReached)
-                {
-                    tiles.Add(tile);
-                }
-            }
-            return tiles.ToArray();
-        }
-        /// <summary>
-        /// Get all the tiles on the path from the target to a tile.
-        /// </summary>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="destinationTile">The destination tile</param>
-        /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
-        /// <param name="includeTarget">Include the target tile into the resulting array or not</param>
-        /// <returns>An array of tiles</returns>
-        public T[] GetPathFromTarget<T>(T[,] grid, T destinationTile, bool includeDestination = true, bool includeTarget = true) where T : ITile
-        {
-            T[] path = GetPathToTarget(grid, destinationTile, includeDestination, includeTarget);
-            T[] reversedPath = new T[path.Length];
-            for (int i = 0; i < path.Length; i++)
-            {
-                reversedPath[i] = path[path.Length - 1 - i];
-            }
-            return reversedPath;
-        }
-        /// <summary>
-        /// Returns the DirectionMap serialized as a byte array.
-        /// </summary>
-        /// <returns>A byte array representing the serialized DirectionMap</returns>
-        public byte[] ToByteArray()
-        {
-            int bytesCount = sizeof(int) + sizeof(int) + sizeof(byte) * _directionMap.Length;
-            byte[] bytes = new byte[bytesCount];
-            int byteIndex = 0;
-            BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _target);
-            byteIndex += sizeof(int);
-            BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _directionMap.Length);
-            byteIndex += sizeof(int);
-            for (int i = 0; i < _directionMap.Length; i++)
-            {
-                bytes[byteIndex] = (byte)_directionMap[i];
-                byteIndex++;
-            }
-            return bytes;
-        }
-        /// <summary>
-        /// Returns the DirectionMap serialized as a byte array.
-        /// </summary>
-        /// <param name="progress">An optional IProgress object to get the serialization progression</param>
-        /// <param name="cancelToken">An optional CancellationToken object to cancel the serialization</param>
-        /// <returns>A byte array representing the serialized DirectionMap</returns>
-        public Task<byte[]> ToByteArrayAsync(IProgress<float> progress = null, CancellationToken cancelToken = default)
-        {
-            Task<byte[]> task = Task.Run(() =>
-            {
-                int bytesCount = sizeof(int) + sizeof(int) + sizeof(byte) * _directionMap.Length;
-                byte[] bytes = new byte[bytesCount];
-                int byteIndex = 0;
-                BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _target);
-                byteIndex += sizeof(int);
-                BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _directionMap.Length);
-                byteIndex += sizeof(int);
-                for (int i = 0; i < _directionMap.Length; i++)
-                {
-                    if (cancelToken.IsCancellationRequested)
-                    {
-                        return null;
-                    }
-                    progress.Report((float)i / _directionMap.Length);
-                    bytes[byteIndex] = (byte)_directionMap[i];
-                    byteIndex++;
-                }
-                return bytes;
-            });
-            return task;
-        }
-        /// <summary>
-        /// Returns a DirectionMap from a byte array that has been serialized with the ToByteArray method.
-        /// </summary>
-        /// <param name="grid">The user grid</param>
-        /// <param name="bytes">The serialized byte array</param>
-        /// <returns>The deserialized DirectionMap</returns>
-        public static DirectionMap FromByteArray<T>(T[,] grid, byte[] bytes) where T : ITile
-        {
-            if (grid == null)
-            {
-                throw new ArgumentException("The grid cannot be null");
-            }
-            int byteIndex = 0;
-            int target = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
-            byteIndex += sizeof(int);
-            int count = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
-            byteIndex += sizeof(int);
-            NextTileDirection[] directionMap = new NextTileDirection[count];
-            for (int i = 0; i < count; i++)
-            {
-                directionMap[i] = (NextTileDirection)bytes[byteIndex];
-                byteIndex++;
-            }
-            return new DirectionMap(directionMap, target);
-        }
-        /// <summary>
-        /// Returns a DirectionMap from a byte array that has been serialized with the ToByteArray method.
-        /// </summary>
-        /// <param name="grid">The user grid</param>
-        /// <param name="bytes">The serialized byte array</param>
-        /// <param name="progress">An optional IProgress object to get the deserialization progression</param>
-        /// <param name="cancelToken">An optional CancellationToken object to cancel the deserialization</param>
-        /// <returns>The deserialized DirectionMap</returns>
-        public static Task<DirectionMap> FromByteArrayAsync<T>(T[,] grid, byte[] bytes, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : ITile
-        {
-            Task<DirectionMap> task = Task.Run(() =>
-            {
-                if (grid == null)
-                {
-                    throw new ArgumentException("The grid cannot be null");
-                }
-                int byteIndex = 0;
-                int target = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
-                byteIndex += sizeof(int);
-                int count = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
-                byteIndex += sizeof(int);
-                NextTileDirection[] directionMap = new NextTileDirection[count];
-                for (int i = 0; i < count; i++)
-                {
-                    if (cancelToken.IsCancellationRequested)
-                    {
-                        return null;
-                    }
-                    progress.Report((float)i / count);
-                    directionMap[i] = (NextTileDirection)bytes[byteIndex];
-                    byteIndex++;
-                }
-                return new DirectionMap(directionMap, target);
-            });
-            return task;
-        }
-        private T GetNextTile<T>(T[,] grid, T tile) where T : ITile
-        {
-            Vector2Int nextTileDirection = GridUtils.NextNodeDirectionToVector2Int(_directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)]);
-            Vector2Int nextTileCoords = new(tile.X + nextTileDirection.x, tile.Y + nextTileDirection.y);
-            return GridUtils.GetTile(grid, nextTileCoords.x, nextTileCoords.y);
-        }
-    }
-    /// <summary>
-    /// You can generate a DirectionMap object that holds pre-calculated paths data.
-    /// This way of doing pathfinding is useful for some usages(like Tower Defenses and more) because it calculates once all the paths between one tile, called the "target", and all the accessible tiles from it.
-    /// To generate the DirectionMap object, use the GenerateDirectionMap method that needs the* grid* and the target tile from which to calculate the paths, as parameters.
-    /// <i>Note that, obviously, any path calculation is valid as long as the user grid, and walkable states of the tiles, remains unchanged</i>
-    /// </summary>
-    /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-    public class DijkstraMap
-    {
-        internal readonly DijkstraTile[] _dijkstraMap;
-        private readonly int _target;
-
-        internal DijkstraMap(DijkstraTile[] dijkstraMap, int target)
-        {
-            _dijkstraMap = dijkstraMap;
-            _target = target;
-        }
-        /// <summary>
-        /// Is the tile is accessible from the target into this this DijkstraMap. Usefull to check if the tile is usable as a parameter for this DirectionMap's methods.
-        /// </summary>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="tile">The tile to check</param>
-        /// <returns>A boolean value</returns>
-        public bool IsTileAccessible<T>(T[,] grid, T tile) where T : IWeightedTile
-        {
-            if (tile == null)
-            {
-                return false;
-            }
-            return _dijkstraMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)].NextTileDirection != NextTileDirection.NONE;
-        }
-        /// <summary>
-        /// Returns the tile that has been used as the target to generate this DijkstraMap
-        /// </summary>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <returns></returns>
-        public T GetTargetTile<T>(T[,] grid) where T : IWeightedTile
-        {
-            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _target);
-            return GridUtils.GetTile(grid, targetCoords.x, targetCoords.y);
-        }
-        /// <summary>
-        /// Get the next tile on the path between a tile and the target.
-        /// </summary>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="tile">A tile</param>
-        /// <returns>A tile object</returns>
-        public T GetNextTileFromTile<T>(T[,] grid, T tile) where T : IWeightedTile
-        {
-            if (!IsTileAccessible(grid, tile))
-            {
-                throw new Exception("Do not call DijkstraMap method with an inaccessible tile");
-            }
-            return GetNextTile(grid, tile);
-        }
-        /// <summary>
-        /// Get the next tile on the path between the target and a tile.
-        /// </summary>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="tile">The tile</param>
-        /// <returns>A Vector2Int direction</returns>
-        public NextTileDirection GetNextTileDirectionFromTile<T>(T[,] grid, T tile) where T : IWeightedTile
-        {
-            if (!IsTileAccessible(grid, tile))
-            {
-                throw new Exception("Do not call DijkstraMap method with an inaccessible tile");
-            }
-            return _dijkstraMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)].NextTileDirection;
-        }
-        /// <summary>
-        /// Get the distance from the specified tile to the target.
-        /// </summary>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="tile">The tile from which to get the distance to the target tile used to generate this dijkstra map</param>
-        /// <returns>The float distance from the specified tile to the target tile used to generate this dijkstra map</returns>
-        public float GetDistanceToTarget<T>(T[,] grid, T tile) where T : IWeightedTile
-        {
-            if (!IsTileAccessible(grid, tile))
-            {
-                throw new Exception("Do not call DijkstraMap method with an inaccessible tile");
-            }
-            int tileFlatIndex = GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y);
-            return _dijkstraMap[tileFlatIndex].Distance;
-        }
-        /// <summary>
-        /// Get all the tiles on the path from a tile to the target.
-        /// </summary>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="includeTarget">Include the target tile into the resulting array or not</param>
-        /// <returns>An array of tiles</returns>
-        public T[] GetPathToTarget<T>(T[,] grid, T startTile, bool includeStart = true, bool includeTarget = true) where T : IWeightedTile
-        {
-            if (!IsTileAccessible(grid, startTile))
-            {
-                throw new Exception("Do not call DijkstraMap method with an inaccessible tile");
-            }
-
-            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _target);
-            T target = GridUtils.GetTile(grid, targetCoords.x, targetCoords.y);
-
-            T tile = includeStart ? startTile : GetNextTile(grid, startTile);
-            bool targetReached = GridUtils.TileEquals(tile, target);
-            if (!includeTarget && targetReached)
-            {
-                return new T[0];
-            }
-            List<T> tiles = new List<T>() { tile };
-            while (!targetReached)
-            {
-                tile = GetNextTile(grid, tile);
-                targetReached = GridUtils.TileEquals(tile, target);
-                if (includeTarget || !targetReached)
-                {
-                    tiles.Add(tile);
-                }
-            }
-            return tiles.ToArray();
-        }
-        /// <summary>
-        /// Get all the tiles on the path from the target to a tile.
-        /// </summary>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="destinationTile">The destination tile</param>
-        /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
-        /// <param name="includeTarget">Include the target tile into the resulting array or not</param>
-        /// <returns>An array of tiles</returns>
-        public T[] GetPathFromTarget<T>(T[,] grid, T destinationTile, bool includeDestination = true, bool includeTarget = true) where T : IWeightedTile
-        {
-            T[] path = GetPathToTarget(grid, destinationTile, includeDestination, includeTarget);
-            T[] reversedPath = new T[path.Length];
-            for (int i = 0; i < path.Length; i++)
-            {
-                reversedPath[i] = path[path.Length - 1 - i];
-            }
-            return reversedPath;
-        }
-        /// <summary>
-        /// Returns the DijkstraMap serialized as a byte array.
-        /// </summary>
-        /// <returns>A byte array representing the serialized DijkstraMap</returns>
-        public byte[] ToByteArray()
-        {
-            int bytesCount = sizeof(int) + sizeof(int) + ((sizeof(byte) + sizeof(float)) * _dijkstraMap.Length);
-            byte[] bytes = new byte[bytesCount];
-            int byteIndex = 0;
-            BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _target);
-            byteIndex += sizeof(int);
-            BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _dijkstraMap.Length);
-            byteIndex += sizeof(int);
-            for (int i = 0; i < _dijkstraMap.Length; i++)
-            {
-                bytes[byteIndex] = (byte)_dijkstraMap[i].NextTileDirection;
-                byteIndex++;
-                BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), BitConverter.SingleToInt32Bits(_dijkstraMap[i].Distance));
-                byteIndex += sizeof(float);
-            }
-            return bytes;
-        }
-        /// <summary>
-        /// Returns the DijkstraMap serialized as a byte array.
-        /// </summary>
-        /// <param name="progress">An optional IProgress object to get the serialization progression</param>
-        /// <param name="cancelToken">An optional CancellationToken object to cancel the serialization</param>
-        /// <returns>A byte array representing the serialized DijkstraMap</returns>
-        public Task<byte[]> ToByteArrayAsync(IProgress<float> progress = null, CancellationToken cancelToken = default)
-        {
-            Task<byte[]> task = Task.Run(() =>
-            {
-                int bytesCount = sizeof(int) + sizeof(int) + ((sizeof(byte) + sizeof(float)) * _dijkstraMap.Length);
-                byte[] bytes = new byte[bytesCount];
-                int byteIndex = 0;
-                BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _target);
-                byteIndex += sizeof(int);
-                BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _dijkstraMap.Length);
-                byteIndex += sizeof(int);
-                for (int i = 0; i < _dijkstraMap.Length; i++)
-                {
-                    if (cancelToken.IsCancellationRequested)
-                    {
-                        return null;
-                    }
-                    progress.Report((float)i / _dijkstraMap.Length);
-                    bytes[byteIndex] = (byte)_dijkstraMap[i].NextTileDirection;
-                    byteIndex++;
-                    BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), BitConverter.SingleToInt32Bits(_dijkstraMap[i].Distance));
-                    byteIndex += sizeof(float);
-                }
-                return bytes;
-            });
-            return task;
-        }
-        /// <summary>
-        /// Returns a DijkstraMap from a byte array that has been serialized with the ToByteArray method.
-        /// </summary>
-        /// <param name="grid">The user grid</param>
-        /// <param name="bytes">The serialized byte array</param>
-        /// <returns>The deserialized DijkstraMap</returns>
-        public static DijkstraMap FromByteArray<T>(T[,] grid, byte[] bytes) where T : IWeightedTile
-        {
-            if (grid == null)
-            {
-                throw new ArgumentException("The grid cannot be null");
-            }
-            int byteIndex = 0;
-            int target = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
-            byteIndex += sizeof(int);
-            int count = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
-            byteIndex += sizeof(int);
-            DijkstraTile[] dijkstraMap = new DijkstraTile[count];
-            for (int i = 0; i < count; i++)
-            {
-                dijkstraMap[i].NextTileDirection = (NextTileDirection)bytes[byteIndex];
-                byteIndex++;
-                dijkstraMap[i].Distance = BitConverter.Int32BitsToSingle(BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex)));
-                byteIndex += sizeof(float);
-            }
-            return new DijkstraMap(dijkstraMap, target);
-        }
-        /// <summary>
-        /// Returns a DijkstraMap from a byte array that has been serialized with the ToByteArray method.
-        /// </summary>
-        /// <param name="grid">The user grid</param>
-        /// <param name="bytes">The serialized byte array</param>
-        /// <param name="progress">An optional IProgress object to get the deserialization progression</param>
-        /// <param name="cancelToken">An optional CancellationToken object to cancel the deserialization</param>
-        /// <returns>The deserialized DijkstraMap</returns>
-        public static Task<DijkstraMap> FromByteArrayAsync<T>(T[,] grid, byte[] bytes, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : IWeightedTile
-        {
-            Task<DijkstraMap> task = Task.Run(() =>
-            {
-                if (grid == null)
-                {
-                    throw new ArgumentException("The grid cannot be null");
-                }
-                int byteIndex = 0;
-                int target = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
-                byteIndex += sizeof(int);
-                int count = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
-                byteIndex += sizeof(int);
-                DijkstraTile[] dijkstraMap = new DijkstraTile[count];
-                for (int i = 0; i < count; i++)
-                {
-                    if (cancelToken.IsCancellationRequested)
-                    {
-                        return null;
-                    }
-                    progress.Report((float)i / count);
-                    dijkstraMap[i].NextTileDirection = (NextTileDirection)bytes[byteIndex];
-                    byteIndex++;
-                    dijkstraMap[i].Distance = BitConverter.Int32BitsToSingle(BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex)));
-                    byteIndex += sizeof(float);
-                }
-                return new DijkstraMap(dijkstraMap, target);
-            });
-            return task;
-        }
-        private T GetNextTile<T>(T[,] grid, T tile) where T : IWeightedTile
-        {
-            Vector2Int nextTileDirection = GridUtils.NextNodeDirectionToVector2Int(_dijkstraMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)].NextTileDirection);
-            Vector2Int nextTileCoords = new(tile.X + nextTileDirection.x, tile.Y + nextTileDirection.y);
-            return GridUtils.GetTile(grid, nextTileCoords.x, nextTileCoords.y);
-        }
-    }
-
     /// <summary>
     /// Some utilitary methods
     /// </summary>
