@@ -2,11 +2,12 @@
 PROJECT_NAME           = "Unity Grid Toolkit"
 PROJECT_BRIEF          = "Utilitary API to proceed operations on abstract grids such as tile extraction, raycasting, and pathfinding."
 OUTPUT_DIRECTORY       = docs
-INPUT                  = Runtime/GridToolkit.cs README.md
+INPUT                  = Runtime README.md
 FILE_PATTERNS          = *.cs *.md
 RECURSIVE              = YES
 EXAMPLE_PATH           = ./
 IMAGE_PATH             = ../../
+EXCLUDE				   = Runtime/PriorityQueuePort.cs
 
 # C# => utiliser l'optimisation Java/C# de Doxygen
 OPTIMIZE_OUTPUT_JAVA   = YES

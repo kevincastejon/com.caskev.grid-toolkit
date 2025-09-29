@@ -645,10 +645,10 @@ namespace GridToolkitTests
                 16f       , 15f       , 14f       , 13f       , 12f       , 11f       , 10f       , 9f        , 10f       , 11f       , 12f       , 13f       , 14f       , 0f        , 16f       , 17f       , 18f       , 19f       , 20f       , 21f       , 22f       , 23f       , 24f       , 25f       , 26f       ,
                 17f       , 16f       , 15f       , 14f       , 13f       , 12f       , 11f       , 10f       , 11f       , 12f       , 13f       , 14f       , 15f       , 0f        , 17f       , 18f       , 19f       , 20f       , 21f       , 22f       , 23f       , 24f       , 25f       , 26f       , 27f       ,
             };
-            for (int i = 0; i < dirMap._dijkstraMap.Length; i++)
+            for (int i = 0; i < dirMap._directionMap.Length; i++)
             {
-                NextTileDirection actualDir = dirMap._dijkstraMap[i].NextTileDirection;
-                float actualDistance = dirMap._dijkstraMap[i].Distance;
+                NextTileDirection actualDir = dirMap._directionMap[i];
+                float actualDistance = dirMap._distanceMap[i];
                 Assert.AreEqual(expectedDirMap[i], actualDir, $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDirMap[i]} but got {actualDir}");
                 Assert.IsTrue(Mathf.Approximately(expectedDistanceMap[i], actualDistance), $"Distance for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDistanceMap[i]} but got {actualDistance}");
             }
@@ -705,10 +705,10 @@ namespace GridToolkitTests
                 13.65686f , 12.65686f , 11.65686f , 10.65686f , 9.656857f , 9.242642f , 8.828428f , 8.414214f , 8.828428f , 9.242642f , 9.656857f , 10.07107f , 10.48528f , 0f        , 14.82843f , 15.24264f , 15.65686f , 16.07107f , 16.48528f , 17.48528f , 18.48528f , 19.48528f , 20.48528f , 21.48528f , 22.48528f ,
                 14.07107f , 13.07107f , 12.07107f , 11.07107f , 10.65686f , 10.24264f , 9.828428f , 9.414214f , 9.828428f , 10.24264f , 10.65686f , 11.07107f , 11.48528f , 0f        , 15.82843f , 16.24264f , 16.65686f , 17.07107f , 17.48528f , 17.8995f  , 18.8995f  , 19.8995f  , 20.8995f  , 21.8995f  , 22.8995f  ,
             };
-            for (int i = 0; i < dirMap._dijkstraMap.Length; i++)
+            for (int i = 0; i < dirMap._directionMap.Length; i++)
             {
-                NextTileDirection actualDir = dirMap._dijkstraMap[i].NextTileDirection;
-                float actualDistance = dirMap._dijkstraMap[i].Distance;
+                NextTileDirection actualDir = dirMap._directionMap[i];
+                float actualDistance = dirMap._distanceMap[i];
                 Assert.AreEqual(expectedDirMap[i], actualDir, $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDirMap[i]} but got {actualDir}");
                 Assert.IsTrue(Mathf.Abs(expectedDistanceMap[i] - actualDistance) < 0.01f, $"Distance for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDistanceMap[i]} but got {actualDistance}");
             }
@@ -765,10 +765,10 @@ namespace GridToolkitTests
                 13.65686000f, 12.65686000f, 11.65686000f, 10.65686000f, 9.65685700f, 9.24264200f, 8.82842800f, 8.41421400f, 8.82842800f, 9.24264200f, 9.65685700f, 10.07107000f, 10.48528000f, 0f        , 14.82843000f, 15.24264000f, 15.65686000f, 16.07107000f, 16.48528000f, 17.48528000f, 18.48528000f, 19.48528000f, 20.48528000f, 21.48528000f, 22.48528000f,
                 14.07107000f, 13.07107000f, 12.07107000f, 11.07107000f, 10.65686000f, 10.24264000f, 9.82842800f, 9.41421400f, 9.82842800f, 10.24264000f, 10.65686000f, 11.07107000f, 11.48528000f, 0f        , 15.82843000f, 16.24264000f, 16.65686000f, 17.07107000f, 17.48528000f, 17.89950000f, 18.89950000f, 19.89950000f, 20.89950000f, 21.89950000f, 22.89950000f,
             };
-            for (int i = 0; i < dirMap._dijkstraMap.Length; i++)
+            for (int i = 0; i < dirMap._directionMap.Length; i++)
             {
-                NextTileDirection actualDir = dirMap._dijkstraMap[i].NextTileDirection;
-                float actualDistance = dirMap._dijkstraMap[i].Distance;
+                NextTileDirection actualDir = dirMap._directionMap[i];
+                float actualDistance = dirMap._distanceMap[i];
                 Assert.AreEqual(expectedDirMap[i], actualDir, $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDirMap[i]} but got {actualDir}");
                 Assert.IsTrue(Mathf.Abs(expectedDistanceMap[i] - actualDistance) < 0.01f, $"Distance for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDistanceMap[i]} but got {actualDistance}");
             }
@@ -825,10 +825,10 @@ namespace GridToolkitTests
                 14.24264000f, 13.24264000f, 12.24264000f, 11.24264000f, 10.24264000f, 9.24264200f, 8.82842800f, 8.41421400f, 8.82842800f, 9.24264200f, 9.65685700f, 10.07107000f, 10.48528000f, 0f        , 15.41421000f, 15.82843000f, 16.24264000f, 16.65686000f, 17.65685000f, 18.65685000f, 19.65685000f, 20.65685000f, 21.65685000f, 22.65685000f, 23.65685000f,
                 14.65686000f, 13.65686000f, 12.65686000f, 11.65686000f, 10.65686000f, 10.24264000f, 9.82842800f, 9.41421400f, 9.82842800f, 10.24264000f, 10.65686000f, 11.07107000f, 11.48528000f, 0f        , 16.41422000f, 16.82843000f, 17.24264000f, 17.65685000f, 18.07107000f, 19.07107000f, 20.07107000f, 21.07107000f, 22.07107000f, 23.07107000f, 24.07107000f,
             };
-            for (int i = 0; i < dirMap._dijkstraMap.Length; i++)
+            for (int i = 0; i < dirMap._directionMap.Length; i++)
             {
-                NextTileDirection actualDir = dirMap._dijkstraMap[i].NextTileDirection;
-                float actualDistance = dirMap._dijkstraMap[i].Distance;
+                NextTileDirection actualDir = dirMap._directionMap[i];
+                float actualDistance = dirMap._distanceMap[i];
                 Assert.AreEqual(expectedDirMap[i], actualDir, $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDirMap[i]} but got {actualDir}");
                 Assert.IsTrue(Mathf.Abs(expectedDistanceMap[i] - actualDistance) < 0.01f, $"Distance for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDistanceMap[i]} but got {actualDistance}");
             }
@@ -1237,10 +1237,10 @@ namespace GridToolkitTests
             DijkstraMap dirMap = Pathfinding.GenerateDijkstraMap(_grid, target);
             byte[] serializedDirMap = dirMap.ToByteArray();
             DijkstraMap deserializedDirMap = DijkstraMap.FromByteArray(_grid, serializedDirMap);
-            Assert.AreEqual(dirMap._dijkstraMap.Length, deserializedDirMap._dijkstraMap.Length);
-            for (int i = 0; i < deserializedDirMap._dijkstraMap.Length; i++)
+            Assert.AreEqual(dirMap._directionMap.Length, deserializedDirMap._directionMap.Length);
+            for (int i = 0; i < deserializedDirMap._directionMap.Length; i++)
             {
-                Assert.AreEqual(dirMap._dijkstraMap[i], deserializedDirMap._dijkstraMap[i]);
+                Assert.AreEqual(dirMap._directionMap[i], deserializedDirMap._directionMap[i]);
             }
         }
         [Test]

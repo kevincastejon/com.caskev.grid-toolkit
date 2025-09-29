@@ -1,0 +1,774 @@
+using Codice.Utils;
+using PriorityQueueUnityPort;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using UnityEngine;
+/// <summary>
+/// Utilitary API to proceed operations on abstract grids such as tile extraction, raycasting, and pathfinding.
+/// </summary>
+namespace Caskev.GridToolkit
+{
+    /// <summary>
+    /// Allows you to calculate paths between tiles.  
+    /// This API offers a method which generates and returns a direction grid.A direction grid can be seen as a "layer" on top of the user grid that indicates, for each accessible tile, the direction to the next tile, ultimately leading to the target tile.  
+    /// A direction grid holds all the paths to a target tile from all the accessible tiles on the grid.
+    /// Storing this DirectionMap object allows you to reconstruct paths between tiles without having to recalculate them every time, which can be costly in terms of performance.
+    /// </summary>
+    public class Pathfinding
+    {
+        private static bool GetTile<T>(T[,] grid, int x, int y, out T tile) where T : ITile
+        {
+            if (x > -1 && y > -1 && x < GridUtils.GetHorizontalLength(grid) && y < GridUtils.GetVerticalLength(grid))
+            {
+                tile = GridUtils.GetTile(grid, x, y);
+                return true;
+            }
+            tile = default;
+            return false;
+        }
+        private static bool GetLeftNeighbour<T>(T[,] grid, int x, int y, out T nei) where T : ITile
+        {
+            if (GetTile(grid, x - 1, y, out nei))
+            {
+                if (nei != null && nei.IsWalkable)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        private static bool GetRightNeighbour<T>(T[,] grid, int x, int y, out T nei) where T : ITile
+        {
+            if (GetTile(grid, x + 1, y, out nei))
+            {
+                if (nei != null && nei.IsWalkable)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        private static bool GetBottomNeighbour<T>(T[,] grid, int x, int y, out T nei) where T : ITile
+        {
+            if (GetTile(grid, x, y - 1, out nei))
+            {
+                if (nei != null && nei.IsWalkable)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        private static bool GetTopNeighbour<T>(T[,] grid, int x, int y, out T nei) where T : ITile
+        {
+            if (GetTile(grid, x, y + 1, out nei))
+            {
+                if (nei != null && nei.IsWalkable)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        private static bool GetLeftBottomNeighbour<T>(T[,] grid, int x, int y, out T nei) where T : ITile
+        {
+            if (GetTile(grid, x - 1, y - 1, out nei))
+            {
+                if (nei != null && nei.IsWalkable)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        private static bool GetLeftTopNeighbour<T>(T[,] grid, int x, int y, out T nei) where T : ITile
+        {
+            if (GetTile(grid, x - 1, y + 1, out nei))
+            {
+                if (nei != null && nei.IsWalkable)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        private static bool GetRightBottomNeighbour<T>(T[,] grid, int x, int y, out T nei) where T : ITile
+        {
+            if (GetTile(grid, x + 1, y - 1, out nei))
+            {
+                if (nei != null && nei.IsWalkable)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        private static bool GetRightTopNeighbour<T>(T[,] grid, int x, int y, out T nei) where T : ITile
+        {
+            if (GetTile(grid, x + 1, y + 1, out nei))
+            {
+                if (nei != null && nei.IsWalkable)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        private static void GetTileOrthographicNeighbours<T>(ref List<T> nodes, T[,] grid, int x, int y) where T : ITile
+        {
+            T nei;
+
+            bool leftWalkable = GetLeftNeighbour(grid, x, y, out nei);
+            if (leftWalkable)
+            {
+                nodes.Add(nei);
+            }
+            bool rightWalkable = GetRightNeighbour(grid, x, y, out nei);
+            if (rightWalkable)
+            {
+                nodes.Add(nei);
+            }
+            bool bottomWalkable = GetBottomNeighbour(grid, x, y, out nei);
+            if (bottomWalkable)
+            {
+                nodes.Add(nei);
+            }
+            bool topWalkable = GetTopNeighbour(grid, x, y, out nei);
+            if (topWalkable)
+            {
+                nodes.Add(nei);
+            }
+        }
+        private static void GetTileNeighbours<T>(ref List<T> nodes, T[,] grid, int x, int y, DiagonalsPolicy diagonalsPolicy) where T : ITile
+        {
+            T nei;
+
+            bool leftWalkable = GetLeftNeighbour(grid, x, y, out nei);
+            if (leftWalkable)
+            {
+                nodes.Add(nei);
+            }
+            bool rightWalkable = GetRightNeighbour(grid, x, y, out nei);
+            if (rightWalkable)
+            {
+                nodes.Add(nei);
+            }
+            bool bottomWalkable = GetBottomNeighbour(grid, x, y, out nei);
+            if (bottomWalkable)
+            {
+                nodes.Add(nei);
+            }
+            bool topWalkable = GetTopNeighbour(grid, x, y, out nei);
+            if (topWalkable)
+            {
+                nodes.Add(nei);
+            }
+
+            bool leftBottomWalkable = GetLeftBottomNeighbour(grid, x, y, out nei);
+            if (leftBottomWalkable && IsDiagonalPolicyCompliant(diagonalsPolicy, leftWalkable, bottomWalkable))
+            {
+                nodes.Add(nei);
+            }
+            bool rightBottomWalkable = GetRightBottomNeighbour(grid, x, y, out nei);
+            if (rightBottomWalkable && IsDiagonalPolicyCompliant(diagonalsPolicy, rightWalkable, bottomWalkable))
+            {
+                nodes.Add(nei);
+            }
+            bool leftTopWalkable = GetLeftTopNeighbour(grid, x, y, out nei);
+            if (leftTopWalkable && IsDiagonalPolicyCompliant(diagonalsPolicy, leftWalkable, topWalkable))
+            {
+                nodes.Add(nei);
+            }
+            bool rightTopWalkable = GetRightTopNeighbour(grid, x, y, out nei);
+            if (rightTopWalkable && IsDiagonalPolicyCompliant(diagonalsPolicy, rightWalkable, topWalkable))
+            {
+                nodes.Add(nei);
+            }
+        }
+        private static bool IsDiagonalPolicyCompliant(DiagonalsPolicy policy, bool valueA, bool valueB)
+        {
+            switch (policy)
+            {
+                case DiagonalsPolicy.NONE:
+                    return false;
+                case DiagonalsPolicy.DIAGONAL_2FREE:
+                    return valueA && valueB;
+                case DiagonalsPolicy.DIAGONAL_1FREE:
+                    return valueA || valueB;
+                case DiagonalsPolicy.ALL_DIAGONALS:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+        /// <summary>
+        /// Generates a DirectionField object that will contain all the pre-calculated direction data between a target tile and all the accessible tiles from this target
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="targetTile">The target tile for the paths calculation</param>
+        /// <param name="maxDistance">The maximum distance used for the paths calculation</param>
+        /// <param name="diagonalsPolicy">The diagonal movements policy for the paths calculation</param>
+        /// <returns>A DirectionField object</returns>
+        public static DirectionField GenerateDirectionField<T>(T[,] grid, T targetTile, int maxDistance, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE) where T : ITile
+        {
+            if (maxDistance < 1)
+            {
+                throw new Exception("The MaxDistance parameter has to be superior to 0.");
+            }
+
+            if (targetTile == null || !targetTile.IsWalkable)
+            {
+                throw new Exception("Do not try to generate a DirectionField with an unwalkable (or null) tile as the target");
+            }
+            int width = grid.GetLength(0);
+            int height = grid.GetLength(1);
+            Vector2Int gridDimensions = new Vector2Int(width, height);
+            int totalSize = width * height;
+            NextTileDirection[] directionMap = new NextTileDirection[totalSize];
+            int[] distanceMap = new int[totalSize];
+            bool[] visited = new bool[totalSize];
+            List<int> accessibleTilesFlatIndexes = new();
+            int targetIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, targetTile.X, targetTile.Y);
+            visited[targetIndex] = true;
+            directionMap[targetIndex] = NextTileDirection.SELF;
+            distanceMap[targetIndex] = 0;
+            accessibleTilesFlatIndexes.Add(targetIndex);
+            Queue<T> frontier = new Queue<T>();
+            frontier.Enqueue(targetTile);
+            List<T> neighbourgs = new();
+            T current = default;
+            int neighborIndex = -1;
+            int visitedCount = 0;
+            while (frontier.Count > 0)
+            {
+                current = frontier.Dequeue();
+                if (diagonalsPolicy != DiagonalsPolicy.NONE)
+                {
+                    GetTileNeighbours(ref neighbourgs, grid, current.X, current.Y, diagonalsPolicy);
+                }
+                else
+                {
+                    GetTileOrthographicNeighbours(ref neighbourgs, grid, current.X, current.Y);
+                }
+                foreach (T neiTile in neighbourgs)
+                {
+                    neighborIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, neiTile.X, neiTile.Y);
+                    int newDistance = distanceMap[GridUtils.GetFlatIndexFromCoordinates(gridDimensions, current.X, current.Y)] + 1;
+                    if (!visited[neighborIndex] && newDistance <= maxDistance)
+                    {
+                        visitedCount++;
+                        accessibleTilesFlatIndexes.Add(neighborIndex);
+                        visited[neighborIndex] = true;
+                        directionMap[neighborIndex] = GridUtils.GetDirectionTo(neiTile, current);
+                        distanceMap[neighborIndex] = newDistance;
+                        frontier.Enqueue(neiTile);
+                    }
+                }
+                neighbourgs.Clear();
+            }
+            return new DirectionField(maxDistance, accessibleTilesFlatIndexes.ToArray(), directionMap, targetIndex);
+        }
+        /// <summary>
+        /// Generates asynchronously a DirectionField object that will contain all the pre-calculated direction data between a target tile and all the accessible tiles from this target
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="targetTile">The target tile for the paths calculation</param>
+        /// <param name="maxDistance">The maximum distance used for the paths calculation</param>
+        /// <param name="diagonalsPolicy">The diagonal movements policy for the paths calculation</param>
+        /// <param name="progress">An optional IProgress object to get the generation progression</param>
+        /// <param name="cancelToken">An optional CancellationToken object to cancel the generation</param>
+        /// <returns>A DirectionField object</returns>
+        public static Task<DirectionField> GenerateDirectionFieldAsync<T>(T[,] grid, T targetTile, int maxDistance, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : ITile
+        {
+            if (maxDistance < 1)
+            {
+                throw new Exception("The MaxDistance parameter has to be superior to 0.");
+            }
+            Task<DirectionField> task = Task.Run(() =>
+            {
+                if (targetTile == null || !targetTile.IsWalkable)
+                {
+                    throw new Exception("Do not try to generate a DirectionField with an unwalkable (or null) tile as the target");
+                }
+                int width = grid.GetLength(0);
+                int height = grid.GetLength(1);
+                Vector2Int gridDimensions = new Vector2Int(width, height);
+                int totalSize = width * height;
+                NextTileDirection[] directionMap = new NextTileDirection[totalSize];
+                int[] distanceMap = new int[totalSize];
+                bool[] visited = new bool[totalSize];
+                List<int> accessibleTilesFlatIndexes = new();
+                int targetIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, targetTile.X, targetTile.Y);
+                visited[targetIndex] = true;
+                directionMap[targetIndex] = NextTileDirection.SELF;
+                distanceMap[targetIndex] = 0;
+                accessibleTilesFlatIndexes.Add(targetIndex);
+                Queue<T> frontier = new Queue<T>();
+                frontier.Enqueue(targetTile);
+                List<T> neighbourgs = new();
+                T current = default;
+                int neighborIndex = -1;
+                int visitedCount = 0;
+                while (frontier.Count > 0)
+                {
+                    if (cancelToken.IsCancellationRequested)
+                    {
+                        return null;
+                    }
+                    progress?.Report((float)visitedCount / totalSize);
+                    current = frontier.Dequeue();
+                    if (diagonalsPolicy != DiagonalsPolicy.NONE)
+                    {
+                        GetTileNeighbours(ref neighbourgs, grid, current.X, current.Y, diagonalsPolicy);
+                    }
+                    else
+                    {
+                        GetTileOrthographicNeighbours(ref neighbourgs, grid, current.X, current.Y);
+                    }
+                    foreach (T neiTile in neighbourgs)
+                    {
+                        neighborIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, neiTile.X, neiTile.Y);
+                        int newDistance = distanceMap[GridUtils.GetFlatIndexFromCoordinates(gridDimensions, current.X, current.Y)] + 1;
+                        if (!visited[neighborIndex] && newDistance <= maxDistance)
+                        {
+                            visitedCount++;
+                            accessibleTilesFlatIndexes.Add(neighborIndex);
+                            visited[neighborIndex] = true;
+                            directionMap[neighborIndex] = GridUtils.GetDirectionTo(neiTile, current);
+                            distanceMap[neighborIndex] = newDistance;
+                            frontier.Enqueue(neiTile);
+                        }
+                    }
+                    neighbourgs.Clear();
+                }
+                return new DirectionField(maxDistance, accessibleTilesFlatIndexes.ToArray(), directionMap, targetIndex);
+            });
+            return task;
+        }
+        /// <summary>
+        /// Generates asynchronously a DirectionMap object that will contain all the pre-calculated direction data between a target tile and all the accessible tiles from this target
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="targetTile">The target tile for the paths calculation</param>
+        /// <param name="diagonalsPolicy">The diagonal movements policy for the paths calculation</param>
+        /// <param name="progress">An optional IProgress object to get the generation progression</param>
+        /// <param name="cancelToken">An optional CancellationToken object to cancel the generation</param>
+        /// <returns>A DirectionMap object</returns>
+        public static Task<DirectionMap> GenerateDirectionMapAsync<T>(T[,] grid, T targetTile, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : ITile
+        {
+            Task<DirectionMap> task = Task.Run(() =>
+            {
+                if (targetTile == null || !targetTile.IsWalkable)
+                {
+                    throw new Exception("Do not try to generate a DirectionMap with an unwalkable (or null) tile as the target");
+                }
+                int width = grid.GetLength(0);
+                int height = grid.GetLength(1);
+                Vector2Int gridDimensions = new Vector2Int(width, height);
+                int totalSize = width * height;
+                NextTileDirection[] directionMap = new NextTileDirection[totalSize];
+                bool[] visited = new bool[totalSize];
+                int targetIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, targetTile.X, targetTile.Y);
+                visited[targetIndex] = true;
+                directionMap[targetIndex] = NextTileDirection.SELF;
+                Queue<T> frontier = new Queue<T>();
+                frontier.Enqueue(targetTile);
+                List<T> neighbourgs = new();
+                T current = default;
+                int neighborIndex = -1;
+                int visitedCount = 0;
+                while (frontier.Count > 0)
+                {
+                    if (cancelToken.IsCancellationRequested)
+                    {
+                        return null;
+                    }
+                    progress?.Report((float)visitedCount / totalSize);
+                    current = frontier.Dequeue();
+                    if (diagonalsPolicy != DiagonalsPolicy.NONE)
+                    {
+                        GetTileNeighbours(ref neighbourgs, grid, current.X, current.Y, diagonalsPolicy);
+                    }
+                    else
+                    {
+                        GetTileOrthographicNeighbours(ref neighbourgs, grid, current.X, current.Y);
+                    }
+                    foreach (T neiTile in neighbourgs)
+                    {
+                        neighborIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, neiTile.X, neiTile.Y);
+                        if (!visited[neighborIndex])
+                        {
+                            visitedCount++;
+                            visited[neighborIndex] = true;
+                            directionMap[neighborIndex] = GridUtils.GetDirectionTo(neiTile, current);
+                            frontier.Enqueue(neiTile);
+                        }
+                    }
+                    neighbourgs.Clear();
+                }
+                return new DirectionMap(directionMap, targetIndex);
+            });
+            return task;
+        }
+        /// <summary>
+        /// Generates a DirectionMap object that will contain all the pre-calculated direction data between a target tile and all the accessible tiles from this target
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="targetTile">The target tile for the paths calculation</param>
+        /// <param name="diagonalsPolicy">The diagonal movements policy for the paths calculation</param>
+        /// <returns>A DirectionMap object</returns>
+        public static DirectionMap GenerateDirectionMap<T>(T[,] grid, T targetTile, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE) where T : ITile
+        {
+            if (targetTile == null || !targetTile.IsWalkable)
+            {
+                throw new Exception("Do not try to generate a DirectionMap with an unwalkable (or null) tile as the target");
+            }
+            int width = grid.GetLength(0);
+            int height = grid.GetLength(1);
+            Vector2Int gridDimensions = new Vector2Int(width, height);
+            int totalSize = width * height;
+            NextTileDirection[] directionMap = new NextTileDirection[totalSize];
+            bool[] visited = new bool[totalSize];
+            int targetIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, targetTile.X, targetTile.Y);
+            visited[targetIndex] = true;
+            directionMap[targetIndex] = NextTileDirection.SELF;
+            Queue<T> frontier = new Queue<T>();
+            frontier.Enqueue(targetTile);
+            List<T> neighbourgs = new();
+            T current = default;
+            int neighborIndex = -1;
+            while (frontier.Count > 0)
+            {
+                current = frontier.Dequeue();
+                if (diagonalsPolicy != DiagonalsPolicy.NONE)
+                {
+                    GetTileNeighbours(ref neighbourgs, grid, current.X, current.Y, diagonalsPolicy);
+                }
+                else
+                {
+                    GetTileOrthographicNeighbours(ref neighbourgs, grid, current.X, current.Y);
+                }
+                foreach (T neiTile in neighbourgs)
+                {
+                    neighborIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, neiTile.X, neiTile.Y);
+                    if (!visited[neighborIndex])
+                    {
+                        visited[neighborIndex] = true;
+                        directionMap[neighborIndex] = GridUtils.GetDirectionTo(neiTile, current);
+                        frontier.Enqueue(neiTile);
+                    }
+                }
+                neighbourgs.Clear();
+            }
+            return new DirectionMap(directionMap, targetIndex);
+        }
+        /// <summary>
+        /// Generates asynchronously a DijkstraField object that will contain all the pre-calculated direction and distance data between a target tile and all the accessible tiles from this target
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="targetTile">The target tile for the paths calculation</param>
+        /// <param name="diagonalsPolicy">The diagonal movements policy for the paths calculation</param>
+        /// <param name="diagonalsWeight">The diagonal movements cost for the paths calculation</param>
+        /// <param name="progress">An optional IProgress object to get the generation progression</param>
+        /// <param name="cancelToken">An optional CancellationToken object to cancel the generation</param>
+        /// <returns>A DirectionMap object</returns>
+        public static Task<DijkstraField> GenerateDijkstraFieldAsync<T>(T[,] grid, T targetTile, float maxDistance, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE, float diagonalsWeight = 1.414f, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : IWeightedTile
+        {
+            if (maxDistance < 1f)
+            {
+                throw new Exception("The MaxDistance parameter has to be superior or equal to 1f.");
+            }
+            Task<DijkstraField> task = Task.Run(() =>
+            {
+                if (targetTile == null || !targetTile.IsWalkable)
+                {
+                    throw new Exception("Do not try to generate a DijkstraField with an unwalkable (or null) tile as the target");
+                }
+                int width = grid.GetLength(0);
+                int height = grid.GetLength(1);
+                Vector2Int gridDimensions = new Vector2Int(width, height);
+                int totalSize = width * height;
+                NextTileDirection[] directionMap = new NextTileDirection[totalSize];
+                float[] distanceMap = new float[totalSize];
+                bool[] visited = new bool[totalSize];
+                List<int> accessibleTilesFlatIndexes = new();
+                int targetIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, targetTile.X, targetTile.Y);
+                visited[targetIndex] = true;
+                directionMap[targetIndex] = NextTileDirection.SELF;
+                distanceMap[targetIndex] = 0f;
+                accessibleTilesFlatIndexes.Add(targetIndex);
+                PriorityQueue<T, float> frontier = new();
+                frontier.Enqueue(targetTile, 0f);
+                List<T> neighbourgs = new();
+                T current;
+                int neighborIndex;
+                int currentIndex;
+                bool isDiagonal;
+                float newDistance;
+                int visitedCount = 0;
+                while (frontier.Count > 0)
+                {
+                    if (cancelToken.IsCancellationRequested)
+                    {
+                        return null;
+                    }
+                    progress?.Report((float)visitedCount / totalSize);
+                    current = frontier.Dequeue();
+                    if (diagonalsPolicy != DiagonalsPolicy.NONE)
+                    {
+                        GetTileNeighbours(ref neighbourgs, grid, current.X, current.Y, diagonalsPolicy);
+                    }
+                    else
+                    {
+                        GetTileOrthographicNeighbours(ref neighbourgs, grid, current.X, current.Y);
+                    }
+                    foreach (T neiTile in neighbourgs)
+                    {
+                        neighborIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, neiTile.X, neiTile.Y);
+                        currentIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, current.X, current.Y);
+                        isDiagonal = current.X != neiTile.X && current.Y != neiTile.Y;
+                        newDistance = distanceMap[currentIndex] + neiTile.Weight * (isDiagonal ? diagonalsWeight : 1f);
+                        if (newDistance <= maxDistance && (!visited[neighborIndex] || newDistance < distanceMap[neighborIndex]))
+                        {
+                            visitedCount++;
+                            if (!visited[neighborIndex])
+                            {
+                                accessibleTilesFlatIndexes.Add(neighborIndex);
+                            }
+                            visited[neighborIndex] = true;
+                            directionMap[neighborIndex] = GridUtils.GetDirectionTo(neiTile, current);
+                            distanceMap[neighborIndex] = newDistance;
+                            frontier.Enqueue(neiTile, newDistance);
+                        }
+                    }
+                    neighbourgs.Clear();
+                }
+                return new DijkstraField(maxDistance, accessibleTilesFlatIndexes.ToArray(), directionMap, distanceMap, targetIndex);
+            });
+            return task;
+        }
+        /// <summary>
+        /// Generates asynchronously a DijkstraField object that will contain all the pre-calculated direction and distance data between a target tile and all the accessible tiles from this target
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="targetTile">The target tile for the paths calculation</param>
+        /// <param name="diagonalsPolicy">The diagonal movements policy for the paths calculation</param>
+        /// <param name="diagonalsWeight">The diagonal movements cost for the paths calculation</param>
+        /// <param name="progress">An optional IProgress object to get the generation progression</param>
+        /// <param name="cancelToken">An optional CancellationToken object to cancel the generation</param>
+        /// <returns>A DirectionMap object</returns>
+        public static DijkstraField GenerateDijkstraField<T>(T[,] grid, T targetTile, float maxDistance, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE, float diagonalsWeight = 1.414f) where T : IWeightedTile
+        {
+            if (maxDistance < 1f)
+            {
+                throw new Exception("The MaxDistance parameter has to be superior or equal to 1f.");
+            }
+            if (targetTile == null || !targetTile.IsWalkable)
+            {
+                throw new Exception("Do not try to generate a DijkstraField with an unwalkable (or null) tile as the target");
+            }
+            int width = grid.GetLength(0);
+            int height = grid.GetLength(1);
+            Vector2Int gridDimensions = new Vector2Int(width, height);
+            int totalSize = width * height;
+            NextTileDirection[] directionMap = new NextTileDirection[totalSize];
+            float[] distanceMap = new float[totalSize];
+            bool[] visited = new bool[totalSize];
+            List<int> accessibleTilesFlatIndexes = new();
+            int targetIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, targetTile.X, targetTile.Y);
+            visited[targetIndex] = true;
+            directionMap[targetIndex] = NextTileDirection.SELF;
+            distanceMap[targetIndex] = 0f;
+            accessibleTilesFlatIndexes.Add(targetIndex);
+            PriorityQueue<T, float> frontier = new();
+            frontier.Enqueue(targetTile, 0f);
+            List<T> neighbourgs = new();
+            T current;
+            int neighborIndex;
+            int currentIndex;
+            bool isDiagonal;
+            float newDistance;
+            int visitedCount = 0;
+            while (frontier.Count > 0)
+            {
+                current = frontier.Dequeue();
+                if (diagonalsPolicy != DiagonalsPolicy.NONE)
+                {
+                    GetTileNeighbours(ref neighbourgs, grid, current.X, current.Y, diagonalsPolicy);
+                }
+                else
+                {
+                    GetTileOrthographicNeighbours(ref neighbourgs, grid, current.X, current.Y);
+                }
+                foreach (T neiTile in neighbourgs)
+                {
+                    neighborIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, neiTile.X, neiTile.Y);
+                    currentIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, current.X, current.Y);
+                    isDiagonal = current.X != neiTile.X && current.Y != neiTile.Y;
+                    newDistance = distanceMap[currentIndex] + neiTile.Weight * (isDiagonal ? diagonalsWeight : 1f);
+                    if (newDistance <= maxDistance && (!visited[neighborIndex] || newDistance < distanceMap[neighborIndex]))
+                    {
+                        visitedCount++;
+                        if (!visited[neighborIndex])
+                        {
+                            accessibleTilesFlatIndexes.Add(neighborIndex);
+                        }
+                        visited[neighborIndex] = true;
+                        directionMap[neighborIndex] = GridUtils.GetDirectionTo(neiTile, current);
+                        distanceMap[neighborIndex] = newDistance;
+                        frontier.Enqueue(neiTile, newDistance);
+                    }
+                }
+                neighbourgs.Clear();
+            }
+            return new DijkstraField(maxDistance, accessibleTilesFlatIndexes.ToArray(), directionMap, distanceMap, targetIndex);
+        }
+        /// <summary>
+        /// Generates asynchronously a DijkstraMap object that will contain all the pre-calculated direction and distance data between a target tile and all the accessible tiles from this target
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="targetTile">The target tile for the paths calculation</param>
+        /// <param name="diagonalsPolicy">The diagonal movements policy for the paths calculation</param>
+        /// <param name="diagonalsWeight">The diagonal movements cost for the paths calculation</param>
+        /// <param name="progress">An optional IProgress object to get the generation progression</param>
+        /// <param name="cancelToken">An optional CancellationToken object to cancel the generation</param>
+        /// <returns>A DirectionMap object</returns>
+        public static Task<DijkstraMap> GenerateDijkstraMapAsync<T>(T[,] grid, T targetTile, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE, float diagonalsWeight = 1.414f, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : IWeightedTile
+        {
+            Task<DijkstraMap> task = Task.Run(() =>
+            {
+                if (targetTile == null || !targetTile.IsWalkable)
+                {
+                    throw new Exception("Do not try to generate a DijkstraMap with an unwalkable (or null) tile as the target");
+                }
+                int width = grid.GetLength(0);
+                int height = grid.GetLength(1);
+                Vector2Int gridDimensions = new Vector2Int(width, height);
+                int totalSize = width * height;
+                NextTileDirection[] directionMap = new NextTileDirection[totalSize];
+                float[] distanceMap = new float[totalSize];
+                bool[] visited = new bool[totalSize];
+                int targetIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, targetTile.X, targetTile.Y);
+                visited[targetIndex] = true;
+                directionMap[targetIndex] = NextTileDirection.SELF;
+                distanceMap[targetIndex] = 0f;
+                PriorityQueue<T, float> frontier = new();
+                frontier.Enqueue(targetTile, 0f);
+                List<T> neighbourgs = new();
+                T current;
+                int neighborIndex;
+                int currentIndex;
+                bool isDiagonal;
+                float newDistance;
+                int visitedCount = 0;
+                while (frontier.Count > 0)
+                {
+                    if (cancelToken.IsCancellationRequested)
+                    {
+                        return null;
+                    }
+                    progress?.Report((float)visitedCount / totalSize);
+                    current = frontier.Dequeue();
+                    if (diagonalsPolicy != DiagonalsPolicy.NONE)
+                    {
+                        GetTileNeighbours(ref neighbourgs, grid, current.X, current.Y, diagonalsPolicy);
+                    }
+                    else
+                    {
+                        GetTileOrthographicNeighbours(ref neighbourgs, grid, current.X, current.Y);
+                    }
+                    foreach (T neiTile in neighbourgs)
+                    {
+                        neighborIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, neiTile.X, neiTile.Y);
+                        currentIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, current.X, current.Y);
+                        isDiagonal = current.X != neiTile.X && current.Y != neiTile.Y;
+                        newDistance = distanceMap[currentIndex] + neiTile.Weight * (isDiagonal ? diagonalsWeight : 1f);
+                        if (!visited[neighborIndex] || newDistance < distanceMap[neighborIndex])
+                        {
+                            visitedCount++;
+                            visited[neighborIndex] = true;
+                            directionMap[neighborIndex] = GridUtils.GetDirectionTo(neiTile, current);
+                            distanceMap[neighborIndex] = newDistance;
+                            frontier.Enqueue(neiTile, newDistance);
+                        }
+                    }
+                    neighbourgs.Clear();
+                }
+                return new DijkstraMap(directionMap, distanceMap, targetIndex);
+            });
+            return task;
+        }
+        /// <summary>
+        /// Generates a DijkstraMap object that will contain all the pre-calculated direction and distance data between a target tile and all the accessible tiles from this target
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="targetTile">The target tile for the paths calculation</param>
+        /// <param name="diagonalsPolicy">The diagonal movements policy for the paths calculation</param>
+        /// <param name="diagonalsWeight">The diagonal movements cost for the paths calculation</param>
+        /// <returns>A DijkstraMap object</returns>
+        public static DijkstraMap GenerateDijkstraMap<T>(T[,] grid, T targetTile, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE, float diagonalsWeight = 1.414f) where T : IWeightedTile
+        {
+            if (targetTile == null || !targetTile.IsWalkable)
+            {
+                throw new Exception("Do not try to generate a DijkstraMap with an unwalkable (or null) tile as the target");
+            }
+            int width = grid.GetLength(0);
+            int height = grid.GetLength(1);
+            Vector2Int gridDimensions = new Vector2Int(width, height);
+            int totalSize = width * height;
+            NextTileDirection[] directionMap = new NextTileDirection[totalSize];
+            float[] distanceMap = new float[totalSize];
+            bool[] visited = new bool[totalSize];
+            int targetIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, targetTile.X, targetTile.Y);
+            visited[targetIndex] = true;
+            directionMap[targetIndex] = NextTileDirection.SELF;
+            distanceMap[targetIndex] = 0f;
+            PriorityQueue<T, float> frontier = new();
+            frontier.Enqueue(targetTile, 0f);
+            List<T> neighbourgs = new();
+            T current;
+            int neighborIndex;
+            int currentIndex;
+            bool isDiagonal;
+            float newDistance;
+            while (frontier.Count > 0)
+            {
+                current = frontier.Dequeue();
+                if (diagonalsPolicy != DiagonalsPolicy.NONE)
+                {
+                    GetTileNeighbours(ref neighbourgs, grid, current.X, current.Y, diagonalsPolicy);
+                }
+                else
+                {
+                    GetTileOrthographicNeighbours(ref neighbourgs, grid, current.X, current.Y);
+                }
+                foreach (T neiTile in neighbourgs)
+                {
+                    neighborIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, neiTile.X, neiTile.Y);
+                    currentIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, current.X, current.Y);
+                    isDiagonal = current.X != neiTile.X && current.Y != neiTile.Y;
+                    newDistance = distanceMap[currentIndex] + neiTile.Weight * (isDiagonal ? diagonalsWeight : 1f);
+                    if (!visited[neighborIndex] || newDistance < distanceMap[neighborIndex])
+                    {
+                        visited[neighborIndex] = true;
+                        directionMap[neighborIndex] = GridUtils.GetDirectionTo(neiTile, current);
+                        distanceMap[neighborIndex] = newDistance;
+                        frontier.Enqueue(neiTile, newDistance);
+                    }
+                }
+                neighbourgs.Clear();
+            }
+            return new DijkstraMap(directionMap, distanceMap, targetIndex);
+        }
+    }
+}

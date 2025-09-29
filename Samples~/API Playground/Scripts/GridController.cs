@@ -177,7 +177,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
             _highlightedTiles = highlightedTiles;
             for (int i = 0; i < _highlightedTiles.Length; i++)
             {
-                if (!_startTileEnabled || _highlightedTiles[i] != _startTile)
+                if ((!_startTileEnabled || _highlightedTiles[i] != _startTile) && (_highlightedTiles[i] != _centerTile) && (!_pathTiles.Contains(_highlightedTiles[i])))
                 {
                     _tileMap.SetColor(new Vector3Int(_highlightedTiles[i].X, _highlightedTiles[i].Y), _highlightedColor);
                 }

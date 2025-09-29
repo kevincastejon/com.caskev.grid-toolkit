@@ -3039,12 +3039,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _uiContent: {fileID: 1521155868}
-  _arrowPrefab: {fileID: 5348830800239933102, guid: 8577014e1f7af9b4d9a3c110b0c9887e, type: 3}
+  _directionPrefab: {fileID: 5348830800239933102, guid: 8577014e1f7af9b4d9a3c110b0c9887e, type: 3}
   _distancePrefab: {fileID: 2245469734968360483, guid: 443ce90e1d67bfa4a835efed745bb552, type: 3}
   _progressWindow: {fileID: 440380021}
   _pathfindingType: {fileID: 1331491886}
   _diagonalsPolicy: {fileID: 266140250}
   _diagonalsWeight: {fileID: 1059552028}
+  _maxDistance: {fileID: 1098664777}
   _hoveredTileLabel: {fileID: 1106527572}
 --- !u!1 &266140248
 GameObject:
@@ -7439,7 +7440,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &659455613
 RectTransform:
   m_ObjectHideFlags: 0
@@ -11373,10 +11374,10 @@ MonoBehaviour:
   m_FillRect: {fileID: 974887405}
   m_HandleRect: {fileID: 1759538604}
   m_Direction: 0
-  m_MinValue: 0
+  m_MinValue: 1
   m_MaxValue: 50
   m_WholeNumbers: 0
-  m_Value: 0
+  m_Value: 5
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
@@ -14134,6 +14135,12 @@ MonoBehaviour:
       m_Image: {fileID: 0}
       m_Color: {r: 1, g: 1, b: 1, a: 1}
     - m_Text: DIJKSTRA MAP
+      m_Image: {fileID: 0}
+      m_Color: {r: 1, g: 1, b: 1, a: 1}
+    - m_Text: DIRECTION PATHS
+      m_Image: {fileID: 0}
+      m_Color: {r: 1, g: 1, b: 1, a: 1}
+    - m_Text: DIJKSTRA PATHS
       m_Image: {fileID: 0}
       m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_OnValueChanged:
