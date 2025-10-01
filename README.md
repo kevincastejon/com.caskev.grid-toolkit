@@ -204,7 +204,7 @@ Every pathfinding calculation method has an asynchronous variant, that returns a
 
 #### DirectionMap
 
-A DirectionMap will hold all the pre-calculated direction data between a target tile and all the tiles that are accessible to this target.  
+A DirectionMap holds direction data between a target tile and all the tiles that are accessible to this target.  
 Once generated, this object can contain all the paths you need (ie: a tower defense game with a village core where all enemies run to) and then use the paths with almost no performance cost.  
 There are also serialization methods to bake or save these objects to files and load them later with the deserialization methods.
 
@@ -275,7 +275,7 @@ DirectionMap directionMap = DirectionMap.FromByteArray(grid, serializedDirection
 
 *Note that a DijkstraMap object inherits from all the methods and properties of a DirectionMap object.*
 
-A Dijkstra will hold both direction and distance data between a target tile and all the tiles that are accessible to this target.  
+A DijkstraMap holds both direction and distance data between a target tile and all the tiles that are accessible to this target.  
 Once generated, this object can contain all the paths and distance data that you need (ie: a tower defense game with a village core where all enemies run to, or a strategy game in which you would display the distance cost of the movement by hovering tiles with the cursor) and then use the paths with almost no performance cost.  
 There are also serialization methods to bake or save these objects to files and load them later with the deserialization methods.
 
@@ -299,7 +299,7 @@ float distance = dijsktraMap.GetDistanceToTarget(grid, tile);
 
 A DirectionField holds the direction data between a target tile and all the tiles that are accessible to this target into the specified maximum distance range.
 This allows you to run them more often because of the early exit due to the maximum distance parameter (note that more higher is the distance, more costly is the generation).  
-Once generated, these objects offers you a way to get the accessible tiles within a range, and paths to them, with almost no performance cost (ie: a strategy game where you want to check the tiles in range of your character)
+Once generated, this object offers you a way to get the accessible tiles within a range, and paths to them, with almost no performance cost (ie: a strategy game where you want to check the tiles in range of your character)
 
 To generate a **DirectionField** object, use the **GenerateDirectionField** method that needs the *grid* and the *target* tile from which to calculate the paths, as parameters.
 
@@ -324,7 +324,7 @@ for (int i = 0; i < directionField.AccessibleTilesCount; i++)
 
 A DijkstraField holds the direction data between a target tile and all the tiles that are accessible to this target into the specified maximum distance range.
 This allows you to run them more often because of the early exit due to the maximum distance parameter (note that more higher is the distance, more costly is the generation).  
-Once generated, these objects offers you a way to get the accessible tiles within a range, and paths to them, with almost no performance cost (ie: a strategy game where you want to check the tiles in range of your character)
+Once generated, this object offers you a way to get the accessible tiles within a range, and paths to them, with almost no performance cost (ie: a strategy game where you want to check the tiles in range of your character)
 
 To generate a **DijkstraField** object, use the **GenerateDijkstraField** method that needs the *grid* and the *target* tile from which to calculate the paths, as parameters.
 

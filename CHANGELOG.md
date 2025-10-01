@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.4.0] - 2025-10-02
+### Added
+- DirectionField and DijkstraField features.
+
+
 ## [0.3.0] - 2025-09-22
 ### Added
 - Dijkstra map feature with tiles and diagonal movement weights parameters.

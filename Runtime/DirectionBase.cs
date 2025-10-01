@@ -7,13 +7,9 @@ using UnityEngine;
 namespace Caskev.GridToolkit
 {
     /// <summary>
-    /// You can generate a DirectionPaths object that holds pre-calculated direction and distance data.
-    /// This way of doing pathfinding is useful for some usages(like Tower Defenses and more) because it calculates once all the paths between one tile, called the "target", and all the accessible tiles from it.
-    /// To generate the DirectionPaths object, use the GenerateDirectionPaths method that needs the* grid* and the target tile from which to calculate the paths, as parameters.
-    /// <i>Note that, obviously, any path calculation is valid as long as the user grid, and walkable states of the tiles, remains unchanged</i>
+    /// Abstract base class for DirectionMap and DirectionField, containing all the common methods and properties.
     /// </summary>
-    /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-    public class DirectionBase
+    public abstract class DirectionBase
     {
         internal readonly NextTileDirection[] _directionMap;
         protected readonly int _target;

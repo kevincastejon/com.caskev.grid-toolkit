@@ -6,7 +6,10 @@ using UnityEngine;
 /// </summary>
 namespace Caskev.GridToolkit
 {
-    public class DijkstraBase
+    /// <summary>
+    /// Abstract base class for DijkstraMap and DijkstraField, containing all the common methods and properties.
+    /// </summary>
+    public abstract class DijkstraBase
     {
         internal readonly NextTileDirection[] _directionMap;
         internal readonly float[] _distanceMap;
