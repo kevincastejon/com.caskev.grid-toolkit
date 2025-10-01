@@ -2,16 +2,17 @@ using System;
 using System.Buffers.Binary;
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEditor.Experimental.GraphView;
+using static UnityEngine.GraphicsBuffer;
 /// <summary>
 /// Utilitary API to proceed operations on abstract grids such as tile extraction, raycasting, and pathfinding.
 /// </summary>
 namespace Caskev.GridToolkit
 {
     /// <summary>
-    /// You can generate a DirectionMap object that holds pre-calculated direction and distance data.
-    /// This way of doing pathfinding is useful for some usages(like Tower Defenses and more) because it calculates once all the paths between one tile, called the "target", and all the accessible tiles from it.
-    /// To generate the DirectionMap object, use the GenerateDirectionMap method that needs the* grid* and the target tile from which to calculate the paths, as parameters.
-    /// <i>Note that, obviously, any path calculation is valid as long as the user grid, and walkable states of the tiles, remains unchanged</i>
+    /// A DirectionMap will hold all the pre-calculated direction data between a target tile and all the tiles that are accessible to this target.  
+    /// Once generated, this object can contain all the paths you need (ie: a tower defense game with a village core where all enemies run to) and then use the paths with almost no performance cost.  
+    /// There are also serialization methods to bake or save these objects to files and load them later with the deserialization methods.
     /// </summary>
     /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
     public class DirectionMap : DirectionBase

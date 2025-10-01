@@ -2,16 +2,17 @@ using System;
 using System.Buffers.Binary;
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEditor.Experimental.GraphView;
+using static UnityEngine.GraphicsBuffer;
 /// <summary>
 /// Utilitary API to proceed operations on abstract grids such as tile extraction, raycasting, and pathfinding.
 /// </summary>
 namespace Caskev.GridToolkit
 {
     /// <summary>
-    /// You can generate a DijkstraMap object that holds pre-calculated paths data.
-    /// This way of doing pathfinding is useful for some usages(like Tower Defenses and more) because it calculates once all the paths between one tile, called the "target", and all the accessible tiles from it.
-    /// To generate the DijkstraMap object, use the GenerateDijkstraMap method that needs the* grid* and the target tile from which to calculate the paths, as parameters.
-    /// <i>Note that, obviously, any path calculation is valid as long as the user grid, and walkable states of the tiles, remains unchanged</i>
+    /// A Dijkstra will hold both direction and distance data between a target tile and all the tiles that are accessible to this target.  
+    /// Once generated, this object can contain all the paths and distance data that you need (ie: a tower defense game with a village core where all enemies run to, or a strategy game in which you would display the distance cost of the movement by hovering tiles with the cursor) and then use the paths with almost no performance cost.  
+    /// There are also serialization methods to bake or save these objects to files and load them later with the deserialization methods.
     /// </summary>
     /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
     public class DijkstraMap : DijkstraBase

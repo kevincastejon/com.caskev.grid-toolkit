@@ -12,9 +12,19 @@ namespace Caskev.GridToolkit
 {
     /// <summary>
     /// Allows you to calculate paths between tiles.  
-    /// This API offers a method which generates and returns a direction grid.A direction grid can be seen as a "layer" on top of the user grid that indicates, for each accessible tile, the direction to the next tile, ultimately leading to the target tile.  
-    /// A direction grid holds all the paths to a target tile from all the accessible tiles on the grid.
-    /// Storing this DirectionMap object allows you to reconstruct paths between tiles without having to recalculate them every time, which can be costly in terms of performance.
+    /// This API offers several ways to do pathfinding, depending on your needs.
+    /// 
+    /// You can generate objects that can be seen as layers of data on top of your grid.  
+    /// A DirectionMap will hold all the pre-calculated direction data between a target tile and all the tiles that are accessible to this target.  
+    /// A Dijkstra map will hold both direction and distance data.  
+    /// Once generated, these objects can contain all the paths you need (ie: a tower defense game with a village core where all enemies have to run to) and then use the paths with almost no performance cost.  
+    /// There are also serialization methods to bake or save these objects to files and load them later with the deserialization methods.
+    /// 
+    /// These two objects covers the entire grid, but you can also generate a DirectionField or a DijkstraField that will hold the same kind of data but only for tiles that are within a specified distance from the target tile.  
+    /// This allows you to run them more often because of the early exit due to the maximum distance parameter (note that more higher is the distance, more costly is the generation).  
+    /// Once generated, these objects offers you a way to get the accessible tiles within a range, and paths to them, with almost no performance cost (ie: a strategy game where you want to check the tiles in range of your character)
+    /// 
+    /// *Note that, obviously, any path calculation is valid as long as the user grid, walkable states (and weights for dijkstra objects) of the tiles, remains unchanged*
     /// </summary>
     public class Pathfinding
     {
@@ -204,7 +214,7 @@ namespace Caskev.GridToolkit
             }
         }
         /// <summary>
-        /// Generates a DirectionField object that will contain all the pre-calculated direction data between a target tile and all the accessible tiles from this target
+        /// Generates a DirectionField object that will contain all the pre-calculated direction data between a target tile and all the tiles that are accessible to this target into the specified maximum distance range.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
         /// <param name="grid">A two-dimensional array of tiles</param>
@@ -272,7 +282,7 @@ namespace Caskev.GridToolkit
             return new DirectionField(maxDistance, accessibleTilesFlatIndexes.ToArray(), directionMap, targetIndex);
         }
         /// <summary>
-        /// Generates asynchronously a DirectionField object that will contain all the pre-calculated direction data between a target tile and all the accessible tiles from this target
+        /// Generates asynchronously a DirectionField object that will contain all the pre-calculated direction data between a target tile and all the accessible tiles from this target into the specified maximum distance.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
         /// <param name="grid">A two-dimensional array of tiles</param>
@@ -469,11 +479,12 @@ namespace Caskev.GridToolkit
             return new DirectionMap(directionMap, targetIndex);
         }
         /// <summary>
-        /// Generates asynchronously a DijkstraField object that will contain all the pre-calculated direction and distance data between a target tile and all the accessible tiles from this target
+        /// Generates asynchronously a DijkstraField object that will contain all the pre-calculated direction and distance data between a target tile and all the accessible tiles from this target into the specified maximum distance.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
         /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="targetTile">The target tile for the paths calculation</param>
+        /// <param name="maxDistance">The maximum distance used for the paths calculation</param>
         /// <param name="diagonalsPolicy">The diagonal movements policy for the paths calculation</param>
         /// <param name="diagonalsWeight">The diagonal movements cost for the paths calculation</param>
         /// <param name="progress">An optional IProgress object to get the generation progression</param>
@@ -555,15 +566,14 @@ namespace Caskev.GridToolkit
             return task;
         }
         /// <summary>
-        /// Generates asynchronously a DijkstraField object that will contain all the pre-calculated direction and distance data between a target tile and all the accessible tiles from this target
+        /// Generates asynchronously a DijkstraField object that will contain all the pre-calculated direction and distance data between a target tile and all the accessible tiles from this target into the specified maximum distance.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
         /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="targetTile">The target tile for the paths calculation</param>
+        /// <param name="maxDistance">The maximum distance used for the paths calculation</param>
         /// <param name="diagonalsPolicy">The diagonal movements policy for the paths calculation</param>
         /// <param name="diagonalsWeight">The diagonal movements cost for the paths calculation</param>
-        /// <param name="progress">An optional IProgress object to get the generation progression</param>
-        /// <param name="cancelToken">An optional CancellationToken object to cancel the generation</param>
         /// <returns>A DirectionMap object</returns>
         public static DijkstraField GenerateDijkstraField<T>(T[,] grid, T targetTile, float maxDistance, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE, float diagonalsWeight = 1.414f) where T : IWeightedTile
         {
