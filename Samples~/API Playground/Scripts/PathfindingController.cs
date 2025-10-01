@@ -160,6 +160,38 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
                     break;
             }
         }
+        private async void GenerateDirectionMap()
+        {
+            _canvasGroup.interactable = false;
+            _progressWindow.transform.parent.gameObject.SetActive(true);
+            _cts = new System.Threading.CancellationTokenSource();
+            try
+            {
+                _directionMap = await Pathfinding.GenerateDirectionMapAsync(_grid.Map, _targetTile, (DiagonalsPolicy)_diagonalsPolicy.value, new Progress<float>((x) => _progressWindow.text = (x * 100).ToString("F0") + "%"), _cts.Token);
+            }
+            catch (Exception e)
+            {
+                _progressWindow.transform.parent.gameObject.SetActive(false);
+                _canvasGroup.interactable = true;
+                _cts = null;
+                throw e;
+            }
+            _progressWindow.transform.parent.gameObject.SetActive(false);
+            _canvasGroup.interactable = true;
+            _cts = null;
+            UpdateDirectionSprites();
+            UpdateDistanceSprites();
+            bool isAccessible = _directionMap.IsTileAccessible(_grid.Map, _startTile);
+            Tile[] path = new Tile[0];
+            if (isAccessible)
+            {
+                path = _directionMap.GetPathToTarget(_grid.Map, _startTile, false, false);
+            }
+            _grid.TintCenter(_targetTile);
+            _grid.TintPathTiles(path);
+            _grid.TintStart(_startTile);
+            _grid.TintHighlightedTiles(new Tile[0]);
+        }
         private async void GenerateDirectionField()
         {
             _canvasGroup.interactable = false;
@@ -236,6 +268,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
             _grid.TintCenter(_targetTile);
             _grid.TintPathTiles(path);
             _grid.TintStart(_startTile);
+            _grid.TintHighlightedTiles(new Tile[0]);
         }
         private async void GenerateDijkstraField()
         {
@@ -280,37 +313,6 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
                 _grid.TintPathTiles(path);
             }
             _grid.TintHighlightedTiles(allAccessibleTiles);
-        }
-        private async void GenerateDirectionMap()
-        {
-            _canvasGroup.interactable = false;
-            _progressWindow.transform.parent.gameObject.SetActive(true);
-            _cts = new System.Threading.CancellationTokenSource();
-            try
-            {
-                _directionMap = await Pathfinding.GenerateDirectionMapAsync(_grid.Map, _targetTile, (DiagonalsPolicy)_diagonalsPolicy.value, new Progress<float>((x) => _progressWindow.text = (x * 100).ToString("F0") + "%"), _cts.Token);
-            }
-            catch (Exception e)
-            {
-                _progressWindow.transform.parent.gameObject.SetActive(false);
-                _canvasGroup.interactable = true;
-                _cts = null;
-                throw e;
-            }
-            _progressWindow.transform.parent.gameObject.SetActive(false);
-            _canvasGroup.interactable = true;
-            _cts = null;
-            UpdateDirectionSprites();
-            UpdateDistanceSprites();
-            bool isAccessible = _directionMap.IsTileAccessible(_grid.Map, _startTile);
-            Tile[] path = new Tile[0];
-            if (isAccessible)
-            {
-                path = _directionMap.GetPathToTarget(_grid.Map, _startTile, false, false);
-            }
-            _grid.TintCenter(_targetTile);
-            _grid.TintPathTiles(path);
-            _grid.TintStart(_startTile);
         }
         private void HideDirectionSprites()
         {
@@ -363,6 +365,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
                     UpdateDistanceSpritesFromDijkstraField();
                     break;
                 default:
+                    HideDistanceSprites();
                     break;
             }
         }
