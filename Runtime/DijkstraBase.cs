@@ -142,6 +142,12 @@ namespace Caskev.GridToolkit
             }
             return reversedPath;
         }
+        /// <summary>
+        /// Gets the next tile from the specified tile along the path to the target tile.
+        /// </summary>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="tile">Any tile that is accessible to the target tile</param>
+        /// <returns></returns>
         protected T GetNextTile<T>(T[,] grid, T tile) where T : IWeightedTile
         {
             Vector2Int nextTileDirection = GridUtils.NextNodeDirectionToVector2Int(_directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)]);
