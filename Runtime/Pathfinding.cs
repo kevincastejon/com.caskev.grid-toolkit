@@ -240,11 +240,11 @@ namespace Caskev.GridToolkit
             int height = grid.GetLength(1);
             Vector2Int gridDimensions = new Vector2Int(width, height);
             int totalSize = width * height;
-            NextTileDirection[] directionMap = new NextTileDirection[totalSize];
+            NextTileDirection[] directionGrid = new NextTileDirection[totalSize];
             bool[] visited = new bool[totalSize];
             int targetIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, targetTile.X, targetTile.Y);
             visited[targetIndex] = true;
-            directionMap[targetIndex] = NextTileDirection.SELF;
+            directionGrid[targetIndex] = NextTileDirection.SELF;
             Queue<T> frontier = new Queue<T>();
             frontier.Enqueue(targetTile);
             List<T> neighbourgs = new();
@@ -267,13 +267,13 @@ namespace Caskev.GridToolkit
                     if (!visited[neighborIndex])
                     {
                         visited[neighborIndex] = true;
-                        directionMap[neighborIndex] = GridUtils.GetDirectionBetweenAdjacentTiles(neiTile, current);
+                        directionGrid[neighborIndex] = GridUtils.GetDirectionBetweenAdjacentTiles(neiTile, current);
                         frontier.Enqueue(neiTile);
                     }
                 }
                 neighbourgs.Clear();
             }
-            return new DirectionGrid(directionMap, targetIndex);
+            return new DirectionGrid(directionGrid, targetIndex);
         }
         /// <summary>
         /// Asynchronously generates a DirectionGrid that holds direction data between a target tile and all the tiles that are accessible to this target.  
@@ -299,11 +299,11 @@ namespace Caskev.GridToolkit
                 int height = grid.GetLength(1);
                 Vector2Int gridDimensions = new Vector2Int(width, height);
                 int totalSize = width * height;
-                NextTileDirection[] directionMap = new NextTileDirection[totalSize];
+                NextTileDirection[] directionGrid = new NextTileDirection[totalSize];
                 bool[] visited = new bool[totalSize];
                 int targetIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, targetTile.X, targetTile.Y);
                 visited[targetIndex] = true;
-                directionMap[targetIndex] = NextTileDirection.SELF;
+                directionGrid[targetIndex] = NextTileDirection.SELF;
                 Queue<T> frontier = new Queue<T>();
                 frontier.Enqueue(targetTile);
                 List<T> neighbourgs = new();
@@ -333,13 +333,13 @@ namespace Caskev.GridToolkit
                         {
                             visitedCount++;
                             visited[neighborIndex] = true;
-                            directionMap[neighborIndex] = GridUtils.GetDirectionBetweenAdjacentTiles(neiTile, current);
+                            directionGrid[neighborIndex] = GridUtils.GetDirectionBetweenAdjacentTiles(neiTile, current);
                             frontier.Enqueue(neiTile);
                         }
                     }
                     neighbourgs.Clear();
                 }
-                return new DirectionGrid(directionMap, targetIndex);
+                return new DirectionGrid(directionGrid, targetIndex);
             });
             return task;
         }
@@ -369,13 +369,13 @@ namespace Caskev.GridToolkit
             int height = grid.GetLength(1);
             Vector2Int gridDimensions = new Vector2Int(width, height);
             int totalSize = width * height;
-            NextTileDirection[] directionMap = new NextTileDirection[totalSize];
+            NextTileDirection[] directionGrid = new NextTileDirection[totalSize];
             int[] distanceMap = new int[totalSize];
             bool[] visited = new bool[totalSize];
             List<int> accessibleTilesFlatIndexes = new();
             int targetIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, targetTile.X, targetTile.Y);
             visited[targetIndex] = true;
-            directionMap[targetIndex] = NextTileDirection.SELF;
+            directionGrid[targetIndex] = NextTileDirection.SELF;
             distanceMap[targetIndex] = 0;
             accessibleTilesFlatIndexes.Add(targetIndex);
             Queue<T> frontier = new Queue<T>();
@@ -404,14 +404,14 @@ namespace Caskev.GridToolkit
                         visitedCount++;
                         accessibleTilesFlatIndexes.Add(neighborIndex);
                         visited[neighborIndex] = true;
-                        directionMap[neighborIndex] = GridUtils.GetDirectionBetweenAdjacentTiles(neiTile, current);
+                        directionGrid[neighborIndex] = GridUtils.GetDirectionBetweenAdjacentTiles(neiTile, current);
                         distanceMap[neighborIndex] = newDistance;
                         frontier.Enqueue(neiTile);
                     }
                 }
                 neighbourgs.Clear();
             }
-            return new DirectionField(maxDistance, accessibleTilesFlatIndexes.ToArray(), directionMap, targetIndex);
+            return new DirectionField(maxDistance, accessibleTilesFlatIndexes.ToArray(), directionGrid, targetIndex);
         }
         /// <summary>
         /// Asynchronously generates a DirectionField that holds the direction data between a target tile and all the tiles that are accessible to this target into the specified maximum distance range.
@@ -442,13 +442,13 @@ namespace Caskev.GridToolkit
                 int height = grid.GetLength(1);
                 Vector2Int gridDimensions = new Vector2Int(width, height);
                 int totalSize = width * height;
-                NextTileDirection[] directionMap = new NextTileDirection[totalSize];
+                NextTileDirection[] directionGrid = new NextTileDirection[totalSize];
                 int[] distanceMap = new int[totalSize];
                 bool[] visited = new bool[totalSize];
                 List<int> accessibleTilesFlatIndexes = new();
                 int targetIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, targetTile.X, targetTile.Y);
                 visited[targetIndex] = true;
-                directionMap[targetIndex] = NextTileDirection.SELF;
+                directionGrid[targetIndex] = NextTileDirection.SELF;
                 distanceMap[targetIndex] = 0;
                 accessibleTilesFlatIndexes.Add(targetIndex);
                 Queue<T> frontier = new Queue<T>();
@@ -482,14 +482,14 @@ namespace Caskev.GridToolkit
                             visitedCount++;
                             accessibleTilesFlatIndexes.Add(neighborIndex);
                             visited[neighborIndex] = true;
-                            directionMap[neighborIndex] = GridUtils.GetDirectionBetweenAdjacentTiles(neiTile, current);
+                            directionGrid[neighborIndex] = GridUtils.GetDirectionBetweenAdjacentTiles(neiTile, current);
                             distanceMap[neighborIndex] = newDistance;
                             frontier.Enqueue(neiTile);
                         }
                     }
                     neighbourgs.Clear();
                 }
-                return new DirectionField(maxDistance, accessibleTilesFlatIndexes.ToArray(), directionMap, targetIndex);
+                return new DirectionField(maxDistance, accessibleTilesFlatIndexes.ToArray(), directionGrid, targetIndex);
             });
             return task;
         }
@@ -514,12 +514,12 @@ namespace Caskev.GridToolkit
             int height = grid.GetLength(1);
             Vector2Int gridDimensions = new Vector2Int(width, height);
             int totalSize = width * height;
-            NextTileDirection[] directionMap = new NextTileDirection[totalSize];
+            NextTileDirection[] directionGrid = new NextTileDirection[totalSize];
             float[] distanceMap = new float[totalSize];
             bool[] visited = new bool[totalSize];
             int targetIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, targetTile.X, targetTile.Y);
             visited[targetIndex] = true;
-            directionMap[targetIndex] = NextTileDirection.SELF;
+            directionGrid[targetIndex] = NextTileDirection.SELF;
             distanceMap[targetIndex] = 0f;
             PriorityQueue<T, float> frontier = new();
             frontier.Enqueue(targetTile, 0f);
@@ -549,14 +549,14 @@ namespace Caskev.GridToolkit
                     if (!visited[neighborIndex] || newDistance < distanceMap[neighborIndex])
                     {
                         visited[neighborIndex] = true;
-                        directionMap[neighborIndex] = GridUtils.GetDirectionBetweenAdjacentTiles(neiTile, current);
+                        directionGrid[neighborIndex] = GridUtils.GetDirectionBetweenAdjacentTiles(neiTile, current);
                         distanceMap[neighborIndex] = newDistance;
                         frontier.Enqueue(neiTile, newDistance);
                     }
                 }
                 neighbourgs.Clear();
             }
-            return new DijkstraGrid(directionMap, distanceMap, targetIndex);
+            return new DijkstraGrid(directionGrid, distanceMap, targetIndex);
         }
         /// <summary>
         /// Asynchronously generates a DijkstraGrid that holds both direction and distance data between a target tile and all the tiles that are accessible to this target.  
@@ -583,12 +583,12 @@ namespace Caskev.GridToolkit
                 int height = grid.GetLength(1);
                 Vector2Int gridDimensions = new Vector2Int(width, height);
                 int totalSize = width * height;
-                NextTileDirection[] directionMap = new NextTileDirection[totalSize];
+                NextTileDirection[] directionGrid = new NextTileDirection[totalSize];
                 float[] distanceMap = new float[totalSize];
                 bool[] visited = new bool[totalSize];
                 int targetIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, targetTile.X, targetTile.Y);
                 visited[targetIndex] = true;
-                directionMap[targetIndex] = NextTileDirection.SELF;
+                directionGrid[targetIndex] = NextTileDirection.SELF;
                 distanceMap[targetIndex] = 0f;
                 PriorityQueue<T, float> frontier = new();
                 frontier.Enqueue(targetTile, 0f);
@@ -625,14 +625,14 @@ namespace Caskev.GridToolkit
                         {
                             visitedCount++;
                             visited[neighborIndex] = true;
-                            directionMap[neighborIndex] = GridUtils.GetDirectionBetweenAdjacentTiles(neiTile, current);
+                            directionGrid[neighborIndex] = GridUtils.GetDirectionBetweenAdjacentTiles(neiTile, current);
                             distanceMap[neighborIndex] = newDistance;
                             frontier.Enqueue(neiTile, newDistance);
                         }
                     }
                     neighbourgs.Clear();
                 }
-                return new DijkstraGrid(directionMap, distanceMap, targetIndex);
+                return new DijkstraGrid(directionGrid, distanceMap, targetIndex);
             });
             return task;
         }
@@ -662,13 +662,13 @@ namespace Caskev.GridToolkit
             int height = grid.GetLength(1);
             Vector2Int gridDimensions = new Vector2Int(width, height);
             int totalSize = width * height;
-            NextTileDirection[] directionMap = new NextTileDirection[totalSize];
+            NextTileDirection[] directionGrid = new NextTileDirection[totalSize];
             float[] distanceMap = new float[totalSize];
             bool[] visited = new bool[totalSize];
             List<int> accessibleTilesFlatIndexes = new();
             int targetIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, targetTile.X, targetTile.Y);
             visited[targetIndex] = true;
-            directionMap[targetIndex] = NextTileDirection.SELF;
+            directionGrid[targetIndex] = NextTileDirection.SELF;
             distanceMap[targetIndex] = 0f;
             accessibleTilesFlatIndexes.Add(targetIndex);
             PriorityQueue<T, float> frontier = new();
@@ -705,14 +705,14 @@ namespace Caskev.GridToolkit
                             accessibleTilesFlatIndexes.Add(neighborIndex);
                         }
                         visited[neighborIndex] = true;
-                        directionMap[neighborIndex] = GridUtils.GetDirectionBetweenAdjacentTiles(neiTile, current);
+                        directionGrid[neighborIndex] = GridUtils.GetDirectionBetweenAdjacentTiles(neiTile, current);
                         distanceMap[neighborIndex] = newDistance;
                         frontier.Enqueue(neiTile, newDistance);
                     }
                 }
                 neighbourgs.Clear();
             }
-            return new DijkstraField(maxDistance, accessibleTilesFlatIndexes.ToArray(), directionMap, distanceMap, targetIndex);
+            return new DijkstraField(maxDistance, accessibleTilesFlatIndexes.ToArray(), directionGrid, distanceMap, targetIndex);
         }
         /// <summary>
         /// Asynchronously generates a DijkstraField holds the direction data between a target tile and all the tiles that are accessible to this target into the specified maximum distance range.
@@ -744,13 +744,13 @@ namespace Caskev.GridToolkit
                 int height = grid.GetLength(1);
                 Vector2Int gridDimensions = new Vector2Int(width, height);
                 int totalSize = width * height;
-                NextTileDirection[] directionMap = new NextTileDirection[totalSize];
+                NextTileDirection[] directionGrid = new NextTileDirection[totalSize];
                 float[] distanceMap = new float[totalSize];
                 bool[] visited = new bool[totalSize];
                 List<int> accessibleTilesFlatIndexes = new();
                 int targetIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, targetTile.X, targetTile.Y);
                 visited[targetIndex] = true;
-                directionMap[targetIndex] = NextTileDirection.SELF;
+                directionGrid[targetIndex] = NextTileDirection.SELF;
                 distanceMap[targetIndex] = 0f;
                 accessibleTilesFlatIndexes.Add(targetIndex);
                 PriorityQueue<T, float> frontier = new();
@@ -792,14 +792,14 @@ namespace Caskev.GridToolkit
                                 accessibleTilesFlatIndexes.Add(neighborIndex);
                             }
                             visited[neighborIndex] = true;
-                            directionMap[neighborIndex] = GridUtils.GetDirectionBetweenAdjacentTiles(neiTile, current);
+                            directionGrid[neighborIndex] = GridUtils.GetDirectionBetweenAdjacentTiles(neiTile, current);
                             distanceMap[neighborIndex] = newDistance;
                             frontier.Enqueue(neiTile, newDistance);
                         }
                     }
                     neighbourgs.Clear();
                 }
-                return new DijkstraField(maxDistance, accessibleTilesFlatIndexes.ToArray(), directionMap, distanceMap, targetIndex);
+                return new DijkstraField(maxDistance, accessibleTilesFlatIndexes.ToArray(), directionGrid, distanceMap, targetIndex);
             });
             return task;
         }
@@ -824,13 +824,13 @@ namespace Caskev.GridToolkit
             int height = grid.GetLength(1);
             Vector2Int gridDimensions = new Vector2Int(width, height);
             int totalSize = width * height;
-            NextTileDirection[] directionMap = new NextTileDirection[totalSize];
+            NextTileDirection[] directionGrid = new NextTileDirection[totalSize];
             float[] distanceMap = new float[totalSize];
             bool[] visited = new bool[totalSize];
             List<int> accessibleTilesFlatIndexes = new();
             int targetIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, targetTile.X, targetTile.Y);
             visited[targetIndex] = true;
-            directionMap[targetIndex] = NextTileDirection.SELF;
+            directionGrid[targetIndex] = NextTileDirection.SELF;
             distanceMap[targetIndex] = 0f;
             accessibleTilesFlatIndexes.Add(targetIndex);
             PriorityQueue<T, float> frontier = new();
@@ -851,7 +851,7 @@ namespace Caskev.GridToolkit
                     List<T> path = includeStart ? new() { t } : new();
                     while (!GridUtils.TileEquals(t, targetTile))
                     {
-                        Vector2Int nextTileDirection = GridUtils.NextNodeDirectionToVector2Int(directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), t.X, t.Y)]);
+                        Vector2Int nextTileDirection = GridUtils.NextNodeDirectionToVector2Int(directionGrid[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), t.X, t.Y)]);
                         Vector2Int nextTileCoords = new(t.X + nextTileDirection.x, t.Y + nextTileDirection.y);
                         T nextTile = GridUtils.GetTile(grid, nextTileCoords.x, nextTileCoords.y);
                         if (!GridUtils.TileEquals(nextTile, targetTile) || includeTarget)
@@ -885,7 +885,7 @@ namespace Caskev.GridToolkit
                             accessibleTilesFlatIndexes.Add(neighborIndex);
                         }
                         visited[neighborIndex] = true;
-                        directionMap[neighborIndex] = GridUtils.GetDirectionBetweenAdjacentTiles(neiTile, current);
+                        directionGrid[neighborIndex] = GridUtils.GetDirectionBetweenAdjacentTiles(neiTile, current);
                         distanceMap[neighborIndex] = newDistance;
                         frontier.Enqueue(neiTile, newDistance + FloatHeuristic(new(startTile.X, startTile.Y), new(neiTile.X, neiTile.Y)));
                     }
@@ -919,13 +919,13 @@ namespace Caskev.GridToolkit
                 int height = grid.GetLength(1);
                 Vector2Int gridDimensions = new Vector2Int(width, height);
                 int totalSize = width * height;
-                NextTileDirection[] directionMap = new NextTileDirection[totalSize];
+                NextTileDirection[] directionGrid = new NextTileDirection[totalSize];
                 float[] distanceMap = new float[totalSize];
                 bool[] visited = new bool[totalSize];
                 List<int> accessibleTilesFlatIndexes = new();
                 int targetIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, targetTile.X, targetTile.Y);
                 visited[targetIndex] = true;
-                directionMap[targetIndex] = NextTileDirection.SELF;
+                directionGrid[targetIndex] = NextTileDirection.SELF;
                 distanceMap[targetIndex] = 0f;
                 accessibleTilesFlatIndexes.Add(targetIndex);
                 PriorityQueue<T, float> frontier = new();
@@ -951,7 +951,7 @@ namespace Caskev.GridToolkit
                         List<T> path = includeStart ? new() { t } : new();
                         while (!GridUtils.TileEquals(t, targetTile))
                         {
-                            Vector2Int nextTileDirection = GridUtils.NextNodeDirectionToVector2Int(directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), t.X, t.Y)]);
+                            Vector2Int nextTileDirection = GridUtils.NextNodeDirectionToVector2Int(directionGrid[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), t.X, t.Y)]);
                             Vector2Int nextTileCoords = new(t.X + nextTileDirection.x, t.Y + nextTileDirection.y);
                             T nextTile = GridUtils.GetTile(grid, nextTileCoords.x, nextTileCoords.y);
                             if (!GridUtils.TileEquals(nextTile, targetTile) || includeTarget)
@@ -985,7 +985,7 @@ namespace Caskev.GridToolkit
                                 accessibleTilesFlatIndexes.Add(neighborIndex);
                             }
                             visited[neighborIndex] = true;
-                            directionMap[neighborIndex] = GridUtils.GetDirectionBetweenAdjacentTiles(neiTile, current);
+                            directionGrid[neighborIndex] = GridUtils.GetDirectionBetweenAdjacentTiles(neiTile, current);
                             distanceMap[neighborIndex] = newDistance;
                             frontier.Enqueue(neiTile, newDistance + FloatHeuristic(new(startTile.X, startTile.Y), new(neiTile.X, neiTile.Y)));
                         }

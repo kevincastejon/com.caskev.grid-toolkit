@@ -33,9 +33,9 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
         private Transform[,] _distanceSprites;
         private CanvasGroup _canvasGroup;
         private GridController _grid;
-        private DirectionGrid _directionMap;
+        private DirectionGrid _directionGrid;
         private DirectionField _directionField;
-        private DijkstraGrid _dijkstraMap;
+        private DijkstraGrid _dijkstraGrid;
         private DijkstraField _dijkstraField;
         private Tile[] _uniquePath;
         private Tile _targetTile;
@@ -173,7 +173,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
             _cts = new System.Threading.CancellationTokenSource();
             try
             {
-                _directionMap = await Pathfinding.GenerateDirectionGridAsync(_grid.Map, _targetTile, (DiagonalsPolicy)_diagonalsPolicy.value, new Progress<float>((x) => _progressWindow.text = (x * 100).ToString("F0") + "%"), _cts.Token);
+                _directionGrid = await Pathfinding.GenerateDirectionGridAsync(_grid.Map, _targetTile, (DiagonalsPolicy)_diagonalsPolicy.value, new Progress<float>((x) => _progressWindow.text = (x * 100).ToString("F0") + "%"), _cts.Token);
             }
             catch (Exception e)
             {
@@ -187,11 +187,11 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
             _cts = null;
             UpdateDirectionSprites();
             UpdateDistanceSprites();
-            bool isAccessible = _directionMap.IsTileAccessible(_grid.Map, _startTile);
+            bool isAccessible = _directionGrid.IsTileAccessible(_grid.Map, _startTile);
             Tile[] path = new Tile[0];
             if (isAccessible)
             {
-                path = _directionMap.GetPathToTarget(_grid.Map, _startTile, false, false);
+                path = _directionGrid.GetPathToTarget(_grid.Map, _startTile, false, false);
             }
             _grid.TintCenter(_targetTile);
             _grid.TintPathTiles(path);
@@ -251,7 +251,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
             _cts = new System.Threading.CancellationTokenSource();
             try
             {
-                _dijkstraMap = await Pathfinding.GenerateDijkstraGridAsync(_grid.Map, _targetTile, (DiagonalsPolicy)_diagonalsPolicy.value, _diagonalsWeight.value, new Progress<float>((x) => _progressWindow.text = (x * 100).ToString("F0") + "%"), _cts.Token);
+                _dijkstraGrid = await Pathfinding.GenerateDijkstraGridAsync(_grid.Map, _targetTile, (DiagonalsPolicy)_diagonalsPolicy.value, _diagonalsWeight.value, new Progress<float>((x) => _progressWindow.text = (x * 100).ToString("F0") + "%"), _cts.Token);
             }
             catch (Exception e)
             {
@@ -265,11 +265,11 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
             _cts = null;
             UpdateDirectionSprites();
             UpdateDistanceSprites();
-            bool isAccessible = _dijkstraMap.IsTileAccessible(_grid.Map, _startTile);
+            bool isAccessible = _dijkstraGrid.IsTileAccessible(_grid.Map, _startTile);
             Tile[] path = new Tile[0];
             if (isAccessible)
             {
-                path = _dijkstraMap.GetPathToTarget(_grid.Map, _startTile, false, false);
+                path = _dijkstraGrid.GetPathToTarget(_grid.Map, _startTile, false, false);
             }
             _grid.TintCenter(_targetTile);
             _grid.TintPathTiles(path);
@@ -428,7 +428,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
         }
         private void UpdateDirectionSpritesFromDijkstraGrid()
         {
-            if (_dijkstraMap == null)
+            if (_dijkstraGrid == null)
             {
                 return;
             }
@@ -438,10 +438,10 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
                 {
                     Transform arrow = _directionSprites[i, j];
                     float angle = 0f;
-                    bool hasDirection = _dijkstraMap.IsTileAccessible(_grid.Map, _grid.Map[i, j]);
+                    bool hasDirection = _dijkstraGrid.IsTileAccessible(_grid.Map, _grid.Map[i, j]);
                     if (hasDirection)
                     {
-                        NextTileDirection nextDirection = _dijkstraMap.GetNextTileDirectionFromTile(_grid.Map, _grid.Map[i, j]);
+                        NextTileDirection nextDirection = _dijkstraGrid.GetNextTileDirectionFromTile(_grid.Map, _grid.Map[i, j]);
                         switch (nextDirection)
                         {
                             case NextTileDirection.RIGHT: angle = 0f; break;
@@ -553,7 +553,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
 
         private void UpdateDirectionSpritesFromDirectionGrid()
         {
-            if (_directionMap == null)
+            if (_directionGrid == null)
             {
                 return;
             }
@@ -563,10 +563,10 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
                 {
                     Transform arrow = _directionSprites[i, j];
                     float angle = 0f;
-                    bool hasDirection = _directionMap.IsTileAccessible(_grid.Map, _grid.Map[i, j]);
+                    bool hasDirection = _directionGrid.IsTileAccessible(_grid.Map, _grid.Map[i, j]);
                     if (hasDirection)
                     {
-                        NextTileDirection nextDirection = _directionMap.GetNextTileDirectionFromTile(_grid.Map, _grid.Map[i, j]);
+                        NextTileDirection nextDirection = _directionGrid.GetNextTileDirectionFromTile(_grid.Map, _grid.Map[i, j]);
                         switch (nextDirection)
                         {
                             case NextTileDirection.RIGHT: angle = 0f; break;
@@ -653,7 +653,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
         }
         private void UpdateDistanceSpritesFromDijkstraGrid()
         {
-            if (_dijkstraMap == null)
+            if (_dijkstraGrid == null)
             {
                 return;
             }
@@ -662,7 +662,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
                 for (int j = 0; j < _grid.Map.GetLength(1); j++)
                 {
                     Transform distanceSprite = _distanceSprites[i, j];
-                    bool isWall = !_dijkstraMap.IsTileAccessible(_grid.Map, _grid.Map[i, j]);
+                    bool isWall = !_dijkstraGrid.IsTileAccessible(_grid.Map, _grid.Map[i, j]);
                     if (isWall)
                     {
                         distanceSprite.gameObject.SetActive(false);
@@ -670,7 +670,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
                     else
                     {
                         distanceSprite.gameObject.SetActive(true);
-                        distanceSprite.GetComponent<TextMeshPro>().text = _dijkstraMap.GetDistanceToTarget(_grid.Map, _grid.Map[i, j]).ToString("F0");
+                        distanceSprite.GetComponent<TextMeshPro>().text = _dijkstraGrid.GetDistanceToTarget(_grid.Map, _grid.Map[i, j]).ToString("F0");
                     }
                 }
             }
@@ -705,9 +705,9 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
             switch ((PathfindingType)_pathfindingType.value)
             {
                 case PathfindingType.DIRECTION_GRID:
-                    if (_directionMap.IsTileAccessible(_grid.Map, _startTile))
+                    if (_directionGrid.IsTileAccessible(_grid.Map, _startTile))
                     {
-                        _grid.TintPathTiles(_directionMap.GetPathToTarget(_grid.Map, _startTile, false, false));
+                        _grid.TintPathTiles(_directionGrid.GetPathToTarget(_grid.Map, _startTile, false, false));
                     }
                     else
                     {
@@ -715,9 +715,9 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
                     }
                     break;
                 case PathfindingType.DIJKSTRA_GRID:
-                    if (_dijkstraMap.IsTileAccessible(_grid.Map, _startTile))
+                    if (_dijkstraGrid.IsTileAccessible(_grid.Map, _startTile))
                     {
-                        _grid.TintPathTiles(_dijkstraMap.GetPathToTarget(_grid.Map, _startTile, false, false));
+                        _grid.TintPathTiles(_dijkstraGrid.GetPathToTarget(_grid.Map, _startTile, false, false));
                     }
                     else
                     {

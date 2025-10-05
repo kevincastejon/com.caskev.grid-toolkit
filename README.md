@@ -213,63 +213,63 @@ There are also serialization methods to bake or save these objects to files and 
 To generate a **DirectionGrid** object, use the **GenerateDirectionGrid** method that needs the *grid* and the *target* tile from which to calculate the paths, as parameters.
 
 ```cs
-DirectionGrid directionMap = Pathfinding.GenerateDirectionGrid(grid, targetTile);
+DirectionGrid directionGrid = Pathfinding.GenerateDirectionGrid(grid, targetTile);
 ```
 
 You can retrieve the tile that has been used as the target to generate this **DirectionGrid**.
 
 - **GetTarget**
 ```cs
-YourCustomTileType targetTile = directionMap.GetTarget(grid);
+YourCustomTileType targetTile = directionGrid.GetTarget(grid);
 ```
 
 You can get all the tiles on the path from a tile to the target.
 
 - **GetPathToTarget**
 ```cs
-YourCustomTileType[] tiles = directionMap.GetPathToTarget(grid, startTile);
+YourCustomTileType[] tiles = directionGrid.GetPathToTarget(grid, startTile);
 ```
 
 Or you can get all the tiles on the path from the target to a tile.
 
 - **GetPathFromTarget**
 ```cs
-YourCustomTileType[] tiles = directionMap.GetPathFromTarget(grid, destinationTile);
+YourCustomTileType[] tiles = directionGrid.GetPathFromTarget(grid, destinationTile);
 ```
 
 You can know if a tile is accessible from the target tile. This is useful before calling the following **DirectionGrid** methods that only takes an accessible tile as parameter.
 
 - **IsTileAccessible**
 ```cs
-bool isTileAccessible = directionMap.IsTileAccessible(grid, tile);
+bool isTileAccessible = directionGrid.IsTileAccessible(grid, tile);
 ```
 
 You can get the next tile on the path between the target and a tile.
 
 - **GetNextTileFromTile**
 ```cs
-YourCustomTileType nextTile = directionMap.GetNextTileFromTile(grid, tile);
+YourCustomTileType nextTile = directionGrid.GetNextTileFromTile(grid, tile);
 ```
 
 You can get the next tile direction on the path between the target and a tile (in 2D grid coordinates). NextTileDirection is an enum representing the eight possible directions.
 
 - **GetNextTileDirectionFromTile**
 ```cs
-NextTileDirection nextTileDirection = directionMap.GetNextTileDirectionFromTile(grid, tile);
+NextTileDirection nextTileDirection = directionGrid.GetNextTileDirectionFromTile(grid, tile);
 ```
 
 You can serialize the generated **DirectionGrid** to a byte array. Usefull for path baking in edit time.
 
 - **ToByteArray**
 ```cs
-byte[] serializedDirectionGrid = directionMap.ToByteArray();
+byte[] serializedDirectionGrid = directionGrid.ToByteArray();
 ```
 
 You can deserialize a byte array to a **DirectionGrid**. Usefull for loading baked paths at runtime.
 
 - **FromByteArray**
 ```cs
-DirectionGrid directionMap = DirectionGrid.FromByteArray(grid, serializedDirectionGrid);
+DirectionGrid directionGrid = DirectionGrid.FromByteArray(grid, serializedDirectionGrid);
 ```
 
 ---
@@ -285,7 +285,7 @@ There are also serialization methods to bake or save these objects to files and 
 To generate a **DijkstraGrid** object, use the **GenerateDijkstraGrid** method that needs the *grid* and the *target* tile from which to calculate the paths, as parameters.
 
 ```cs
-DijkstraGrid dijkstraMap = Pathfinding.GenerateDijkstraGrid(grid, targetTile);
+DijkstraGrid dijkstraGrid = Pathfinding.GenerateDijkstraGrid(grid, targetTile);
 ```
 
 You can get the distance between the target and a tile.

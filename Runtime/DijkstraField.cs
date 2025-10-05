@@ -22,7 +22,7 @@ namespace Caskev.GridToolkit
         /// Gets the total number of accessible tiles.
         /// </summary>
         public int AccessibleTilesCount => _accessibleTilesFlatIndexes.Length;
-        internal DijkstraField(float maxDistance, int[] accessibleTilesFlatIndexes, NextTileDirection[] directionMap, float[] distanceMap, int target) : base(directionMap, distanceMap, target)
+        internal DijkstraField(float maxDistance, int[] accessibleTilesFlatIndexes, NextTileDirection[] directionGrid, float[] distanceMap, int target) : base(directionGrid, distanceMap, target)
         {
             _maxDistance = maxDistance;
             _accessibleTilesFlatIndexes = accessibleTilesFlatIndexes;

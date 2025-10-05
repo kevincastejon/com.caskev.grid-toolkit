@@ -11,15 +11,15 @@ namespace Caskev.GridToolkit
     /// </summary>
     public abstract class DirectionBase
     {
-        internal readonly NextTileDirection[] _directionMap;
+        internal readonly NextTileDirection[] _directionGrid;
         /// <summary>
         /// The flat index of the target tile.
         /// </summary>
         protected readonly int _target;
 
-        internal DirectionBase(NextTileDirection[] directionMap, int target)
+        internal DirectionBase(NextTileDirection[] directionGrid, int target)
         {
-            _directionMap = directionMap;
+            _directionGrid = directionGrid;
             _target = target;
         }
         /// <summary>
@@ -34,7 +34,7 @@ namespace Caskev.GridToolkit
             {
                 return false;
             }
-            return _directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)] != NextTileDirection.NONE;
+            return _directionGrid[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)] != NextTileDirection.NONE;
         }
         /// <summary>
         /// Returns the tile that has been used as the target to generate this DirectionPaths
@@ -72,7 +72,7 @@ namespace Caskev.GridToolkit
             {
                 throw new Exception("Do not call DirectionPaths method with an inaccessible tile");
             }
-            return _directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)];
+            return _directionGrid[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)];
         }
         /// <summary>
         /// Get all the tiles on the path from a tile to the target.
@@ -136,7 +136,7 @@ namespace Caskev.GridToolkit
         /// <returns></returns>
         protected T GetNextTile<T>(T[,] grid, T tile) where T : ITile
         {
-            Vector2Int nextTileDirection = GridUtils.NextNodeDirectionToVector2Int(_directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)]);
+            Vector2Int nextTileDirection = GridUtils.NextNodeDirectionToVector2Int(_directionGrid[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)]);
             Vector2Int nextTileCoords = new(tile.X + nextTileDirection.x, tile.Y + nextTileDirection.y);
             return GridUtils.GetTile(grid, nextTileCoords.x, nextTileCoords.y);
         }

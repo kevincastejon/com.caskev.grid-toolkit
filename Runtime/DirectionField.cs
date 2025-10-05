@@ -23,7 +23,7 @@ namespace Caskev.GridToolkit
         /// </summary>
         public int AccessibleTilesCount => _accessibleTilesFlatIndexes.Length;
 
-        internal DirectionField(int maxDistance, int[] accessibleTilesFlatIndexes, NextTileDirection[] directionMap, int target) : base(directionMap, target)
+        internal DirectionField(int maxDistance, int[] accessibleTilesFlatIndexes, NextTileDirection[] directionGrid, int target) : base(directionGrid, target)
         {
             _maxDistance = maxDistance;
             _accessibleTilesFlatIndexes = accessibleTilesFlatIndexes;

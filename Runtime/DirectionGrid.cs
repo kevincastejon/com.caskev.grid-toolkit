@@ -14,23 +14,23 @@ namespace Caskev.GridToolkit
     /// </summary>
     public class DirectionGrid : DirectionBase
     {
-        internal DirectionGrid(NextTileDirection[] directionMap, int target) : base(directionMap, target) { }
+        internal DirectionGrid(NextTileDirection[] directionGrid, int target) : base(directionGrid, target) { }
         /// <summary>
         /// Returns the DirectionGrid serialized as a byte array.
         /// </summary>
         /// <returns>A byte array representing the serialized DirectionGrid</returns>
         public byte[] ToByteArray()
         {
-            int bytesCount = sizeof(int) + sizeof(int) + sizeof(byte) * _directionMap.Length;
+            int bytesCount = sizeof(int) + sizeof(int) + sizeof(byte) * _directionGrid.Length;
             byte[] bytes = new byte[bytesCount];
             int byteIndex = 0;
             BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _target);
             byteIndex += sizeof(int);
-            BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _directionMap.Length);
+            BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _directionGrid.Length);
             byteIndex += sizeof(int);
-            for (int i = 0; i < _directionMap.Length; i++)
+            for (int i = 0; i < _directionGrid.Length; i++)
             {
-                bytes[byteIndex] = (byte)_directionMap[i];
+                bytes[byteIndex] = (byte)_directionGrid[i];
                 byteIndex++;
             }
             return bytes;
@@ -45,21 +45,21 @@ namespace Caskev.GridToolkit
         {
             Task<byte[]> task = Task.Run(() =>
             {
-                int bytesCount = sizeof(int) + sizeof(int) + sizeof(byte) * _directionMap.Length;
+                int bytesCount = sizeof(int) + sizeof(int) + sizeof(byte) * _directionGrid.Length;
                 byte[] bytes = new byte[bytesCount];
                 int byteIndex = 0;
                 BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _target);
                 byteIndex += sizeof(int);
-                BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _directionMap.Length);
+                BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _directionGrid.Length);
                 byteIndex += sizeof(int);
-                for (int i = 0; i < _directionMap.Length; i++)
+                for (int i = 0; i < _directionGrid.Length; i++)
                 {
                     if (cancelToken.IsCancellationRequested)
                     {
                         return null;
                     }
-                    progress.Report((float)i / _directionMap.Length);
-                    bytes[byteIndex] = (byte)_directionMap[i];
+                    progress.Report((float)i / _directionGrid.Length);
+                    bytes[byteIndex] = (byte)_directionGrid[i];
                     byteIndex++;
                 }
                 return bytes;
@@ -83,13 +83,13 @@ namespace Caskev.GridToolkit
             byteIndex += sizeof(int);
             int count = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
             byteIndex += sizeof(int);
-            NextTileDirection[] directionMap = new NextTileDirection[count];
+            NextTileDirection[] directionGrid = new NextTileDirection[count];
             for (int i = 0; i < count; i++)
             {
-                directionMap[i] = (NextTileDirection)bytes[byteIndex];
+                directionGrid[i] = (NextTileDirection)bytes[byteIndex];
                 byteIndex++;
             }
-            return new DirectionGrid(directionMap, target);
+            return new DirectionGrid(directionGrid, target);
         }
         /// <summary>
         /// Returns a DirectionGrid from a byte array that has been serialized with the ToByteArray method.
@@ -112,7 +112,7 @@ namespace Caskev.GridToolkit
                 byteIndex += sizeof(int);
                 int count = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
                 byteIndex += sizeof(int);
-                NextTileDirection[] directionMap = new NextTileDirection[count];
+                NextTileDirection[] directionGrid = new NextTileDirection[count];
                 for (int i = 0; i < count; i++)
                 {
                     if (cancelToken.IsCancellationRequested)
@@ -120,10 +120,10 @@ namespace Caskev.GridToolkit
                         return null;
                     }
                     progress.Report((float)i / count);
-                    directionMap[i] = (NextTileDirection)bytes[byteIndex];
+                    directionGrid[i] = (NextTileDirection)bytes[byteIndex];
                     byteIndex++;
                 }
-                return new DirectionGrid(directionMap, target);
+                return new DirectionGrid(directionGrid, target);
             });
             return task;
         }

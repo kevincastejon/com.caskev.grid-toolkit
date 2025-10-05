@@ -11,16 +11,16 @@ namespace Caskev.GridToolkit
     /// </summary>
     public abstract class DijkstraBase
     {
-        internal readonly NextTileDirection[] _directionMap;
+        internal readonly NextTileDirection[] _directionGrid;
         internal readonly float[] _distanceMap;
         /// <summary>
         /// The flat index of the target tile.
         /// </summary>
         protected readonly int _target;
 
-        internal DijkstraBase(NextTileDirection[] directionMap, float[] distanceMap, int target)
+        internal DijkstraBase(NextTileDirection[] directionGrid, float[] distanceMap, int target)
         {
-            _directionMap = directionMap;
+            _directionGrid = directionGrid;
             _distanceMap = distanceMap;
             _target = target;
         }
@@ -36,7 +36,7 @@ namespace Caskev.GridToolkit
             {
                 return false;
             }
-            return _directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)] != NextTileDirection.NONE;
+            return _directionGrid[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)] != NextTileDirection.NONE;
         }
         /// <summary>
         /// Returns the tile that has been used as the target to generate this DijkstraPaths
@@ -74,7 +74,7 @@ namespace Caskev.GridToolkit
             {
                 throw new Exception("Do not call DijkstraPaths method with an inaccessible tile");
             }
-            return _directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)];
+            return _directionGrid[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)];
         }
         /// <summary>
         /// Get the distance from the specified tile to the target.
@@ -153,7 +153,7 @@ namespace Caskev.GridToolkit
         /// <returns></returns>
         protected T GetNextTile<T>(T[,] grid, T tile) where T : IWeightedTile
         {
-            Vector2Int nextTileDirection = GridUtils.NextNodeDirectionToVector2Int(_directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)]);
+            Vector2Int nextTileDirection = GridUtils.NextNodeDirectionToVector2Int(_directionGrid[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)]);
             Vector2Int nextTileCoords = new(tile.X + nextTileDirection.x, tile.Y + nextTileDirection.y);
             return GridUtils.GetTile(grid, nextTileCoords.x, nextTileCoords.y);
         }
