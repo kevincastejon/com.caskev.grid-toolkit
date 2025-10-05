@@ -2,7 +2,7 @@
 
 [![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://kevincastejon.github.io/com.caskev.unity-grid-toolkit/)
 
-Utilitary API to proceed operations on abstract grids such as tile extraction, raycasting, and pathfinding.
+Utilitary API to proceed operations on abstract grids such as tile [extraction](#extraction), raycasting, and pathfinding.
 
 [API References](https://kevincastejon.github.io/com.caskev.unity-grid-toolkit/namespaces.html)
 
