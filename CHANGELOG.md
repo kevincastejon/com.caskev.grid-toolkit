@@ -1,9 +1,12 @@
 # Changelog
 
+## [0.5.0] - 2025-10-06
+### Added
+- Unique path generation feature (with A* algorythm)
+
 ## [0.4.0] - 2025-10-02
 ### Added
 - DirectionField and DijkstraField features.
-
 
 ## [0.3.0] - 2025-09-22
 ### Added

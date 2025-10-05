@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-
 namespace GridToolkitTests
 {
     public class Pathfinding_Tests
@@ -593,7 +592,7 @@ namespace GridToolkitTests
         }
 
         #endregion
-        
+
         #region DirectionField
 
         [Test]
@@ -1152,7 +1151,7 @@ namespace GridToolkitTests
         }
 
         #endregion
-        
+
         #region DijkstraMap
 
         [Test]
@@ -2490,6 +2489,110 @@ namespace GridToolkitTests
             Assert.IsTrue(Mathf.Approximately(20f, dirMap.GetDistanceToTarget(_grid, start)));
         }
 
+        #endregion
+
+        #region UniquePath
+
+        [TestCase(true, true)]
+        [TestCase(false, true)]
+        [TestCase(true, false)]
+        [TestCase(false, false)]
+        public void GenerateUniquePath_NoDiagonals(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = includeTarget ? new(6, 10) : null;
+            TestTile start = includeStart ? new(2, 10) : null;
+            TestTile[] path = Pathfinding.GenerateUniquePath(_grid, GridUtils.GetTile(_grid, targetX, targetY), GridUtils.GetTile(_grid, startX, startY), DiagonalsPolicy.NONE, 1.414f, includeStart, includeTarget);
+            for (int i = 0; i < path.Length; i++)
+            {
+                Debug.Log(path[i]);
+            }
+            List<TestTile> expectedPath = new() { start, new(2, 11), new(2, 12), new(2, 13), new(2, 14), new(1, 14), new(1, 15), new(1, 16), new(2, 16), new(3, 16), new(4, 16), new(5, 16), new(6, 16), new(7, 16), new(7, 15), new(7, 14), new(7, 13), new(7, 12), new(7, 11), new(6, 11), target };
+            expectedPath.RemoveAll(x => x == null);
+            Assert.AreEqual(expectedPath.Count, path.Length, $"Path length should be {expectedPath.Count} but got {path.Length}");
+            for (int i = 0; i < path.Length; i++)
+            {
+                Assert.IsTrue(expectedPath[i].X == path[i].X && expectedPath[i].Y == path[i].Y, $"Tile {i} on the path should be {expectedPath[i]} but got {path[i]}");
+            }
+        }
+        [TestCase(true, true)]
+        [TestCase(false, true)]
+        [TestCase(true, false)]
+        [TestCase(false, false)]
+        public void GenerateUniquePath_AllDiagonals(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = includeTarget ? new(6, 10) : null;
+            TestTile start = includeStart ? new(2, 10) : null;
+            TestTile[] path = Pathfinding.GenerateUniquePath(_grid, GridUtils.GetTile(_grid, targetX, targetY), GridUtils.GetTile(_grid, startX, startY), DiagonalsPolicy.ALL_DIAGONALS, 1.414f, includeStart, includeTarget);
+            for (int i = 0; i < path.Length; i++)
+            {
+                Debug.Log(path[i]);
+            }
+            List<TestTile> expectedPath = new() { start, new(2, 11), new(3, 12), new(4, 13), new(5, 13), new(6, 14), new(7, 13), new(7, 12), new(6, 11), target };
+            expectedPath.RemoveAll(x => x == null);
+            Assert.AreEqual(expectedPath.Count, path.Length, $"Path length should be {expectedPath.Count} but got {path.Length}");
+            for (int i = 0; i < path.Length; i++)
+            {
+                Assert.IsTrue(expectedPath[i].X == path[i].X && expectedPath[i].Y == path[i].Y, $"Tile {i} on the path should be {expectedPath[i]} but got {path[i]}");
+            }
+        }
+        [TestCase(true, true)]
+        [TestCase(false, true)]
+        [TestCase(true, false)]
+        [TestCase(false, false)]
+        public void GenerateUniquePath_DiagonalsOneFree(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = includeTarget ? new(6, 10) : null;
+            TestTile start = includeStart ? new(2, 10) : null;
+            TestTile[] path = Pathfinding.GenerateUniquePath(_grid, GridUtils.GetTile(_grid, targetX, targetY), GridUtils.GetTile(_grid, startX, startY), DiagonalsPolicy.DIAGONAL_1FREE, 1.414f, includeStart, includeTarget);
+            for (int i = 0; i < path.Length; i++)
+            {
+                Debug.Log(path[i]);
+            }
+            List<TestTile> expectedPath = new() { start, new(2, 11), new(2, 12), new(2, 13), new(2, 14), new(1, 15), new(2, 16), new(3, 16), new(4, 16), new(5, 16), new(6, 16), new(7, 15), new(7, 14), new(7, 13), new(7, 12), new(6, 11), target };
+            expectedPath.RemoveAll(x => x == null);
+            Assert.AreEqual(expectedPath.Count, path.Length, $"Path length should be {expectedPath.Count} but got {path.Length}");
+            for (int i = 0; i < path.Length; i++)
+            {
+                Assert.IsTrue(expectedPath[i].X == path[i].X && expectedPath[i].Y == path[i].Y, $"Tile {i} on the path should be {expectedPath[i]} but got {path[i]}");
+            }
+        }
+        [TestCase(true, true)]
+        [TestCase(false, true)]
+        [TestCase(true, false)]
+        [TestCase(false, false)]
+        public void GenerateUniquePath_DiagonalsTwoFree(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = includeTarget ? new(6, 10) : null;
+            TestTile start = includeStart ? new(2, 10) : null;
+            TestTile[] path = Pathfinding.GenerateUniquePath(_grid, GridUtils.GetTile(_grid, targetX, targetY), GridUtils.GetTile(_grid, startX, startY), DiagonalsPolicy.DIAGONAL_2FREE, 1.414f, includeStart, includeTarget);
+            for (int i = 0; i < path.Length; i++)
+            {
+                Debug.Log(path[i]);
+            }
+            List<TestTile> expectedPath = new() { start, new(2, 11), new(2, 12), new(2, 13), new(1, 14), new(1, 15), new(1, 16), new(2, 16), new(3, 16), new(4, 16), new(5, 16), new(6, 16), new(7, 16), new(7, 15), new(7, 14), new(7, 13), new(7, 12), new(7, 11), target };
+            expectedPath.RemoveAll(x => x == null);
+            Assert.AreEqual(expectedPath.Count, path.Length, $"Path length should be {expectedPath.Count} but got {path.Length}");
+            for (int i = 0; i < path.Length; i++)
+            {
+                Assert.IsTrue(expectedPath[i].X == path[i].X && expectedPath[i].Y == path[i].Y, $"Tile {i} on the path should be {expectedPath[i]} but got {path[i]}");
+            }
+        }
         #endregion
     }
 }
