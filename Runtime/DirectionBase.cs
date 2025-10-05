@@ -12,6 +12,9 @@ namespace Caskev.GridToolkit
     public abstract class DirectionBase
     {
         internal readonly NextTileDirection[] _directionMap;
+        /// <summary>
+        /// The flat index of the target tile.
+        /// </summary>
         protected readonly int _target;
 
         internal DirectionBase(NextTileDirection[] directionMap, int target)

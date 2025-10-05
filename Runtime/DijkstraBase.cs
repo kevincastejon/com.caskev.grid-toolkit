@@ -13,6 +13,9 @@ namespace Caskev.GridToolkit
     {
         internal readonly NextTileDirection[] _directionMap;
         internal readonly float[] _distanceMap;
+        /// <summary>
+        /// The flat index of the target tile.
+        /// </summary>
         protected readonly int _target;
 
         internal DijkstraBase(NextTileDirection[] directionMap, float[] distanceMap, int target)
