@@ -1,4 +1,3 @@
-using Codice.Utils;
 using UnityEngine;
 /// <summary>
 /// Utilitary API to proceed operations on abstract grids such as tile extraction, raycasting, and pathfinding.
@@ -10,23 +9,6 @@ namespace Caskev.GridToolkit
     /// </summary>
     public static class GridUtils
     {
-        internal static NextTileDirection GetDirectionTo(ITile tileA, ITile tileB)
-        {
-            int dx = tileB.X - tileA.X;
-            int dy = tileB.Y - tileA.Y;
-
-            if (dx == 0 && dy == 0) return NextTileDirection.SELF;
-            if (dx == 0 && dy == -1) return NextTileDirection.DOWN;
-            if (dx == 0 && dy == 1) return NextTileDirection.UP;
-            if (dx == -1 && dy == 0) return NextTileDirection.LEFT;
-            if (dx == 1 && dy == 0) return NextTileDirection.RIGHT;
-            if (dx == -1 && dy == -1) return NextTileDirection.DOWN_LEFT;
-            if (dx == 1 && dy == -1) return NextTileDirection.DOWN_RIGHT;
-            if (dx == -1 && dy == 1) return NextTileDirection.UP_LEFT;
-            if (dx == 1 && dy == 1) return NextTileDirection.UP_RIGHT;
-
-            return NextTileDirection.NONE;
-        }
         internal static Vector2Int NextNodeDirectionToVector2Int(NextTileDirection dir)
         {
             switch (dir)
@@ -61,7 +43,29 @@ namespace Caskev.GridToolkit
         {
             return y * gridDimensions.y + x;
         }
+        /// <summary>
+        /// Gets the direction between two adjacent tiles.
+        /// </summary>
+        /// <param name="tileA">The first tile</param>
+        /// <param name="tileB">The second tile</param>
+        /// <returns>The direction from the first tile to the second tile.</returns>
+        public static NextTileDirection GetDirectionBetweenAdjacentTiles(ITile tileA, ITile tileB)
+        {
+            int dx = tileB.X - tileA.X;
+            int dy = tileB.Y - tileA.Y;
 
+            if (dx == 0 && dy == 0) return NextTileDirection.SELF;
+            if (dx == 0 && dy == -1) return NextTileDirection.DOWN;
+            if (dx == 0 && dy == 1) return NextTileDirection.UP;
+            if (dx == -1 && dy == 0) return NextTileDirection.LEFT;
+            if (dx == 1 && dy == 0) return NextTileDirection.RIGHT;
+            if (dx == -1 && dy == -1) return NextTileDirection.DOWN_LEFT;
+            if (dx == 1 && dy == -1) return NextTileDirection.DOWN_RIGHT;
+            if (dx == -1 && dy == 1) return NextTileDirection.UP_LEFT;
+            if (dx == 1 && dy == 1) return NextTileDirection.UP_RIGHT;
+
+            return NextTileDirection.NONE;
+        }
         /// <summary>
         /// Compare two tiles to check if they share the same coordinates values
         /// </summary>

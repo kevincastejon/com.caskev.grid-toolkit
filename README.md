@@ -172,6 +172,8 @@ These two objects covers the entire grid, but you can also generate a DirectionF
 This allows you to run them more often because of the early exit due to the maximum distance parameter (note that more higher is the distance, more costly is the generation).  
 Once generated, these objects offers you a way to get the accessible tiles within a range, and paths to them, with almost no performance cost (ie: a strategy game where you want to check the tiles in range of your character)
 
+If you only need a single path between two specific tiles, you can also generate that unique path. But you should keep the other options in mind as it can be way more effective to generate all paths at once rather than generating a unique path again and again.
+
 *Note that, obviously, any path calculation is valid as long as the user grid, walkable states (and weights for dijkstra objects) of the tiles, remains unchanged*
 
 ---
@@ -213,8 +215,6 @@ To generate a **DirectionMap** object, use the **GenerateDirectionMap** method t
 ```cs
 DirectionMap directionMap = Pathfinding.GenerateDirectionMap(grid, targetTile);
 ```
-
----
 
 You can retrieve the tile that has been used as the target to generate this **DirectionMap**.
 
@@ -271,6 +271,9 @@ You can deserialize a byte array to a **DirectionMap**. Usefull for loading bake
 ```cs
 DirectionMap directionMap = DirectionMap.FromByteArray(grid, serializedDirectionMap);
 ```
+
+---
+
 #### DijkstraMap
 
 *Note that a DijkstraMap object inherits from all the methods and properties of a DirectionMap object.*
@@ -285,14 +288,15 @@ To generate a **DijkstraMap** object, use the **GenerateDijkstraMap** method tha
 DijkstraMap dijkstraMap = Pathfinding.GenerateDijkstraMap(grid, targetTile);
 ```
 
----
-
 You can get the distance between the target and a tile.
 
 - **GetDistanceToTarget**
 ```cs
 float distance = dijsktraMap.GetDistanceToTarget(grid, tile);
 ```
+
+---
+
 #### DirectionField
 
 *Note that a DirectionField object inherits from all the methods and properties of a DirectionMap object.*
@@ -307,8 +311,6 @@ To generate a **DirectionField** object, use the **GenerateDirectionField** meth
 DirectionField directionField = Pathfinding.GenerateDirectionField(grid, targetTile);
 ```
 
----
-
 You can access and iterate over all the accessible tiles.
 
 - **GetAccessibleTile**
@@ -318,6 +320,9 @@ for (int i = 0; i < directionField.AccessibleTilesCount; i++)
 	YourCustomTileType tile = directionField.GetAccessibleTile(grid, i);
 }
 ```
+
+---
+
 #### DijkstraField
 
 *Note that a DijkstraField object inherits from all the methods and properties of a DijkstraMap object.*
@@ -332,8 +337,6 @@ To generate a **DijkstraField** object, use the **GenerateDijkstraField** method
 DijkstraField dijkstraField = Pathfinding.GenerateDijkstraField(grid, targetTile);
 ```
 
----
-
 You can access and iterate over all the accessible tiles and also get their distance to the target.
 
 - **GetAccessibleTile**
@@ -343,4 +346,17 @@ for (int i = 0; i < dijkstraField.AccessibleTilesCount; i++)
 	YourCustomTileType tile = dijkstraField.GetAccessibleTile(grid, i);
 	float distance = dijkstraField.GetDistanceToTarget(grid, tile);
 }
+```
+
+---
+
+#### Unique path
+
+If you only need a single path between two specific tiles, you can also generate that unique path.  
+But you should keep the other options in mind as it can be way more effective to generate all paths at once rather than generating a unique path again and again.
+
+To generate a unique path, use the **GenerateUniquePath** method that needs the *grid*, the *target* tile and the *start** tile from which to calculate the path, as parameters.
+
+```cs
+YourCustomTileType[] uniquePath = Pathfinding.GenerateUniquePath(grid, targetTile, startTile);
 ```
