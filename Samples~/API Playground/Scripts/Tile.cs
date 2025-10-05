@@ -15,5 +15,9 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
             X = x;
             Y = y;
         }
+        public override string ToString()
+        {
+            return $"[X:{X} Y:{Y} Walkable:{IsWalkable} Weight:{Weight}]";
+        }
     }
 }

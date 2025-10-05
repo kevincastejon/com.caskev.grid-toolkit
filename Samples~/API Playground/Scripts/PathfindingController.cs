@@ -327,7 +327,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
             _cts = new System.Threading.CancellationTokenSource();
             try
             {
-                _uniquePath = await Pathfinding.GenerateUniquePathAsync(_grid.Map, _targetTile, _startTile, (DiagonalsPolicy)_diagonalsPolicy.value, _diagonalsWeight.value, new Progress<float>((x) => _progressWindow.text = (x * 100).ToString("F0") + "%"), _cts.Token);
+                _uniquePath = await Pathfinding.GenerateUniquePathAsync(_grid.Map, _targetTile, _startTile, (DiagonalsPolicy)_diagonalsPolicy.value, _diagonalsWeight.value, true, true, new Progress<float>((x) => _progressWindow.text = (x * 100).ToString("F0") + "%"), _cts.Token);
             }
             catch (Exception e)
             {
@@ -350,9 +350,9 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
             {
                 _grid.TintPathTiles(_uniquePath);
             }
-                _grid.TintCenter(_targetTile);
-                _grid.TintStart(_startTile);
-                _grid.TintHighlightedTiles(new Tile[0]);
+            _grid.TintCenter(_targetTile);
+            _grid.TintStart(_startTile);
+            _grid.TintHighlightedTiles(new Tile[0]);
         }
         private void HideDirectionSprites()
         {
