@@ -812,7 +812,7 @@ namespace Caskev.GridToolkit
         /// <param name="diagonalsPolicy">The diagonal movements policy for the path calculation</param>
         /// <param name="diagonalsWeight">The diagonal movements cost for the path calculation</param>
         /// <returns>An array of tiles representing the path</returns>
-        public static T[] GenerateUniquePath<T>(T[,] grid, T targetTile, T startTile, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE, float diagonalsWeight = 1.414f) where T : IWeightedTile
+        public static T[] GenerateUniquePath<T>(T[,] grid, T targetTile, T startTile, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE, float diagonalsWeight = 1.414f, bool includeStart = true, bool includeTarget = true) where T : IWeightedTile
         {
             if (targetTile == null || !targetTile.IsWalkable)
             {
@@ -846,7 +846,7 @@ namespace Caskev.GridToolkit
                 if (GridUtils.TileEquals(current, startTile))
                 {
                     T t = current;
-                    List<T> path = new List<T>() { t };
+                    List<T> path = includeStart ? new() { t } : new();
                     while (!GridUtils.TileEquals(t, targetTile))
                     {
                         Vector2Int nextTileDirection = GridUtils.NextNodeDirectionToVector2Int(directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), t.X, t.Y)]);
@@ -854,6 +854,10 @@ namespace Caskev.GridToolkit
                         T nextTile = GridUtils.GetTile(grid, nextTileCoords.x, nextTileCoords.y);
                         path.Add(nextTile);
                         t = nextTile;
+                    }
+                    if (includeTarget)
+                    {
+                        path.Add(t);
                     }
                     return path.ToArray();
                 }
@@ -898,7 +902,7 @@ namespace Caskev.GridToolkit
         /// <param name="diagonalsPolicy">The diagonal movements policy for the path calculation</param>
         /// <param name="diagonalsWeight">The diagonal movements cost for the path calculation</param>
         /// <returns>An array of tiles representing the path</returns>
-        public static Task<T[]> GenerateUniquePathAsync<T>(T[,] grid, T targetTile, T startTile, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE, float diagonalsWeight = 1.414f, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : IWeightedTile
+        public static Task<T[]> GenerateUniquePathAsync<T>(T[,] grid, T targetTile, T startTile, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE, float diagonalsWeight = 1.414f, bool includeStart = true, bool includeTarget = true, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : IWeightedTile
         {
             Task<T[]> task = Task.Run(() =>
             {
@@ -939,7 +943,7 @@ namespace Caskev.GridToolkit
                     if (GridUtils.TileEquals(current, startTile))
                     {
                         T t = current;
-                        List<T> path = new List<T>() { t };
+                        List<T> path = includeStart ? new() { t } : new();
                         while (!GridUtils.TileEquals(t, targetTile))
                         {
                             Vector2Int nextTileDirection = GridUtils.NextNodeDirectionToVector2Int(directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), t.X, t.Y)]);
@@ -947,6 +951,10 @@ namespace Caskev.GridToolkit
                             T nextTile = GridUtils.GetTile(grid, nextTileCoords.x, nextTileCoords.y);
                             path.Add(nextTile);
                             t = nextTile;
+                        }
+                        if (includeTarget)
+                        {
+                            path.Add(t);
                         }
                         return path.ToArray();
                     }
