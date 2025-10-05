@@ -811,6 +811,8 @@ namespace Caskev.GridToolkit
         /// <param name="startTile">The start tile for the path calculation</param>
         /// <param name="diagonalsPolicy">The diagonal movements policy for the path calculation</param>
         /// <param name="diagonalsWeight">The diagonal movements cost for the path calculation</param>
+        /// <param name="includeStart">Include the start into the path array or not</param>
+        /// <param name="includeTarget">Include the target into the path array or not</param>
         /// <returns>An array of tiles representing the path</returns>
         public static T[] GenerateUniquePath<T>(T[,] grid, T targetTile, T startTile, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE, float diagonalsWeight = 1.414f, bool includeStart = true, bool includeTarget = true) where T : IWeightedTile
         {
@@ -900,6 +902,10 @@ namespace Caskev.GridToolkit
         /// <param name="startTile">The start tile for the path calculation</param>
         /// <param name="diagonalsPolicy">The diagonal movements policy for the path calculation</param>
         /// <param name="diagonalsWeight">The diagonal movements cost for the path calculation</param>
+        /// <param name="includeStart">Include the start into the path array or not</param>
+        /// <param name="includeTarget">Include the target into the path array or not</param>
+        /// <param name="progress">An optional IProgress object to get the generation progression</param>
+        /// <param name="cancelToken">An optional CancellationToken object to cancel the generation</param>
         /// <returns>An array of tiles representing the path</returns>
         public static Task<T[]> GenerateUniquePathAsync<T>(T[,] grid, T targetTile, T startTile, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE, float diagonalsWeight = 1.414f, bool includeStart = true, bool includeTarget = true, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : IWeightedTile
         {
