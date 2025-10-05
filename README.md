@@ -2,7 +2,7 @@
 
 [![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://kevincastejon.github.io/com.caskev.unity-grid-toolkit/)
 
-Utilitary API to proceed operations on abstract grids such as tile extraction, raycasting, and pathfinding.
+Utilitary API to proceed operations on abstract grids such as tile [extraction](#extraction), [raycasting](#raycasting), and [pathfinding](#pathfinding).
 
 [API References](https://kevincastejon.github.io/com.caskev.unity-grid-toolkit/namespaces.html)
 
@@ -163,16 +163,16 @@ Allows you to calculate paths between tiles.
 This API offers several ways to do pathfinding, depending on your needs.
 
 You can generate objects that can be seen as layers of data on top of your grid.  
-A DirectionGrid will hold all the pre-calculated direction data between a target tile and all the tiles that are accessible to this target.  
-A Dijkstra map will hold both direction and distance data.  
+A [DirectionGrid](#directiongrid) will hold all the pre-calculated direction data between a target tile and all the tiles that are accessible to this target.  
+A [DijkstraMap](#dijkstramap) will hold both direction and distance data.  
 Once generated, these objects can contain all the paths you need (ie: a tower defense game with a village core where all enemies have to run to) and then use the paths with almost no performance cost.  
 There are also serialization methods to bake or save these objects to files and load them later with the deserialization methods.
 
-These two objects covers the entire grid, but you can also generate a DirectionField or a DijkstraField that will hold the same kind of data but only for tiles that are within a specified distance from the target tile.  
+These two objects covers the entire grid, but you can also generate a [DirectionField](#directionfield) or a [DijkstraField](#dijkstrafield) that will hold the same kind of data but only for tiles that are within a specified distance from the target tile.  
 This allows you to run them more often because of the early exit due to the maximum distance parameter (note that more higher is the distance, more costly is the generation).  
 Once generated, these objects offers you a way to get the accessible tiles within a range, and paths to them, with almost no performance cost (ie: a strategy game where you want to check the tiles in range of your character)
 
-If you only need a single path between two specific tiles, you can also generate that unique path. But you should keep the other options in mind as it can be way more effective to generate all paths at once rather than generating a unique path again and again.
+If you only need a single path between two specific tiles, you can also generate that [unique path](#unique-path). But you should keep the other options in mind as it can be way more effective to generate all paths at once rather than generating a unique path again and again.
 
 *Note that, obviously, any path calculation is valid as long as the user grid, walkable states (and weights for dijkstra objects) of the tiles, remains unchanged*
 
@@ -353,7 +353,7 @@ for (int i = 0; i < dijkstraField.AccessibleTilesCount; i++)
 #### Unique path
 
 If you only need a single path between two specific tiles, you can also generate that unique path.  
-But you should keep the other options in mind as it can be way more effective to generate all paths at once rather than generating a unique path again and again.
+But you should keep the other options in mind as it can be way more efficient to generate all paths at once rather than generating a unique path again and again.
 
 To generate a unique path, use the **GenerateUniquePath** method that needs the *grid*, the *target* tile and the *start** tile from which to calculate the path, as parameters.
 
