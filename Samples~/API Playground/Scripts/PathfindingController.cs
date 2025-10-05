@@ -33,9 +33,9 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
         private Transform[,] _distanceSprites;
         private CanvasGroup _canvasGroup;
         private GridController _grid;
-        private DirectionMap _directionMap;
+        private DirectionGrid _directionMap;
         private DirectionField _directionField;
-        private DijkstraMap _dijkstraMap;
+        private DijkstraGrid _dijkstraMap;
         private DijkstraField _dijkstraField;
         private Tile[] _uniquePath;
         private Tile _targetTile;
@@ -148,10 +148,10 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
             switch ((PathfindingType)_pathfindingType.value)
             {
                 case PathfindingType.DIRECTION_GRID:
-                    GenerateDirectionMap();
+                    GenerateDirectionGrid();
                     break;
                 case PathfindingType.DIJKSTRA_GRID:
-                    GenerateDijkstraMap();
+                    GenerateDijkstraGrid();
                     break;
                 case PathfindingType.DIRECTION_FIELD:
                     GenerateDirectionField();
@@ -166,14 +166,14 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
                     break;
             }
         }
-        private async void GenerateDirectionMap()
+        private async void GenerateDirectionGrid()
         {
             _canvasGroup.interactable = false;
             _progressWindow.transform.parent.gameObject.SetActive(true);
             _cts = new System.Threading.CancellationTokenSource();
             try
             {
-                _directionMap = await Pathfinding.GenerateDirectionMapAsync(_grid.Map, _targetTile, (DiagonalsPolicy)_diagonalsPolicy.value, new Progress<float>((x) => _progressWindow.text = (x * 100).ToString("F0") + "%"), _cts.Token);
+                _directionMap = await Pathfinding.GenerateDirectionGridAsync(_grid.Map, _targetTile, (DiagonalsPolicy)_diagonalsPolicy.value, new Progress<float>((x) => _progressWindow.text = (x * 100).ToString("F0") + "%"), _cts.Token);
             }
             catch (Exception e)
             {
@@ -244,14 +244,14 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
             }
             _grid.TintHighlightedTiles(allAccessibleTiles);
         }
-        private async void GenerateDijkstraMap()
+        private async void GenerateDijkstraGrid()
         {
             _canvasGroup.interactable = false;
             _progressWindow.transform.parent.gameObject.SetActive(true);
             _cts = new System.Threading.CancellationTokenSource();
             try
             {
-                _dijkstraMap = await Pathfinding.GenerateDijkstraMapAsync(_grid.Map, _targetTile, (DiagonalsPolicy)_diagonalsPolicy.value, _diagonalsWeight.value, new Progress<float>((x) => _progressWindow.text = (x * 100).ToString("F0") + "%"), _cts.Token);
+                _dijkstraMap = await Pathfinding.GenerateDijkstraGridAsync(_grid.Map, _targetTile, (DiagonalsPolicy)_diagonalsPolicy.value, _diagonalsWeight.value, new Progress<float>((x) => _progressWindow.text = (x * 100).ToString("F0") + "%"), _cts.Token);
             }
             catch (Exception e)
             {
@@ -379,10 +379,10 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
             switch ((PathfindingType)_pathfindingType.value)
             {
                 case PathfindingType.DIRECTION_GRID:
-                    UpdateDirectionSpritesFromDirectionMap();
+                    UpdateDirectionSpritesFromDirectionGrid();
                     break;
                 case PathfindingType.DIJKSTRA_GRID:
-                    UpdateDirectionSpritesFromDijkstraMap();
+                    UpdateDirectionSpritesFromDijkstraGrid();
                     break;
                 case PathfindingType.DIRECTION_FIELD:
                     UpdateDirectionSpritesFromDirectionField();
@@ -402,7 +402,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
             switch ((PathfindingType)_pathfindingType.value)
             {
                 case PathfindingType.DIJKSTRA_GRID:
-                    UpdateDistanceSpritesFromDijkstraMap();
+                    UpdateDistanceSpritesFromDijkstraGrid();
                     break;
                 case PathfindingType.DIJKSTRA_FIELD:
                     UpdateDistanceSpritesFromDijkstraField();
@@ -426,7 +426,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
                 }
             }
         }
-        private void UpdateDirectionSpritesFromDijkstraMap()
+        private void UpdateDirectionSpritesFromDijkstraGrid()
         {
             if (_dijkstraMap == null)
             {
@@ -551,7 +551,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
             }
         }
 
-        private void UpdateDirectionSpritesFromDirectionMap()
+        private void UpdateDirectionSpritesFromDirectionGrid()
         {
             if (_directionMap == null)
             {
@@ -651,7 +651,7 @@ namespace GridToolkitWorkingProject.Demos.APIPlayground
                 }
             }
         }
-        private void UpdateDistanceSpritesFromDijkstraMap()
+        private void UpdateDistanceSpritesFromDijkstraGrid()
         {
             if (_dijkstraMap == null)
             {

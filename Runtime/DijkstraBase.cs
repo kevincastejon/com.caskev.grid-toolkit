@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Caskev.GridToolkit
 {
     /// <summary>
-    /// Abstract base class for DijkstraMap and DijkstraField, containing all the common methods and properties.
+    /// Abstract base class for DijkstraGrid and DijkstraField, containing all the common methods and properties.
     /// </summary>
     public abstract class DijkstraBase
     {
@@ -25,7 +25,7 @@ namespace Caskev.GridToolkit
             _target = target;
         }
         /// <summary>
-        /// Is the tile is accessible from the target into this this DijkstraPaths. Usefull to check if the tile is usable as a parameter for this DirectionMap's methods.
+        /// Is the tile is accessible from the target into this this DijkstraPaths. Usefull to check if the tile is usable as a parameter for this DirectionGrid's methods.
         /// </summary>
         /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="tile">The tile to check</param>

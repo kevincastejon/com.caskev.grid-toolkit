@@ -11,7 +11,7 @@ Utilitary API to proceed operations on abstract grids such as tile extraction, r
 
 All you need to use this API is a bi-dimensional array of tiles ordered in row major order (see below).
 
-What is a *tile* ? Any object (custom class, struct, component, ...) that implements the very light **ITile** (**IWeightedTile** for *DijkstraMap*) interface of this library. This interface requires three properties getters:
+What is a *tile* ? Any object (custom class, struct, component, ...) that implements the very light **ITile** (**IWeightedTile** for *DijkstraGrid*) interface of this library. This interface requires three properties getters:
 - *bool* **IsWalkable** . Must return if the tile can be walk/see throught (for pathfinding/raycasting)
 - *int* **X** . Must return the horizontal position of the tile into the grid
 - *int* **Y** . Must return the vertical position of the tile into the grid
@@ -163,7 +163,7 @@ Allows you to calculate paths between tiles.
 This API offers several ways to do pathfinding, depending on your needs.
 
 You can generate objects that can be seen as layers of data on top of your grid.  
-A DirectionMap will hold all the pre-calculated direction data between a target tile and all the tiles that are accessible to this target.  
+A DirectionGrid will hold all the pre-calculated direction data between a target tile and all the tiles that are accessible to this target.  
 A Dijkstra map will hold both direction and distance data.  
 Once generated, these objects can contain all the paths you need (ie: a tower defense game with a village core where all enemies have to run to) and then use the paths with almost no performance cost.  
 There are also serialization methods to bake or save these objects to files and load them later with the deserialization methods.
@@ -190,7 +190,7 @@ Take a look at this schematic to understand how it works:
 
 ![](DiagonalsPolicySchematic.png)
 
-##### DiagonalsWeight (Only available with *DijkstraMap*)
+##### DiagonalsWeight (Only available with *DijkstraGrid*)
 
 When moving diagonally from one tile to another, there is actually more distance covered than when moving with orthogonal movement. 
 Mathematically, when the orthogonal distance between two adjacent tiles is 1, then the diagonal distance between two diagonally adjacent tiles is roughly 1.414. The detailed calculation is **Sqrt(x_distance²+y_distance²)**. 
@@ -204,19 +204,19 @@ Every pathfinding calculation method has an asynchronous variant, that returns a
 
 ---
 
-#### DirectionMap
+#### DirectionGrid
 
-A DirectionMap holds direction data between a target tile and all the tiles that are accessible to this target.  
+A DirectionGrid holds direction data between a target tile and all the tiles that are accessible to this target.  
 Once generated, this object can contain all the paths you need (ie: a tower defense game with a village core where all enemies run to) and then use the paths with almost no performance cost.  
 There are also serialization methods to bake or save these objects to files and load them later with the deserialization methods.
 
-To generate a **DirectionMap** object, use the **GenerateDirectionMap** method that needs the *grid* and the *target* tile from which to calculate the paths, as parameters.
+To generate a **DirectionGrid** object, use the **GenerateDirectionGrid** method that needs the *grid* and the *target* tile from which to calculate the paths, as parameters.
 
 ```cs
-DirectionMap directionMap = Pathfinding.GenerateDirectionMap(grid, targetTile);
+DirectionGrid directionMap = Pathfinding.GenerateDirectionGrid(grid, targetTile);
 ```
 
-You can retrieve the tile that has been used as the target to generate this **DirectionMap**.
+You can retrieve the tile that has been used as the target to generate this **DirectionGrid**.
 
 - **GetTarget**
 ```cs
@@ -237,7 +237,7 @@ Or you can get all the tiles on the path from the target to a tile.
 YourCustomTileType[] tiles = directionMap.GetPathFromTarget(grid, destinationTile);
 ```
 
-You can know if a tile is accessible from the target tile. This is useful before calling the following **DirectionMap** methods that only takes an accessible tile as parameter.
+You can know if a tile is accessible from the target tile. This is useful before calling the following **DirectionGrid** methods that only takes an accessible tile as parameter.
 
 - **IsTileAccessible**
 ```cs
@@ -258,34 +258,34 @@ You can get the next tile direction on the path between the target and a tile (i
 NextTileDirection nextTileDirection = directionMap.GetNextTileDirectionFromTile(grid, tile);
 ```
 
-You can serialize the generated **DirectionMap** to a byte array. Usefull for path baking in edit time.
+You can serialize the generated **DirectionGrid** to a byte array. Usefull for path baking in edit time.
 
 - **ToByteArray**
 ```cs
-byte[] serializedDirectionMap = directionMap.ToByteArray();
+byte[] serializedDirectionGrid = directionMap.ToByteArray();
 ```
 
-You can deserialize a byte array to a **DirectionMap**. Usefull for loading baked paths at runtime.
+You can deserialize a byte array to a **DirectionGrid**. Usefull for loading baked paths at runtime.
 
 - **FromByteArray**
 ```cs
-DirectionMap directionMap = DirectionMap.FromByteArray(grid, serializedDirectionMap);
+DirectionGrid directionMap = DirectionGrid.FromByteArray(grid, serializedDirectionGrid);
 ```
 
 ---
 
-#### DijkstraMap
+#### DijkstraGrid
 
-*Note that a DijkstraMap object inherits from all the methods and properties of a DirectionMap object.*
+*Note that a DijkstraGrid object inherits from all the methods and properties of a DirectionGrid object.*
 
-A DijkstraMap holds both direction and distance data between a target tile and all the tiles that are accessible to this target.  
+A DijkstraGrid holds both direction and distance data between a target tile and all the tiles that are accessible to this target.  
 Once generated, this object can contain all the paths and distance data that you need (ie: a tower defense game with a village core where all enemies run to, or a strategy game in which you would display the distance cost of the movement by hovering tiles with the cursor) and then use the paths with almost no performance cost.  
 There are also serialization methods to bake or save these objects to files and load them later with the deserialization methods.
 
-To generate a **DijkstraMap** object, use the **GenerateDijkstraMap** method that needs the *grid* and the *target* tile from which to calculate the paths, as parameters.
+To generate a **DijkstraGrid** object, use the **GenerateDijkstraGrid** method that needs the *grid* and the *target* tile from which to calculate the paths, as parameters.
 
 ```cs
-DijkstraMap dijkstraMap = Pathfinding.GenerateDijkstraMap(grid, targetTile);
+DijkstraGrid dijkstraMap = Pathfinding.GenerateDijkstraGrid(grid, targetTile);
 ```
 
 You can get the distance between the target and a tile.
@@ -299,7 +299,7 @@ float distance = dijsktraMap.GetDistanceToTarget(grid, tile);
 
 #### DirectionField
 
-*Note that a DirectionField object inherits from all the methods and properties of a DirectionMap object.*
+*Note that a DirectionField object inherits from all the methods and properties of a DirectionGrid object.*
 
 A DirectionField holds the direction data between a target tile and all the tiles that are accessible to this target into the specified maximum distance range.
 This allows you to run them more often because of the early exit due to the maximum distance parameter (note that more higher is the distance, more costly is the generation).  
@@ -325,7 +325,7 @@ for (int i = 0; i < directionField.AccessibleTilesCount; i++)
 
 #### DijkstraField
 
-*Note that a DijkstraField object inherits from all the methods and properties of a DijkstraMap object.*
+*Note that a DijkstraField object inherits from all the methods and properties of a DijkstraGrid object.*
 
 A DijkstraField holds the direction data between a target tile and all the tiles that are accessible to this target into the specified maximum distance range.
 This allows you to run them more often because of the early exit due to the maximum distance parameter (note that more higher is the distance, more costly is the generation).  

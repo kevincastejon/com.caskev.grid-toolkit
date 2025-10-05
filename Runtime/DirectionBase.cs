@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Caskev.GridToolkit
 {
     /// <summary>
-    /// Abstract base class for DirectionMap and DirectionField, containing all the common methods and properties.
+    /// Abstract base class for DirectionGrid and DirectionField, containing all the common methods and properties.
     /// </summary>
     public abstract class DirectionBase
     {

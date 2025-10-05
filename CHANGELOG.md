@@ -34,11 +34,11 @@
 
 ## [0.0.3] - 2025-08-17
 ### Added
-- Add GetTarget method on DirectionMap.
+- Add GetTarget method on DirectionGrid.
 
 ### Changed
-- Remove int Target property on DirectionMap.
-- Generic type constraints optimized on DirectionMap.
+- Remove int Target property on DirectionGrid.
+- Generic type constraints optimized on DirectionGrid.
 
 ### Fixed
 - Some cs doc comments issues.
@@ -50,7 +50,7 @@
 - CHANGELOG file.
 
 ### Changed
-- Optimize DirectionMap generation.
+- Optimize DirectionGrid generation.
 
 ### Fixed
 - Some cs doc comments issues.

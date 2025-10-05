@@ -38,14 +38,14 @@ namespace GridToolkitTests
             _grid = GridFactory.Build(map);
         }
 
-        #region DirectionMap
+        #region DirectionGrid
 
         [Test]
-        public void GenerateDirectionMap_NoDiagonals()
+        public void GenerateDirectionGrid_NoDiagonals()
         {
             int targetX = 6;
             int targetY = 10;
-            DirectionMap dirMap = Pathfinding.GenerateDirectionMap(_grid, GridUtils.GetTile(_grid, targetX, targetY), DiagonalsPolicy.NONE);
+            DirectionGrid dirMap = Pathfinding.GenerateDirectionGrid(_grid, GridUtils.GetTile(_grid, targetX, targetY), DiagonalsPolicy.NONE);
             NextTileDirection[] expectedDirMap = new NextTileDirection[20 * 25]
             {
                 _dirs['↓'] , _dirs['0'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['0'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'],
@@ -76,11 +76,11 @@ namespace GridToolkitTests
             }
         }
         [Test]
-        public void GenerateDirectionMap_AllDiagonals()
+        public void GenerateDirectionGrid_AllDiagonals()
         {
             int targetX = 6;
             int targetY = 10;
-            DirectionMap dirMap = Pathfinding.GenerateDirectionMap(_grid, GridUtils.GetTile(_grid, targetX, targetY), DiagonalsPolicy.ALL_DIAGONALS);
+            DirectionGrid dirMap = Pathfinding.GenerateDirectionGrid(_grid, GridUtils.GetTile(_grid, targetX, targetY), DiagonalsPolicy.ALL_DIAGONALS);
             NextTileDirection[] expectedDirMap = new NextTileDirection[20 * 25]
             {
                 _dirs['↓'] , _dirs['0'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↓'] , _dirs['↙'] , _dirs['↙'] , _dirs['↓'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['0'] , _dirs['↓'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] ,
@@ -111,11 +111,11 @@ namespace GridToolkitTests
             }
         }
         [Test]
-        public void GenerateDirectionMap_OneFreeDiagonals()
+        public void GenerateDirectionGrid_OneFreeDiagonals()
         {
             int targetX = 6;
             int targetY = 10;
-            DirectionMap dirMap = Pathfinding.GenerateDirectionMap(_grid, GridUtils.GetTile(_grid, targetX, targetY), DiagonalsPolicy.DIAGONAL_1FREE);
+            DirectionGrid dirMap = Pathfinding.GenerateDirectionGrid(_grid, GridUtils.GetTile(_grid, targetX, targetY), DiagonalsPolicy.DIAGONAL_1FREE);
             NextTileDirection[] expectedDirMap = new NextTileDirection[20 * 25]
             {
                 _dirs['↓'] , _dirs['0'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↓'] , _dirs['↙'] , _dirs['↙'] , _dirs['↓'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['0'] , _dirs['↓'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] ,
@@ -146,11 +146,11 @@ namespace GridToolkitTests
             }
         }
         [Test]
-        public void GenerateDirectionMap_TwoFreeDiagonals()
+        public void GenerateDirectionGrid_TwoFreeDiagonals()
         {
             int targetX = 6;
             int targetY = 10;
-            DirectionMap dirMap = Pathfinding.GenerateDirectionMap(_grid, GridUtils.GetTile(_grid, targetX, targetY), DiagonalsPolicy.DIAGONAL_2FREE);
+            DirectionGrid dirMap = Pathfinding.GenerateDirectionGrid(_grid, GridUtils.GetTile(_grid, targetX, targetY), DiagonalsPolicy.DIAGONAL_2FREE);
             NextTileDirection[] expectedDirMap = new NextTileDirection[20 * 25]
             {
                 _dirs['↓'] , _dirs['0'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↓'] , _dirs['↙'] , _dirs['↘'] , _dirs['↓'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['0'] , _dirs['↓'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] ,
@@ -181,17 +181,17 @@ namespace GridToolkitTests
             }
         }
         [Test]
-        public void DirectionMap_GetTargetTile()
+        public void DirectionGrid_GetTargetTile()
         {
             int targetX = 6;
             int targetY = 10;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            DirectionMap dirMap = Pathfinding.GenerateDirectionMap(_grid, target);
+            DirectionGrid dirMap = Pathfinding.GenerateDirectionGrid(_grid, target);
             TestTile returnedTarget = dirMap.GetTargetTile(_grid);
             Assert.IsTrue(GridUtils.TileEquals(target, returnedTarget), $"Target is [{target.X}, {target.Y}] but returned tile is {returnedTarget.X}, {returnedTarget.Y}");
         }
         [Test]
-        public void DirectionMap_IsTileAccessible()
+        public void DirectionGrid_IsTileAccessible()
         {
             int targetX = 6;
             int targetY = 10;
@@ -200,7 +200,7 @@ namespace GridToolkitTests
             int inaccessibleTileX = 1;
             int inaccessibleTileY = 3;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            DirectionMap dirMap = Pathfinding.GenerateDirectionMap(_grid, target);
+            DirectionGrid dirMap = Pathfinding.GenerateDirectionGrid(_grid, target);
             Assert.IsTrue(dirMap.IsTileAccessible(_grid, GridUtils.GetTile(_grid, accessibleTileX, accessibleTileY)));
             Assert.IsFalse(dirMap.IsTileAccessible(_grid, GridUtils.GetTile(_grid, inaccessibleTileX, inaccessibleTileY)));
         }
@@ -208,7 +208,7 @@ namespace GridToolkitTests
         [TestCase(true, false)]
         [TestCase(false, true)]
         [TestCase(true, true)]
-        public void DirectionMap_GetPathToTarget_NoDiagonals(bool includeStart, bool includeTarget)
+        public void DirectionGrid_GetPathToTarget_NoDiagonals(bool includeStart, bool includeTarget)
         {
             int targetX = 6;
             int targetY = 10;
@@ -216,7 +216,7 @@ namespace GridToolkitTests
             int startY = 10;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionMap dirMap = Pathfinding.GenerateDirectionMap(_grid, target, DiagonalsPolicy.NONE);
+            DirectionGrid dirMap = Pathfinding.GenerateDirectionGrid(_grid, target, DiagonalsPolicy.NONE);
             TestTile targetTile = includeTarget ? target : null;
             TestTile startTile = includeStart ? start : null;
             TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, start, includeStart, includeTarget);
@@ -240,7 +240,7 @@ namespace GridToolkitTests
         [TestCase(true, false)]
         [TestCase(false, true)]
         [TestCase(true, true)]
-        public void DirectionMap_GetPathToTarget_AllDiagonals(bool includeStart, bool includeTarget)
+        public void DirectionGrid_GetPathToTarget_AllDiagonals(bool includeStart, bool includeTarget)
         {
             int targetX = 6;
             int targetY = 10;
@@ -248,7 +248,7 @@ namespace GridToolkitTests
             int startY = 10;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionMap dirMap = Pathfinding.GenerateDirectionMap(_grid, target, DiagonalsPolicy.ALL_DIAGONALS);
+            DirectionGrid dirMap = Pathfinding.GenerateDirectionGrid(_grid, target, DiagonalsPolicy.ALL_DIAGONALS);
             TestTile targetTile = includeTarget ? target : null;
             TestTile startTile = includeStart ? start : null;
             TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, start, includeStart, includeTarget);
@@ -272,7 +272,7 @@ namespace GridToolkitTests
         [TestCase(true, false)]
         [TestCase(false, true)]
         [TestCase(true, true)]
-        public void DirectionMap_GetPathToTarget_Diagonals1Free(bool includeStart, bool includeTarget)
+        public void DirectionGrid_GetPathToTarget_Diagonals1Free(bool includeStart, bool includeTarget)
         {
             int targetX = 6;
             int targetY = 10;
@@ -280,7 +280,7 @@ namespace GridToolkitTests
             int startY = 10;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionMap dirMap = Pathfinding.GenerateDirectionMap(_grid, target, DiagonalsPolicy.DIAGONAL_1FREE);
+            DirectionGrid dirMap = Pathfinding.GenerateDirectionGrid(_grid, target, DiagonalsPolicy.DIAGONAL_1FREE);
             TestTile targetTile = includeTarget ? target : null;
             TestTile startTile = includeStart ? start : null;
             TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, start, includeStart, includeTarget);
@@ -304,7 +304,7 @@ namespace GridToolkitTests
         [TestCase(true, false)]
         [TestCase(false, true)]
         [TestCase(true, true)]
-        public void DirectionMap_GetPathToTarget_Diagonals2Free(bool includeStart, bool includeTarget)
+        public void DirectionGrid_GetPathToTarget_Diagonals2Free(bool includeStart, bool includeTarget)
         {
             int targetX = 6;
             int targetY = 10;
@@ -312,7 +312,7 @@ namespace GridToolkitTests
             int startY = 10;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionMap dirMap = Pathfinding.GenerateDirectionMap(_grid, target, DiagonalsPolicy.DIAGONAL_2FREE);
+            DirectionGrid dirMap = Pathfinding.GenerateDirectionGrid(_grid, target, DiagonalsPolicy.DIAGONAL_2FREE);
             TestTile targetTile = includeTarget ? target : null;
             TestTile startTile = includeStart ? start : null;
             TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, start, includeStart, includeTarget);
@@ -336,7 +336,7 @@ namespace GridToolkitTests
         [TestCase(true, false)]
         [TestCase(false, true)]
         [TestCase(true, true)]
-        public void DirectionMap_GetPathFromTarget_NoDiagonals(bool includeStart, bool includeTarget)
+        public void DirectionGrid_GetPathFromTarget_NoDiagonals(bool includeStart, bool includeTarget)
         {
             int targetX = 6;
             int targetY = 10;
@@ -344,7 +344,7 @@ namespace GridToolkitTests
             int startY = 10;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionMap dirMap = Pathfinding.GenerateDirectionMap(_grid, target, DiagonalsPolicy.NONE);
+            DirectionGrid dirMap = Pathfinding.GenerateDirectionGrid(_grid, target, DiagonalsPolicy.NONE);
             TestTile targetTile = includeTarget ? target : null;
             TestTile startTile = includeStart ? start : null;
             TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, start, includeStart, includeTarget);
@@ -368,7 +368,7 @@ namespace GridToolkitTests
         [TestCase(true, false)]
         [TestCase(false, true)]
         [TestCase(true, true)]
-        public void DirectionMap_GetPathFromTarget_AllDiagonals(bool includeStart, bool includeTarget)
+        public void DirectionGrid_GetPathFromTarget_AllDiagonals(bool includeStart, bool includeTarget)
         {
             int targetX = 6;
             int targetY = 10;
@@ -376,7 +376,7 @@ namespace GridToolkitTests
             int startY = 10;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionMap dirMap = Pathfinding.GenerateDirectionMap(_grid, target, DiagonalsPolicy.ALL_DIAGONALS);
+            DirectionGrid dirMap = Pathfinding.GenerateDirectionGrid(_grid, target, DiagonalsPolicy.ALL_DIAGONALS);
             TestTile targetTile = includeTarget ? target : null;
             TestTile startTile = includeStart ? start : null;
             TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, start, includeStart, includeTarget);
@@ -400,7 +400,7 @@ namespace GridToolkitTests
         [TestCase(true, false)]
         [TestCase(false, true)]
         [TestCase(true, true)]
-        public void DirectionMap_GetPathFromTarget_Diagonals1Free(bool includeStart, bool includeTarget)
+        public void DirectionGrid_GetPathFromTarget_Diagonals1Free(bool includeStart, bool includeTarget)
         {
             int targetX = 6;
             int targetY = 10;
@@ -408,7 +408,7 @@ namespace GridToolkitTests
             int startY = 10;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionMap dirMap = Pathfinding.GenerateDirectionMap(_grid, target, DiagonalsPolicy.DIAGONAL_1FREE);
+            DirectionGrid dirMap = Pathfinding.GenerateDirectionGrid(_grid, target, DiagonalsPolicy.DIAGONAL_1FREE);
             TestTile targetTile = includeTarget ? target : null;
             TestTile startTile = includeStart ? start : null;
             TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, start, includeStart, includeTarget);
@@ -432,7 +432,7 @@ namespace GridToolkitTests
         [TestCase(true, false)]
         [TestCase(false, true)]
         [TestCase(true, true)]
-        public void DirectionMap_GetPathFromTarget_Diagonals2Free(bool includeStart, bool includeTarget)
+        public void DirectionGrid_GetPathFromTarget_Diagonals2Free(bool includeStart, bool includeTarget)
         {
             int targetX = 6;
             int targetY = 10;
@@ -440,7 +440,7 @@ namespace GridToolkitTests
             int startY = 10;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionMap dirMap = Pathfinding.GenerateDirectionMap(_grid, target, DiagonalsPolicy.DIAGONAL_2FREE);
+            DirectionGrid dirMap = Pathfinding.GenerateDirectionGrid(_grid, target, DiagonalsPolicy.DIAGONAL_2FREE);
             TestTile targetTile = includeTarget ? target : null;
             TestTile startTile = includeStart ? start : null;
             TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, start, includeStart, includeTarget);
@@ -461,7 +461,7 @@ namespace GridToolkitTests
             }
         }
         [Test]
-        public void DirectionMap_GetNextTileFromTile_NoDiagonals()
+        public void DirectionGrid_GetNextTileFromTile_NoDiagonals()
         {
             int targetX = 6;
             int targetY = 10;
@@ -469,13 +469,13 @@ namespace GridToolkitTests
             int startY = 13;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionMap dirMap = Pathfinding.GenerateDirectionMap(_grid, target, DiagonalsPolicy.NONE);
+            DirectionGrid dirMap = Pathfinding.GenerateDirectionGrid(_grid, target, DiagonalsPolicy.NONE);
             TestTile returnedTile = dirMap.GetNextTileFromTile(_grid, start);
             TestTile expectedTile = new(4, 13);
             Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
         }
         [Test]
-        public void DirectionMap_GetNextTileFromTile_AllDiagonals()
+        public void DirectionGrid_GetNextTileFromTile_AllDiagonals()
         {
             int targetX = 6;
             int targetY = 10;
@@ -483,13 +483,13 @@ namespace GridToolkitTests
             int startY = 13;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionMap dirMap = Pathfinding.GenerateDirectionMap(_grid, target, DiagonalsPolicy.ALL_DIAGONALS);
+            DirectionGrid dirMap = Pathfinding.GenerateDirectionGrid(_grid, target, DiagonalsPolicy.ALL_DIAGONALS);
             TestTile returnedTile = dirMap.GetNextTileFromTile(_grid, start);
             TestTile expectedTile = new(6, 14);
             Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
         }
         [Test]
-        public void DirectionMap_GetNextTileFromTile_Diagonals1Free()
+        public void DirectionGrid_GetNextTileFromTile_Diagonals1Free()
         {
             int targetX = 6;
             int targetY = 10;
@@ -497,13 +497,13 @@ namespace GridToolkitTests
             int startY = 15;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionMap dirMap = Pathfinding.GenerateDirectionMap(_grid, target, DiagonalsPolicy.DIAGONAL_1FREE);
+            DirectionGrid dirMap = Pathfinding.GenerateDirectionGrid(_grid, target, DiagonalsPolicy.DIAGONAL_1FREE);
             TestTile returnedTile = dirMap.GetNextTileFromTile(_grid, start);
             TestTile expectedTile = new(2, 16);
             Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
         }
         [Test]
-        public void DirectionMap_GetNextTileFromTile_Diagonals2Free()
+        public void DirectionGrid_GetNextTileFromTile_Diagonals2Free()
         {
             int targetX = 6;
             int targetY = 10;
@@ -511,13 +511,13 @@ namespace GridToolkitTests
             int startY = 15;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionMap dirMap = Pathfinding.GenerateDirectionMap(_grid, target, DiagonalsPolicy.DIAGONAL_2FREE);
+            DirectionGrid dirMap = Pathfinding.GenerateDirectionGrid(_grid, target, DiagonalsPolicy.DIAGONAL_2FREE);
             TestTile returnedTile = dirMap.GetNextTileFromTile(_grid, start);
             TestTile expectedTile = new(1, 16);
             Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
         }
         [Test]
-        public void DirectionMap_GetNextTileDirectionFromTile_NoDiagonals()
+        public void DirectionGrid_GetNextTileDirectionFromTile_NoDiagonals()
         {
             int targetX = 6;
             int targetY = 10;
@@ -525,13 +525,13 @@ namespace GridToolkitTests
             int startY = 13;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionMap dirMap = Pathfinding.GenerateDirectionMap(_grid, target, DiagonalsPolicy.NONE);
+            DirectionGrid dirMap = Pathfinding.GenerateDirectionGrid(_grid, target, DiagonalsPolicy.NONE);
             NextTileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
             NextTileDirection expectedDir = NextTileDirection.LEFT;
             Assert.AreEqual(expectedDir, returnedDir);
         }
         [Test]
-        public void DirectionMap_GetNextTileDirectionFromTile_AllDiagonals()
+        public void DirectionGrid_GetNextTileDirectionFromTile_AllDiagonals()
         {
             int targetX = 6;
             int targetY = 10;
@@ -539,13 +539,13 @@ namespace GridToolkitTests
             int startY = 13;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionMap dirMap = Pathfinding.GenerateDirectionMap(_grid, target, DiagonalsPolicy.ALL_DIAGONALS);
+            DirectionGrid dirMap = Pathfinding.GenerateDirectionGrid(_grid, target, DiagonalsPolicy.ALL_DIAGONALS);
             NextTileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
             NextTileDirection expectedDir = NextTileDirection.UP_RIGHT;
             Assert.AreEqual(expectedDir, returnedDir);
         }
         [Test]
-        public void DirectionMap_GetNextTileDirectionFromTile_Diagonals1Free()
+        public void DirectionGrid_GetNextTileDirectionFromTile_Diagonals1Free()
         {
             int targetX = 6;
             int targetY = 10;
@@ -553,13 +553,13 @@ namespace GridToolkitTests
             int startY = 15;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionMap dirMap = Pathfinding.GenerateDirectionMap(_grid, target, DiagonalsPolicy.DIAGONAL_1FREE);
+            DirectionGrid dirMap = Pathfinding.GenerateDirectionGrid(_grid, target, DiagonalsPolicy.DIAGONAL_1FREE);
             NextTileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
             NextTileDirection expectedDir = NextTileDirection.UP_RIGHT;
             Assert.AreEqual(expectedDir, returnedDir);
         }
         [Test]
-        public void DirectionMap_GetNextTileDirectionFromTile_Diagonals2Free()
+        public void DirectionGrid_GetNextTileDirectionFromTile_Diagonals2Free()
         {
             int targetX = 6;
             int targetY = 10;
@@ -567,13 +567,13 @@ namespace GridToolkitTests
             int startY = 15;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionMap dirMap = Pathfinding.GenerateDirectionMap(_grid, target, DiagonalsPolicy.DIAGONAL_2FREE);
+            DirectionGrid dirMap = Pathfinding.GenerateDirectionGrid(_grid, target, DiagonalsPolicy.DIAGONAL_2FREE);
             NextTileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
             NextTileDirection expectedDir = NextTileDirection.UP;
             Assert.AreEqual(expectedDir, returnedDir);
         }
         [Test]
-        public void DirectionMap_Serialization()
+        public void DirectionGrid_Serialization()
         {
             int targetX = 6;
             int targetY = 10;
@@ -581,9 +581,9 @@ namespace GridToolkitTests
             int startY = 17;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionMap dirMap = Pathfinding.GenerateDirectionMap(_grid, target);
+            DirectionGrid dirMap = Pathfinding.GenerateDirectionGrid(_grid, target);
             byte[] serializedDirMap = dirMap.ToByteArray();
-            DirectionMap deserializedDirMap = DirectionMap.FromByteArray(_grid, serializedDirMap);
+            DirectionGrid deserializedDirMap = DirectionGrid.FromByteArray(_grid, serializedDirMap);
             Assert.AreEqual(dirMap._directionMap.Length, deserializedDirMap._directionMap.Length);
             for (int i = 0; i < deserializedDirMap._directionMap.Length; i++)
             {
@@ -1152,14 +1152,14 @@ namespace GridToolkitTests
 
         #endregion
 
-        #region DijkstraMap
+        #region DijkstraGrid
 
         [Test]
-        public void GenerateDijkstraMap_NoDiagonals()
+        public void GenerateDijkstraGrid_NoDiagonals()
         {
             int targetX = 6;
             int targetY = 10;
-            DijkstraMap dirMap = Pathfinding.GenerateDijkstraMap(_grid, GridUtils.GetTile(_grid, targetX, targetY), DiagonalsPolicy.NONE);
+            DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, GridUtils.GetTile(_grid, targetX, targetY), DiagonalsPolicy.NONE);
             NextTileDirection[] expectedDirMap = new NextTileDirection[20 * 25]
             {
                 _dirs['↓'], _dirs['0'], _dirs['→'], _dirs['↓'], _dirs['↓'], _dirs['→'], _dirs['↓'], _dirs['↓'], _dirs['→'], _dirs['↓'], _dirs['←'], _dirs['←'], _dirs['↓'], _dirs['↓'], _dirs['↓'], _dirs['↓'], _dirs['↓'], _dirs['0'], _dirs['↓'], _dirs['↓'], _dirs['←'], _dirs['↓'], _dirs['←'], _dirs['↓'], _dirs['↓'],
@@ -1215,11 +1215,11 @@ namespace GridToolkitTests
             }
         }
         [Test]
-        public void GenerateDijkstraMap_AllDiagonals()
+        public void GenerateDijkstraGrid_AllDiagonals()
         {
             int targetX = 6;
             int targetY = 10;
-            DijkstraMap dirMap = Pathfinding.GenerateDijkstraMap(_grid, GridUtils.GetTile(_grid, targetX, targetY), DiagonalsPolicy.ALL_DIAGONALS);
+            DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, GridUtils.GetTile(_grid, targetX, targetY), DiagonalsPolicy.ALL_DIAGONALS);
             NextTileDirection[] expectedDirMap = new NextTileDirection[20 * 25]
             {
                 _dirs['↓'], _dirs['0'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↓'], _dirs['↙'], _dirs['↙'], _dirs['↓'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['0'], _dirs['↓'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'],
@@ -1275,11 +1275,11 @@ namespace GridToolkitTests
             }
         }
         [Test]
-        public void GenerateDijkstraMap_OneFreeDiagonals()
+        public void GenerateDijkstraGrid_OneFreeDiagonals()
         {
             int targetX = 6;
             int targetY = 10;
-            DijkstraMap dirMap = Pathfinding.GenerateDijkstraMap(_grid, GridUtils.GetTile(_grid, targetX, targetY), DiagonalsPolicy.DIAGONAL_1FREE);
+            DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, GridUtils.GetTile(_grid, targetX, targetY), DiagonalsPolicy.DIAGONAL_1FREE);
             NextTileDirection[] expectedDirMap = new NextTileDirection[20 * 25]
             {
                 _dirs['↓'], _dirs['0'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↓'], _dirs['↙'], _dirs['↙'], _dirs['↓'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['0'], _dirs['↓'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'],
@@ -1335,11 +1335,11 @@ namespace GridToolkitTests
             }
         }
         [Test]
-        public void GenerateDijkstraMap_TwoFreeDiagonals()
+        public void GenerateDijkstraGrid_TwoFreeDiagonals()
         {
             int targetX = 6;
             int targetY = 10;
-            DijkstraMap dirMap = Pathfinding.GenerateDijkstraMap(_grid, GridUtils.GetTile(_grid, targetX, targetY), DiagonalsPolicy.DIAGONAL_2FREE);
+            DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, GridUtils.GetTile(_grid, targetX, targetY), DiagonalsPolicy.DIAGONAL_2FREE);
             NextTileDirection[] expectedDirMap = new NextTileDirection[20 * 25]
             {
                 _dirs['↓'], _dirs['0'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↓'], _dirs['↙'], _dirs['↙'], _dirs['↓'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['0'], _dirs['↓'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'],
@@ -1395,17 +1395,17 @@ namespace GridToolkitTests
             }
         }
         [Test]
-        public void DijkstraMap_GetTargetTile()
+        public void DijkstraGrid_GetTargetTile()
         {
             int targetX = 6;
             int targetY = 10;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            DijkstraMap dirMap = Pathfinding.GenerateDijkstraMap(_grid, target);
+            DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, target);
             TestTile returnedTarget = dirMap.GetTargetTile(_grid);
             Assert.IsTrue(GridUtils.TileEquals(target, returnedTarget), $"Target is [{target.X}, {target.Y}] but returned tile is {returnedTarget.X}, {returnedTarget.Y}");
         }
         [Test]
-        public void DijkstraMap_IsTileAccessible()
+        public void DijkstraGrid_IsTileAccessible()
         {
             int targetX = 6;
             int targetY = 10;
@@ -1414,7 +1414,7 @@ namespace GridToolkitTests
             int inaccessibleTileX = 1;
             int inaccessibleTileY = 3;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            DijkstraMap dirMap = Pathfinding.GenerateDijkstraMap(_grid, target);
+            DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, target);
             Assert.IsTrue(dirMap.IsTileAccessible(_grid, GridUtils.GetTile(_grid, accessibleTileX, accessibleTileY)));
             Assert.IsFalse(dirMap.IsTileAccessible(_grid, GridUtils.GetTile(_grid, inaccessibleTileX, inaccessibleTileY)));
         }
@@ -1422,7 +1422,7 @@ namespace GridToolkitTests
         [TestCase(true, false)]
         [TestCase(false, true)]
         [TestCase(true, true)]
-        public void DijkstraMap_GetPathToTarget_NoDiagonals(bool includeStart, bool includeTarget)
+        public void DijkstraGrid_GetPathToTarget_NoDiagonals(bool includeStart, bool includeTarget)
         {
             int targetX = 6;
             int targetY = 10;
@@ -1430,7 +1430,7 @@ namespace GridToolkitTests
             int startY = 10;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DijkstraMap dirMap = Pathfinding.GenerateDijkstraMap(_grid, target, DiagonalsPolicy.NONE);
+            DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, target, DiagonalsPolicy.NONE);
             TestTile targetTile = includeTarget ? target : null;
             TestTile startTile = includeStart ? start : null;
             TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, start, includeStart, includeTarget);
@@ -1454,7 +1454,7 @@ namespace GridToolkitTests
         [TestCase(true, false)]
         [TestCase(false, true)]
         [TestCase(true, true)]
-        public void DijkstraMap_GetPathToTarget_AllDiagonals(bool includeStart, bool includeTarget)
+        public void DijkstraGrid_GetPathToTarget_AllDiagonals(bool includeStart, bool includeTarget)
         {
             int targetX = 6;
             int targetY = 10;
@@ -1462,7 +1462,7 @@ namespace GridToolkitTests
             int startY = 10;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DijkstraMap dirMap = Pathfinding.GenerateDijkstraMap(_grid, target, DiagonalsPolicy.ALL_DIAGONALS);
+            DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, target, DiagonalsPolicy.ALL_DIAGONALS);
             TestTile targetTile = includeTarget ? target : null;
             TestTile startTile = includeStart ? start : null;
             TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, start, includeStart, includeTarget);
@@ -1486,7 +1486,7 @@ namespace GridToolkitTests
         [TestCase(true, false)]
         [TestCase(false, true)]
         [TestCase(true, true)]
-        public void DijkstraMap_GetPathToTarget_Diagonals1Free(bool includeStart, bool includeTarget)
+        public void DijkstraGrid_GetPathToTarget_Diagonals1Free(bool includeStart, bool includeTarget)
         {
             int targetX = 6;
             int targetY = 10;
@@ -1494,7 +1494,7 @@ namespace GridToolkitTests
             int startY = 10;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DijkstraMap dirMap = Pathfinding.GenerateDijkstraMap(_grid, target, DiagonalsPolicy.DIAGONAL_1FREE);
+            DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, target, DiagonalsPolicy.DIAGONAL_1FREE);
             TestTile targetTile = includeTarget ? target : null;
             TestTile startTile = includeStart ? start : null;
             TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, start, includeStart, includeTarget);
@@ -1518,7 +1518,7 @@ namespace GridToolkitTests
         [TestCase(true, false)]
         [TestCase(false, true)]
         [TestCase(true, true)]
-        public void DijkstraMap_GetPathToTarget_Diagonals2Free(bool includeStart, bool includeTarget)
+        public void DijkstraGrid_GetPathToTarget_Diagonals2Free(bool includeStart, bool includeTarget)
         {
             int targetX = 6;
             int targetY = 10;
@@ -1526,7 +1526,7 @@ namespace GridToolkitTests
             int startY = 10;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DijkstraMap dirMap = Pathfinding.GenerateDijkstraMap(_grid, target, DiagonalsPolicy.DIAGONAL_2FREE);
+            DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, target, DiagonalsPolicy.DIAGONAL_2FREE);
             TestTile targetTile = includeTarget ? target : null;
             TestTile startTile = includeStart ? start : null;
             TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, start, includeStart, includeTarget);
@@ -1550,7 +1550,7 @@ namespace GridToolkitTests
         [TestCase(true, false)]
         [TestCase(false, true)]
         [TestCase(true, true)]
-        public void DijkstraMap_GetPathFromTarget_NoDiagonals(bool includeStart, bool includeTarget)
+        public void DijkstraGrid_GetPathFromTarget_NoDiagonals(bool includeStart, bool includeTarget)
         {
             int targetX = 6;
             int targetY = 10;
@@ -1558,7 +1558,7 @@ namespace GridToolkitTests
             int startY = 10;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DijkstraMap dirMap = Pathfinding.GenerateDijkstraMap(_grid, target, DiagonalsPolicy.NONE);
+            DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, target, DiagonalsPolicy.NONE);
             TestTile targetTile = includeTarget ? target : null;
             TestTile startTile = includeStart ? start : null;
             TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, start, includeStart, includeTarget);
@@ -1582,7 +1582,7 @@ namespace GridToolkitTests
         [TestCase(true, false)]
         [TestCase(false, true)]
         [TestCase(true, true)]
-        public void DijkstraMap_GetPathFromTarget_AllDiagonals(bool includeStart, bool includeTarget)
+        public void DijkstraGrid_GetPathFromTarget_AllDiagonals(bool includeStart, bool includeTarget)
         {
             int targetX = 6;
             int targetY = 10;
@@ -1590,7 +1590,7 @@ namespace GridToolkitTests
             int startY = 10;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DijkstraMap dirMap = Pathfinding.GenerateDijkstraMap(_grid, target, DiagonalsPolicy.ALL_DIAGONALS);
+            DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, target, DiagonalsPolicy.ALL_DIAGONALS);
             TestTile targetTile = includeTarget ? target : null;
             TestTile startTile = includeStart ? start : null;
             TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, start, includeStart, includeTarget);
@@ -1614,7 +1614,7 @@ namespace GridToolkitTests
         [TestCase(true, false)]
         [TestCase(false, true)]
         [TestCase(true, true)]
-        public void DijkstraMap_GetPathFromTarget_Diagonals1Free(bool includeStart, bool includeTarget)
+        public void DijkstraGrid_GetPathFromTarget_Diagonals1Free(bool includeStart, bool includeTarget)
         {
             int targetX = 6;
             int targetY = 10;
@@ -1622,7 +1622,7 @@ namespace GridToolkitTests
             int startY = 10;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DijkstraMap dirMap = Pathfinding.GenerateDijkstraMap(_grid, target, DiagonalsPolicy.DIAGONAL_1FREE);
+            DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, target, DiagonalsPolicy.DIAGONAL_1FREE);
             TestTile targetTile = includeTarget ? target : null;
             TestTile startTile = includeStart ? start : null;
             TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, start, includeStart, includeTarget);
@@ -1646,7 +1646,7 @@ namespace GridToolkitTests
         [TestCase(true, false)]
         [TestCase(false, true)]
         [TestCase(true, true)]
-        public void DijkstraMap_GetPathFromTarget_Diagonals2Free(bool includeStart, bool includeTarget)
+        public void DijkstraGrid_GetPathFromTarget_Diagonals2Free(bool includeStart, bool includeTarget)
         {
             int targetX = 6;
             int targetY = 10;
@@ -1654,7 +1654,7 @@ namespace GridToolkitTests
             int startY = 10;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DijkstraMap dirMap = Pathfinding.GenerateDijkstraMap(_grid, target, DiagonalsPolicy.DIAGONAL_2FREE);
+            DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, target, DiagonalsPolicy.DIAGONAL_2FREE);
             TestTile targetTile = includeTarget ? target : null;
             TestTile startTile = includeStart ? start : null;
             TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, start, includeStart, includeTarget);
@@ -1675,7 +1675,7 @@ namespace GridToolkitTests
             }
         }
         [Test]
-        public void DijkstraMap_GetNextTileFromTile_NoDiagonals()
+        public void DijkstraGrid_GetNextTileFromTile_NoDiagonals()
         {
             int targetX = 6;
             int targetY = 10;
@@ -1683,13 +1683,13 @@ namespace GridToolkitTests
             int startY = 13;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DijkstraMap dirMap = Pathfinding.GenerateDijkstraMap(_grid, target, DiagonalsPolicy.NONE);
+            DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, target, DiagonalsPolicy.NONE);
             TestTile returnedTile = dirMap.GetNextTileFromTile(_grid, start);
             TestTile expectedTile = new(4, 13);
             Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
         }
         [Test]
-        public void DijkstraMap_GetNextTileFromTile_AllDiagonals()
+        public void DijkstraGrid_GetNextTileFromTile_AllDiagonals()
         {
             int targetX = 6;
             int targetY = 10;
@@ -1697,13 +1697,13 @@ namespace GridToolkitTests
             int startY = 13;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DijkstraMap dirMap = Pathfinding.GenerateDijkstraMap(_grid, target, DiagonalsPolicy.ALL_DIAGONALS);
+            DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, target, DiagonalsPolicy.ALL_DIAGONALS);
             TestTile returnedTile = dirMap.GetNextTileFromTile(_grid, start);
             TestTile expectedTile = new(6, 14);
             Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
         }
         [Test]
-        public void DijkstraMap_GetNextTileFromTile_Diagonals1Free()
+        public void DijkstraGrid_GetNextTileFromTile_Diagonals1Free()
         {
             int targetX = 6;
             int targetY = 10;
@@ -1711,13 +1711,13 @@ namespace GridToolkitTests
             int startY = 15;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DijkstraMap dirMap = Pathfinding.GenerateDijkstraMap(_grid, target, DiagonalsPolicy.DIAGONAL_1FREE);
+            DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, target, DiagonalsPolicy.DIAGONAL_1FREE);
             TestTile returnedTile = dirMap.GetNextTileFromTile(_grid, start);
             TestTile expectedTile = new(2, 16);
             Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
         }
         [Test]
-        public void DijkstraMap_GetNextTileFromTile_Diagonals2Free()
+        public void DijkstraGrid_GetNextTileFromTile_Diagonals2Free()
         {
             int targetX = 6;
             int targetY = 10;
@@ -1725,13 +1725,13 @@ namespace GridToolkitTests
             int startY = 15;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DijkstraMap dirMap = Pathfinding.GenerateDijkstraMap(_grid, target, DiagonalsPolicy.DIAGONAL_2FREE);
+            DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, target, DiagonalsPolicy.DIAGONAL_2FREE);
             TestTile returnedTile = dirMap.GetNextTileFromTile(_grid, start);
             TestTile expectedTile = new(1, 16);
             Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
         }
         [Test]
-        public void DijkstraMap_GetNextTileDirectionFromTile_NoDiagonals()
+        public void DijkstraGrid_GetNextTileDirectionFromTile_NoDiagonals()
         {
             int targetX = 6;
             int targetY = 10;
@@ -1739,13 +1739,13 @@ namespace GridToolkitTests
             int startY = 13;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DijkstraMap dirMap = Pathfinding.GenerateDijkstraMap(_grid, target, DiagonalsPolicy.NONE);
+            DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, target, DiagonalsPolicy.NONE);
             NextTileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
             NextTileDirection expectedDir = NextTileDirection.LEFT;
             Assert.AreEqual(expectedDir, returnedDir);
         }
         [Test]
-        public void DijkstraMap_GetNextTileDirectionFromTile_AllDiagonals()
+        public void DijkstraGrid_GetNextTileDirectionFromTile_AllDiagonals()
         {
             int targetX = 6;
             int targetY = 10;
@@ -1753,13 +1753,13 @@ namespace GridToolkitTests
             int startY = 13;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DijkstraMap dirMap = Pathfinding.GenerateDijkstraMap(_grid, target, DiagonalsPolicy.ALL_DIAGONALS);
+            DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, target, DiagonalsPolicy.ALL_DIAGONALS);
             NextTileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
             NextTileDirection expectedDir = NextTileDirection.UP_RIGHT;
             Assert.AreEqual(expectedDir, returnedDir);
         }
         [Test]
-        public void DijkstraMap_GetNextTileDirectionFromTile_Diagonals1Free()
+        public void DijkstraGrid_GetNextTileDirectionFromTile_Diagonals1Free()
         {
             int targetX = 6;
             int targetY = 10;
@@ -1767,13 +1767,13 @@ namespace GridToolkitTests
             int startY = 15;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DijkstraMap dirMap = Pathfinding.GenerateDijkstraMap(_grid, target, DiagonalsPolicy.DIAGONAL_1FREE);
+            DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, target, DiagonalsPolicy.DIAGONAL_1FREE);
             NextTileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
             NextTileDirection expectedDir = NextTileDirection.UP_RIGHT;
             Assert.AreEqual(expectedDir, returnedDir);
         }
         [Test]
-        public void DijkstraMap_GetNextTileDirectionFromTile_Diagonals2Free()
+        public void DijkstraGrid_GetNextTileDirectionFromTile_Diagonals2Free()
         {
             int targetX = 6;
             int targetY = 10;
@@ -1781,13 +1781,13 @@ namespace GridToolkitTests
             int startY = 15;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DijkstraMap dirMap = Pathfinding.GenerateDijkstraMap(_grid, target, DiagonalsPolicy.DIAGONAL_2FREE);
+            DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, target, DiagonalsPolicy.DIAGONAL_2FREE);
             NextTileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
             NextTileDirection expectedDir = NextTileDirection.UP;
             Assert.AreEqual(expectedDir, returnedDir);
         }
         [Test]
-        public void DijkstraMap_Serialization()
+        public void DijkstraGrid_Serialization()
         {
             int targetX = 6;
             int targetY = 10;
@@ -1795,9 +1795,9 @@ namespace GridToolkitTests
             int startY = 17;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DijkstraMap dirMap = Pathfinding.GenerateDijkstraMap(_grid, target);
+            DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, target);
             byte[] serializedDirMap = dirMap.ToByteArray();
-            DijkstraMap deserializedDirMap = DijkstraMap.FromByteArray(_grid, serializedDirMap);
+            DijkstraGrid deserializedDirMap = DijkstraGrid.FromByteArray(_grid, serializedDirMap);
             Assert.AreEqual(dirMap._directionMap.Length, deserializedDirMap._directionMap.Length);
             for (int i = 0; i < deserializedDirMap._directionMap.Length; i++)
             {
@@ -1805,7 +1805,7 @@ namespace GridToolkitTests
             }
         }
         [Test]
-        public void DijkstraMap_GetDistanceToTarget()
+        public void DijkstraGrid_GetDistanceToTarget()
         {
             int targetX = 6;
             int targetY = 10;
@@ -1813,7 +1813,7 @@ namespace GridToolkitTests
             int startY = 10;
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DijkstraMap dirMap = Pathfinding.GenerateDijkstraMap(_grid, target);
+            DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, target);
             Assert.IsTrue(Mathf.Approximately(20f, dirMap.GetDistanceToTarget(_grid, start)));
         }
 

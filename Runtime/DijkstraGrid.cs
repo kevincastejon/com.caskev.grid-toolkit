@@ -8,17 +8,17 @@ using System.Threading.Tasks;
 namespace Caskev.GridToolkit
 {
     /// <summary>
-    /// A DijkstraMap holds both direction and distance data between a target tile and all the tiles that are accessible to this target.  
+    /// A DijkstraGrid holds both direction and distance data between a target tile and all the tiles that are accessible to this target.  
     /// Once generated, this object can contain all the paths and distance data that you need (ie: a tower defense game with a village core where all enemies run to, or a strategy game in which you would display the distance cost of the movement by hovering tiles with the cursor) and then use the paths with almost no performance cost.  
     /// There are also serialization methods to bake or save these objects to files and load them later with the deserialization methods.
     /// </summary>
-    public class DijkstraMap : DijkstraBase
+    public class DijkstraGrid : DijkstraBase
     {
-        internal DijkstraMap(NextTileDirection[] directionMap, float[] distanceMap, int target) : base(directionMap, distanceMap, target) { }
+        internal DijkstraGrid(NextTileDirection[] directionMap, float[] distanceMap, int target) : base(directionMap, distanceMap, target) { }
         /// <summary>
-        /// Returns the DijkstraMap serialized as a byte array.
+        /// Returns the DijkstraGrid serialized as a byte array.
         /// </summary>
-        /// <returns>A byte array representing the serialized DijkstraMap</returns>
+        /// <returns>A byte array representing the serialized DijkstraGrid</returns>
         public byte[] ToByteArray()
         {
             int bytesCount = sizeof(int) + sizeof(int) + ((sizeof(byte) + sizeof(float)) * _directionMap.Length);
@@ -38,11 +38,11 @@ namespace Caskev.GridToolkit
             return bytes;
         }
         /// <summary>
-        /// Returns the DijkstraMap serialized as a byte array.
+        /// Returns the DijkstraGrid serialized as a byte array.
         /// </summary>
         /// <param name="progress">An optional IProgress object to get the serialization progression</param>
         /// <param name="cancelToken">An optional CancellationToken object to cancel the serialization</param>
-        /// <returns>A byte array representing the serialized DijkstraMap</returns>
+        /// <returns>A byte array representing the serialized DijkstraGrid</returns>
         public Task<byte[]> ToByteArrayAsync(IProgress<float> progress = null, CancellationToken cancelToken = default)
         {
             Task<byte[]> task = Task.Run(() =>
@@ -71,12 +71,12 @@ namespace Caskev.GridToolkit
             return task;
         }
         /// <summary>
-        /// Returns a DijkstraMap from a byte array that has been serialized with the ToByteArray method.
+        /// Returns a DijkstraGrid from a byte array that has been serialized with the ToByteArray method.
         /// </summary>
         /// <param name="grid">The user grid</param>
         /// <param name="bytes">The serialized byte array</param>
-        /// <returns>The deserialized DijkstraMap</returns>
-        public static DijkstraMap FromByteArray<T>(T[,] grid, byte[] bytes) where T : IWeightedTile
+        /// <returns>The deserialized DijkstraGrid</returns>
+        public static DijkstraGrid FromByteArray<T>(T[,] grid, byte[] bytes) where T : IWeightedTile
         {
             if (grid == null)
             {
@@ -96,19 +96,19 @@ namespace Caskev.GridToolkit
                 distanceMap[i] = BitConverter.Int32BitsToSingle(BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex)));
                 byteIndex += sizeof(float);
             }
-            return new DijkstraMap(directionMap, distanceMap, target);
+            return new DijkstraGrid(directionMap, distanceMap, target);
         }
         /// <summary>
-        /// Returns a DijkstraMap from a byte array that has been serialized with the ToByteArray method.
+        /// Returns a DijkstraGrid from a byte array that has been serialized with the ToByteArray method.
         /// </summary>
         /// <param name="grid">The user grid</param>
         /// <param name="bytes">The serialized byte array</param>
         /// <param name="progress">An optional IProgress object to get the deserialization progression</param>
         /// <param name="cancelToken">An optional CancellationToken object to cancel the deserialization</param>
-        /// <returns>The deserialized DijkstraMap</returns>
-        public static Task<DijkstraMap> FromByteArrayAsync<T>(T[,] grid, byte[] bytes, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : IWeightedTile
+        /// <returns>The deserialized DijkstraGrid</returns>
+        public static Task<DijkstraGrid> FromByteArrayAsync<T>(T[,] grid, byte[] bytes, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : IWeightedTile
         {
-            Task<DijkstraMap> task = Task.Run(() =>
+            Task<DijkstraGrid> task = Task.Run(() =>
             {
                 if (grid == null)
                 {
@@ -133,7 +133,7 @@ namespace Caskev.GridToolkit
                     distanceMap[i] = BitConverter.Int32BitsToSingle(BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex)));
                     byteIndex += sizeof(float);
                 }
-                return new DijkstraMap(directionMap, distanceMap, target);
+                return new DijkstraGrid(directionMap, distanceMap, target);
             });
             return task;
         }

@@ -8,17 +8,17 @@ using System.Threading.Tasks;
 namespace Caskev.GridToolkit
 {
     /// <summary>
-    /// A DirectionMap holds direction data between a target tile and all the tiles that are accessible to this target.  
+    /// A DirectionGrid holds direction data between a target tile and all the tiles that are accessible to this target.  
     /// Once generated, this object can contain all the paths you need (ie: a tower defense game with a village core where all enemies run to) and then use the paths with almost no performance cost.  
     /// There are also serialization methods to bake or save these objects to files and load them later with the deserialization methods.
     /// </summary>
-    public class DirectionMap : DirectionBase
+    public class DirectionGrid : DirectionBase
     {
-        internal DirectionMap(NextTileDirection[] directionMap, int target) : base(directionMap, target) { }
+        internal DirectionGrid(NextTileDirection[] directionMap, int target) : base(directionMap, target) { }
         /// <summary>
-        /// Returns the DirectionMap serialized as a byte array.
+        /// Returns the DirectionGrid serialized as a byte array.
         /// </summary>
-        /// <returns>A byte array representing the serialized DirectionMap</returns>
+        /// <returns>A byte array representing the serialized DirectionGrid</returns>
         public byte[] ToByteArray()
         {
             int bytesCount = sizeof(int) + sizeof(int) + sizeof(byte) * _directionMap.Length;
@@ -36,11 +36,11 @@ namespace Caskev.GridToolkit
             return bytes;
         }
         /// <summary>
-        /// Returns the DirectionMap serialized as a byte array.
+        /// Returns the DirectionGrid serialized as a byte array.
         /// </summary>
         /// <param name="progress">An optional IProgress object to get the serialization progression</param>
         /// <param name="cancelToken">An optional CancellationToken object to cancel the serialization</param>
-        /// <returns>A byte array representing the serialized DirectionMap</returns>
+        /// <returns>A byte array representing the serialized DirectionGrid</returns>
         public Task<byte[]> ToByteArrayAsync(IProgress<float> progress = null, CancellationToken cancelToken = default)
         {
             Task<byte[]> task = Task.Run(() =>
@@ -67,12 +67,12 @@ namespace Caskev.GridToolkit
             return task;
         }
         /// <summary>
-        /// Returns a DirectionMap from a byte array that has been serialized with the ToByteArray method.
+        /// Returns a DirectionGrid from a byte array that has been serialized with the ToByteArray method.
         /// </summary>
         /// <param name="grid">The user grid</param>
         /// <param name="bytes">The serialized byte array</param>
-        /// <returns>The deserialized DirectionMap</returns>
-        public static DirectionMap FromByteArray<T>(T[,] grid, byte[] bytes) where T : ITile
+        /// <returns>The deserialized DirectionGrid</returns>
+        public static DirectionGrid FromByteArray<T>(T[,] grid, byte[] bytes) where T : ITile
         {
             if (grid == null)
             {
@@ -89,19 +89,19 @@ namespace Caskev.GridToolkit
                 directionMap[i] = (NextTileDirection)bytes[byteIndex];
                 byteIndex++;
             }
-            return new DirectionMap(directionMap, target);
+            return new DirectionGrid(directionMap, target);
         }
         /// <summary>
-        /// Returns a DirectionMap from a byte array that has been serialized with the ToByteArray method.
+        /// Returns a DirectionGrid from a byte array that has been serialized with the ToByteArray method.
         /// </summary>
         /// <param name="grid">The user grid</param>
         /// <param name="bytes">The serialized byte array</param>
         /// <param name="progress">An optional IProgress object to get the deserialization progression</param>
         /// <param name="cancelToken">An optional CancellationToken object to cancel the deserialization</param>
-        /// <returns>The deserialized DirectionMap</returns>
-        public static Task<DirectionMap> FromByteArrayAsync<T>(T[,] grid, byte[] bytes, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : ITile
+        /// <returns>The deserialized DirectionGrid</returns>
+        public static Task<DirectionGrid> FromByteArrayAsync<T>(T[,] grid, byte[] bytes, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : ITile
         {
-            Task<DirectionMap> task = Task.Run(() =>
+            Task<DirectionGrid> task = Task.Run(() =>
             {
                 if (grid == null)
                 {
@@ -123,7 +123,7 @@ namespace Caskev.GridToolkit
                     directionMap[i] = (NextTileDirection)bytes[byteIndex];
                     byteIndex++;
                 }
-                return new DirectionMap(directionMap, target);
+                return new DirectionGrid(directionMap, target);
             });
             return task;
         }
