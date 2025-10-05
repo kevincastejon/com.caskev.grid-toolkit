@@ -353,7 +353,7 @@ for (int i = 0; i < dijkstraField.AccessibleTilesCount; i++)
 #### Unique path
 
 If you only need a single path between two specific tiles, you can also generate that unique path.  
-But you should keep the other options in mind as it can be way more effective to generate all paths at once rather than generating a unique path again and again.
+But you should keep the other options in mind as it can be way more efficient to generate all paths at once rather than generating a unique path again and again.
 
 To generate a unique path, use the **GenerateUniquePath** method that needs the *grid*, the *target* tile and the *start** tile from which to calculate the path, as parameters.
 
