@@ -852,12 +852,11 @@ namespace Caskev.GridToolkit
                         Vector2Int nextTileDirection = GridUtils.NextNodeDirectionToVector2Int(directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), t.X, t.Y)]);
                         Vector2Int nextTileCoords = new(t.X + nextTileDirection.x, t.Y + nextTileDirection.y);
                         T nextTile = GridUtils.GetTile(grid, nextTileCoords.x, nextTileCoords.y);
-                        path.Add(nextTile);
+                        if (!GridUtils.TileEquals(nextTile, targetTile) || includeTarget)
+                        {
+                            path.Add(nextTile);
+                        }
                         t = nextTile;
-                    }
-                    if (includeTarget)
-                    {
-                        path.Add(t);
                     }
                     return path.ToArray();
                 }
@@ -949,12 +948,11 @@ namespace Caskev.GridToolkit
                             Vector2Int nextTileDirection = GridUtils.NextNodeDirectionToVector2Int(directionMap[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), t.X, t.Y)]);
                             Vector2Int nextTileCoords = new(t.X + nextTileDirection.x, t.Y + nextTileDirection.y);
                             T nextTile = GridUtils.GetTile(grid, nextTileCoords.x, nextTileCoords.y);
-                            path.Add(nextTile);
+                            if (!GridUtils.TileEquals(nextTile, targetTile) || includeTarget)
+                            {
+                                path.Add(nextTile);
+                            }
                             t = nextTile;
-                        }
-                        if (includeTarget)
-                        {
-                            path.Add(t);
                         }
                         return path.ToArray();
                     }
