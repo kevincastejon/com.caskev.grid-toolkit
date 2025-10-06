@@ -88,11 +88,11 @@ Each extraction method has a variant to check if a specific tile would be extrac
 
 - **IsTileInARectangle**
 ```cs
-bool isTileInARectangle = Extraction3D.IsTileInARectangle(grid, tile, centerTile, rectangleSize);
+bool isTileInARectangle = Extraction.IsTileInARectangle(grid, tile, centerTile, rectangleSize);
 ```
 - **IsTileInACircle**
 ```cs
-bool isTileInACircle = Extraction3D.IsTileInACircle(grid, tile, centerTile, radius);
+bool isTileInACircle = Extraction.IsTileInACircle(grid, tile, centerTile, radius);
 ```
 - **IsTileInACone**
 ```cs
