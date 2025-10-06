@@ -1,6 +1,6 @@
 # Grid Toolkit
 
-[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://kevincastejon.github.io/com.caskev.unity-grid-toolkit/)
+[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://kevincastejon.github.io/com.caskev.grid-toolkit/)
 
 Utilitary API to proceed operations on abstract grids such as tile [extraction](#extraction), [raycasting](#raycasting), and [pathfinding](#pathfinding).
 
