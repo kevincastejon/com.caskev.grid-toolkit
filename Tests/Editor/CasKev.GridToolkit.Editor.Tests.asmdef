@@ -1,5 +1,5 @@
 {
-    "name": "UnityGridToolkit.Editor.Tests",
+    "name": "CasKev.GridToolkit.Editor.Tests",
     "rootNamespace": "",
     "references": [
         "GUID:36caeb505e44ba34e853e1551e0be789"
