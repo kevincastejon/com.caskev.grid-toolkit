@@ -28,6 +28,16 @@
       "displayName": "Weighted Tiles",
       "description": "Install the 'Shared Assets' sample prior to this one. Minimalistic demo of weighted tiles usage.",
       "path": "Samples~/Weighted Tiles"
+    },
+    {
+      "displayName": "Tower Defense",
+      "description": "Install the 'Shared Assets' sample prior to this one. Minimalistic demo of a tower defense game using DijkstraGrid.",
+      "path": "Samples~/Tower Defense"
+    },
+    {
+      "displayName": "Tactical Strategy",
+      "description": "Install the 'Shared Assets' sample prior to this one. Minimalistic demo of a tactical strategy game using DijkstraField.",
+      "path": "Samples~/Tactical Strategy"
     }
   ],
   "author": {
