@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
-namespace GridToolkitWorkingProject.Demos.Shared
+namespace GridToolkitWorkingProject.Samples.Shared
 {
     [RequireComponent(typeof(Slider))]
     public class SliderFloatToStringConverter : MonoBehaviour

@@ -1,5 +1,5 @@
 using UnityEngine;
-namespace GridToolkitWorkingProject.Demos.Shared
+namespace GridToolkitWorkingProject.Samples.Shared
 {
     public class CameraControl : MonoBehaviour
     {

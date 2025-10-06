@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
-namespace GridToolkitWorkingProject.Demos.Shared
+namespace GridToolkitWorkingProject.Samples.Shared
 {
     public class BooleanEventInvertor : MonoBehaviour
     {

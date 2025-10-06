@@ -41,5 +41,19 @@ namespace Caskev.GridToolkit
             Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), flatIndex);
             return grid[coords.y, coords.x];
         }
+        /// <summary>
+        /// Returns the tiles that accessible to the target.
+        /// </summary>
+        /// <param name="grid">A two-dimensional array representing the grid of tiles.</param>
+        /// <returns>The tiles that accessible to the target.</returns>
+        public T[] GetAccessibleTiles<T>(T[,] grid) where T : IWeightedTile
+        {
+            T[] accessibleTiles = new T[AccessibleTilesCount];
+            for (int i = 0; i < _accessibleTilesFlatIndexes.Length; i++)
+            {
+                accessibleTiles[i] = GetAccessibleTile(grid, i);
+            }
+            return accessibleTiles;
+        }
     }
 }

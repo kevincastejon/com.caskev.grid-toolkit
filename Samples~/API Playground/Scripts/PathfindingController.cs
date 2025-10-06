@@ -8,7 +8,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace GridToolkitWorkingProject.Demos.APIPlayground
+namespace GridToolkitWorkingProject.Samples.APIPlayground
 {
     public class PathfindingController : MonoBehaviour
     {

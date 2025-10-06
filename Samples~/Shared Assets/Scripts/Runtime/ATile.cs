@@ -1,6 +1,6 @@
 using UnityEngine;
 using Caskev.GridToolkit;
-namespace GridToolkitWorkingProject.Demos.Shared
+namespace GridToolkitWorkingProject.Samples.Shared
 {
     public abstract class ATile : MonoBehaviour, ITile
     {

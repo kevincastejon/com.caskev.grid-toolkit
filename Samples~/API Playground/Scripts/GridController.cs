@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using Caskev.GridToolkit;
 
-namespace GridToolkitWorkingProject.Demos.APIPlayground
+namespace GridToolkitWorkingProject.Samples.APIPlayground
 {
     [DefaultExecutionOrder(-100)]
     public class GridController : MonoBehaviour

@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Caskev.GridToolkit;
 
-namespace GridToolkitWorkingProject.Demos.APIPlayground
+namespace GridToolkitWorkingProject.Samples.APIPlayground
 {
     public class ExtractionController : MonoBehaviour
     {

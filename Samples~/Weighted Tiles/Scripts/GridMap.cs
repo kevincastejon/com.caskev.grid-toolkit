@@ -7,7 +7,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace WeightedTilesDemo
+namespace GridToolkitWorkingProject.Samples.WeightedTiles
 {
     public class GridMap : MonoBehaviour
     {

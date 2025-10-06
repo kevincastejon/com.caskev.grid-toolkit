@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-namespace WeightedTilesDemo
+namespace GridToolkitWorkingProject.Samples.WeightedTiles
 {
     public enum TileState
     {

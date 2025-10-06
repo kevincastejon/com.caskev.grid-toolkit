@@ -30,7 +30,6 @@ namespace Caskev.GridToolkit
         /// <summary>
         /// Retrieves an accessible tile from the specified grid based on the given index.
         /// </summary>
-        /// <typeparam name="T">The type of the tile, which must implement <see cref="IWeightedTile"/>.</typeparam>
         /// <param name="grid">A two-dimensional array representing the grid of tiles.</param>
         /// <param name="index">The zero-based index of the accessible tile in the accessible tiles list <see cref="AccessibleTilesCount"/>.</param>
         /// <returns>The tile of type <typeparamref name="T"/> located at the specified index in the accessible tiles list.</returns>
@@ -39,6 +38,20 @@ namespace Caskev.GridToolkit
             int flatIndex = _accessibleTilesFlatIndexes[index];
             Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), flatIndex);
             return grid[coords.y, coords.x];
+        }
+        /// <summary>
+        /// Returns the tiles that accessible to the target.
+        /// </summary>
+        /// <param name="grid">A two-dimensional array representing the grid of tiles.</param>
+        /// <returns>The tiles that accessible to the target.</returns>
+        public T[] GetAccessibleTiles<T>(T[,] grid) where T : IWeightedTile
+        {
+            T[] accessibleTiles = new T[AccessibleTilesCount];
+            for (int i = 0; i < _accessibleTilesFlatIndexes.Length; i++)
+            {
+                accessibleTiles[i] = GetAccessibleTile(grid, i);
+            }
+            return accessibleTiles;
         }
     }
 }

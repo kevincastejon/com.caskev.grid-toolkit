@@ -1,6 +1,6 @@
 ﻿using Caskev.GridToolkit;
 
-namespace GridToolkitWorkingProject.Demos.APIPlayground
+namespace GridToolkitWorkingProject.Samples.APIPlayground
 {
     public class Tile : IWeightedTile
     {

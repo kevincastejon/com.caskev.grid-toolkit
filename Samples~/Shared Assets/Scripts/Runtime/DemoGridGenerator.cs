@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace GridToolkitWorkingProject.Demos.Shared
+namespace GridToolkitWorkingProject.Samples.Shared
 {
     public class DemoGridGenerator : MonoBehaviour
     {
