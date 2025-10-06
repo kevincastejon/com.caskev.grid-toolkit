@@ -4,7 +4,7 @@
 
 Utilitary API to proceed operations on abstract grids such as tile [extraction](#extraction), [raycasting](#raycasting), and [pathfinding](#pathfinding).
 
-[API References](https://kevincastejon.github.io/com.caskev.unity-grid-toolkit/namespaces.html)
+[API References](https://kevincastejon.github.io/com.caskev.grid-toolkit/namespaces.html)
 
 ---
 ## Usage
