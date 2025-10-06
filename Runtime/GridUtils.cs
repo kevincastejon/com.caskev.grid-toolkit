@@ -9,9 +9,22 @@ namespace Caskev.GridToolkit
     /// </summary>
     public static class GridUtils
     {
-        internal static Vector2Int NextNodeDirectionToVector2Int(NextTileDirection dir)
+        internal static Vector2Int GetCoordinatesFromFlatIndex(Vector2Int gridDimensions, int flatIndex)
         {
-            switch (dir)
+            return new Vector2Int(flatIndex % gridDimensions.y, flatIndex / gridDimensions.y);
+        }
+        internal static int GetFlatIndexFromCoordinates(Vector2Int gridDimensions, int x, int y)
+        {
+            return y * gridDimensions.y + x;
+        }
+        /// <summary>
+        /// Converts a NextTileDirection to a Vector2Int.
+        /// </summary>
+        /// <param name="direction">The NextTileDirection enumeration case</param>
+        /// <returns>The corresponding Vector2Int</returns>
+        public static Vector2Int NextNodeDirectionToVector2Int(NextTileDirection direction)
+        {
+            switch (direction)
             {
                 case NextTileDirection.LEFT:
                     return Vector2Int.left;
@@ -34,14 +47,6 @@ namespace Caskev.GridToolkit
                 default:
                     return Vector2Int.zero;
             }
-        }
-        internal static Vector2Int GetCoordinatesFromFlatIndex(Vector2Int gridDimensions, int flatIndex)
-        {
-            return new Vector2Int(flatIndex % gridDimensions.y, flatIndex / gridDimensions.y);
-        }
-        internal static int GetFlatIndexFromCoordinates(Vector2Int gridDimensions, int x, int y)
-        {
-            return y * gridDimensions.y + x;
         }
         /// <summary>
         /// Gets the direction between two adjacent tiles.
