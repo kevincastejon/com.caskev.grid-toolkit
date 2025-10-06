@@ -2,7 +2,7 @@
   "name": "com.caskev.unity-grid-toolkit",
   "version": "0.5.0",
   "displayName": "Unity Grid Toolkit",
-  "description": "Utilitary API to proceed operations on abstract grids such as tile extraction, raycasting, and pathfinding.",
+  "description": "Utilitary API to proceed operations on abstract grids. Contains classes and methods for extraction, raycasting, and pathfinding.",
   "keywords": [
     "grid",
     "bidimensional",
@@ -21,8 +21,13 @@
     },
     {
       "displayName": "API Playground",
-      "description": "Install the 'Shared Assets' sample prior to this one. Explore the API through a comprehensive UI",
+      "description": "Install the 'Shared Assets' sample prior to this one. Explore the API through an interactive UI.",
       "path": "Samples~/API Playground"
+    },
+    {
+      "displayName": "Weighted Tiles",
+      "description": "Install the 'Shared Assets' sample prior to this one. Minimalistic demo of weighted tiles usage.",
+      "path": "Samples~/Weighted Tiles"
     }
   ],
   "author": {
