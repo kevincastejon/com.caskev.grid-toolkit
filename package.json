@@ -1,7 +1,7 @@
 {
-  "name": "com.caskev.unity-grid-toolkit",
+  "name": "com.caskev.grid-toolkit",
   "version": "0.5.0",
-  "displayName": "Unity Grid Toolkit",
+  "displayName": "Grid Toolkit",
   "description": "Utilitary API to proceed operations on abstract grids such as tile extraction, raycasting, and pathfinding.",
   "keywords": [
     "grid",
@@ -11,8 +11,8 @@
     "raycasting",
     "pathfinding"
   ],
-  "documentationUrl": "https://kevincastejon.github.io/com.caskev.unity-grid-toolkit/index.html",
-  "changelogUrl": "https://github.com/kevincastejon/com.caskev.unity-grid-toolkit/blob/main/CHANGELOG.md",
+  "documentationUrl": "https://kevincastejon.github.io/com.caskev.grid-toolkit/index.html",
+  "changelogUrl": "https://github.com/kevincastejon/com.caskev.grid-toolkit/blob/main/CHANGELOG.md",
   "samples": [
     {
       "displayName": "Shared Assets",
