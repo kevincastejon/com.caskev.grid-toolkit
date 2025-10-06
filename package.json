@@ -1,6 +1,6 @@
 {
   "name": "com.caskev.grid-toolkit",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "displayName": "Grid Toolkit",
   "description": "Utilitary API to proceed operations on abstract grids such as tile extraction, raycasting, and pathfinding.",
   "keywords": [

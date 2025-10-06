@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.6.0] - 2025-10-06
+### Added
+- GetAccessibleTiles methods for DirectionField and DijkstraField.
+- WeightedTiles, TowerDefense and TacticalStrategy samples.
+
 ## [0.5.0] - 2025-10-06
 ### Added
 - Unique path generation feature (with A* algorythm)
