@@ -504,12 +504,8 @@ namespace Caskev.GridToolkit
         /// <param name="targetTile">The target tile for the paths calculation</param>
         /// <param name="diagonalsPolicy">The diagonal movements policy for the paths calculation</param>
         /// <returns>A DirectionGrid object</returns>
-        public static DirectionAtlas GenerateDirectionAtlas<T>(T[,] grid, T targetTile, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE) where T : ITile
+        public static DirectionAtlas GenerateDirectionAtlas<T>(T[,] grid, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE) where T : ITile
         {
-            if (targetTile == null || !targetTile.IsWalkable)
-            {
-                throw new Exception("Do not try to generate a DirectionGrid with an unwalkable (or null) tile as the target");
-            }
             int width = grid.GetLength(0);
             int height = grid.GetLength(1);
             Vector2Int gridDimensions = new Vector2Int(width, height);
@@ -517,7 +513,12 @@ namespace Caskev.GridToolkit
             DirectionGrid[] directionGrid = new DirectionGrid[totalSize];
             for (int i = 0; i < directionGrid.Length; i++)
             {
-                directionGrid[i] = GenerateDirectionGrid(grid, targetTile, diagonalsPolicy);
+                Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(gridDimensions, i);
+                T tile = GridUtils.GetTile(grid, coords.x, coords.y);
+                if (tile.IsWalkable)
+                {
+                    directionGrid[i] = GenerateDirectionGrid(grid, tile, diagonalsPolicy);
+                }
             }
             return new DirectionAtlas(directionGrid);
         }
@@ -534,14 +535,10 @@ namespace Caskev.GridToolkit
         /// <param name="progress">An optional IProgress object to get the generation progression</param>
         /// <param name="cancelToken">An optional CancellationToken object to cancel the generation</param>
         /// <returns>A DirectionGrid object</returns>
-        public static Task<DirectionAtlas> GenerateDirectionAtlasAsync<T>(T[,] grid, T targetTile, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : ITile
+        public static Task<DirectionAtlas> GenerateDirectionAtlasAsync<T>(T[,] grid, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : ITile
         {
             Task<DirectionAtlas> task = Task.Run(() =>
             {
-                if (targetTile == null || !targetTile.IsWalkable)
-                {
-                    throw new Exception("Do not try to generate a DirectionGrid with an unwalkable (or null) tile as the target");
-                }
                 int width = grid.GetLength(0);
                 int height = grid.GetLength(1);
                 Vector2Int gridDimensions = new Vector2Int(width, height);
@@ -549,7 +546,12 @@ namespace Caskev.GridToolkit
                 DirectionGrid[] directionGrid = new DirectionGrid[totalSize];
                 for (int i = 0; i < directionGrid.Length; i++)
                 {
-                    directionGrid[i] = GenerateDirectionGrid(grid, targetTile, diagonalsPolicy);
+                    Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(gridDimensions, i);
+                    T tile = GridUtils.GetTile(grid, coords.x, coords.y);
+                    if (tile.IsWalkable)
+                    {
+                        directionGrid[i] = GenerateDirectionGrid(grid, tile, diagonalsPolicy);
+                    }
                     if (cancelToken.IsCancellationRequested)
                     {
                         return null;
@@ -717,12 +719,8 @@ namespace Caskev.GridToolkit
         /// <param name="progress">An optional IProgress object to get the generation progression</param>
         /// <param name="cancelToken">An optional CancellationToken object to cancel the generation</param>
         /// <returns>A DirectionGrid object</returns>
-        public static DijkstraAtlas GenerateDijkstraAtlas<T>(T[,] grid, T targetTile, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE, float diagonalsWeight = 1.414f) where T : IWeightedTile
+        public static DijkstraAtlas GenerateDijkstraAtlas<T>(T[,] grid, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE, float diagonalsWeight = 1.414f) where T : IWeightedTile
         {
-            if (targetTile == null || !targetTile.IsWalkable)
-            {
-                throw new Exception("Do not try to generate a DirectionGrid with an unwalkable (or null) tile as the target");
-            }
             int width = grid.GetLength(0);
             int height = grid.GetLength(1);
             Vector2Int gridDimensions = new Vector2Int(width, height);
@@ -730,7 +728,12 @@ namespace Caskev.GridToolkit
             DijkstraGrid[] dijkstraGrid = new DijkstraGrid[totalSize];
             for (int i = 0; i < dijkstraGrid.Length; i++)
             {
-                dijkstraGrid[i] = GenerateDijkstraGrid(grid, targetTile, diagonalsPolicy);
+                Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(gridDimensions, i);
+                T tile = GridUtils.GetTile(grid, coords.x, coords.y);
+                if (tile.IsWalkable)
+                {
+                    dijkstraGrid[i] = GenerateDijkstraGrid(grid, tile, diagonalsPolicy);
+                }
             }
             return new DijkstraAtlas(dijkstraGrid);
         }
@@ -746,14 +749,10 @@ namespace Caskev.GridToolkit
         /// <param name="progress">An optional IProgress object to get the generation progression</param>
         /// <param name="cancelToken">An optional CancellationToken object to cancel the generation</param>
         /// <returns>A DirectionGrid object</returns>
-        public static Task<DijkstraAtlas> GenerateDijkstraAtlasAsync<T>(T[,] grid, T targetTile, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE, float diagonalsWeight = 1.414f, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : IWeightedTile
+        public static Task<DijkstraAtlas> GenerateDijkstraAtlasAsync<T>(T[,] grid, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE, float diagonalsWeight = 1.414f, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : IWeightedTile
         {
             Task<DijkstraAtlas> task = Task.Run(() =>
             {
-                if (targetTile == null || !targetTile.IsWalkable)
-                {
-                    throw new Exception("Do not try to generate a DirectionGrid with an unwalkable (or null) tile as the target");
-                }
                 int width = grid.GetLength(0);
                 int height = grid.GetLength(1);
                 Vector2Int gridDimensions = new Vector2Int(width, height);
@@ -761,7 +760,12 @@ namespace Caskev.GridToolkit
                 DijkstraGrid[] dijkstraGrid = new DijkstraGrid[totalSize];
                 for (int i = 0; i < dijkstraGrid.Length; i++)
                 {
-                    dijkstraGrid[i] = GenerateDijkstraGrid(grid, targetTile, diagonalsPolicy);
+                    Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(gridDimensions, i);
+                    T tile = GridUtils.GetTile(grid, coords.x, coords.y);
+                    if (tile.IsWalkable)
+                    {
+                        dijkstraGrid[i] = GenerateDijkstraGrid(grid, tile, diagonalsPolicy);
+                    }
                     if (cancelToken.IsCancellationRequested)
                     {
                         return null;

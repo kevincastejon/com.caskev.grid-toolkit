@@ -29,7 +29,7 @@ public class DirectionAtlas
     {
         if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
         {
-            throw new Exception("Do not call this method with non-walkable (or null) tiles");
+            return false;
         }
         DirectionGrid directionGrid = _directionAtlas[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), destinationTile.X, destinationTile.Y)];
         return directionGrid.IsTileAccessible(grid, startTile);
