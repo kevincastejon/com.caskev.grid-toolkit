@@ -1,0 +1,243 @@
+using Caskev.GridToolkit;
+using System;
+using System.Buffers.Binary;
+using System.Threading;
+using System.Threading.Tasks;
+/// <summary>
+/// Asynchronously generates a DijkstraAtlas that holds DijkstraGrid objects for each tile.  
+/// Once generated, this object contains all the paths and distances between any tiles on the grid, with almost no performance cost.
+/// There are also serialization methods to bake or save these objects to files and load them later with the deserialization methods.
+/// Be carefull as the memory usage can be huge depending on the grid size.
+/// </summary>
+public class DijkstraAtlas
+{
+    internal readonly DijkstraGrid[] _directionAtlas;
+
+    internal DijkstraAtlas(DijkstraGrid[] directionAtlas)
+    {
+        _directionAtlas = directionAtlas;
+    }
+
+    /// <summary>
+    /// Is there a path between two tiles.
+    /// </summary>
+    /// <param name="grid">The user grid</param>
+    /// <param name="startTile">The start tile</param>
+    /// <param name="destinationTile">The destination tile</param>
+    /// <returns>A boolean value</returns>
+    public bool HasPath<T>(T[,] grid, T startTile, T destinationTile) where T : IWeightedTile
+    {
+        if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
+        {
+            throw new Exception("Do not call this method with non-walkable (or null) tiles");
+        }
+        DijkstraGrid dijkstraGrid = _directionAtlas[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), destinationTile.X, destinationTile.Y)];
+        return dijkstraGrid.IsTileAccessible(grid, startTile);
+    }
+    /// <summary>
+    /// Get the next tile on the path between a start tile and a destination tile.
+    /// </summary>
+    /// <param name="grid">The user grid</param>
+    /// <param name="startTile">The start tile</param>
+    /// <param name="destinationTile">The destination tile</param>
+    /// <returns>A tile object</returns>
+    public bool GetNextTileFromTile<T>(T[,] grid, T startTile, T destinationTile, out T nextTile) where T : IWeightedTile
+    {
+        if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
+        {
+            throw new Exception("Do not call this method with non-walkable (or null) tiles");
+        }
+        DijkstraGrid dijkstraGrid = _directionAtlas[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), destinationTile.X, destinationTile.Y)];
+        if (!dijkstraGrid.IsTileAccessible(grid, startTile))
+        {
+            nextTile = default;
+            return false;
+        }
+        nextTile = dijkstraGrid.GetNextTileFromTile(grid, startTile);
+        return true;
+    }
+    /// <summary>
+    /// Get the next tile on the path between a start tile and a destination tile.
+    /// </summary>
+    /// <param name="grid">The user grid</param>
+    /// <param name="startTile">The start tile</param>
+    /// <param name="destinationTile">The destination tile</param>
+    /// <returns>A Vector2Int direction</returns>
+    public NextTileDirection GetNextTileDirectionFromTile<T>(T[,] grid, T startTile, T destinationTile) where T : IWeightedTile
+    {
+        if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
+        {
+            throw new Exception("Do not call this method with non-walkable (or null) tiles");
+        }
+        DijkstraGrid dijkstraGrid = _directionAtlas[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), destinationTile.X, destinationTile.Y)];
+        return dijkstraGrid.GetNextTileDirectionFromTile(grid, startTile);
+    }
+    /// <summary>
+    /// Get the distance between two tiles.
+    /// </summary>
+    /// <param name="grid">The user grid</param>
+    /// <param name="startTile">The start tile</param>
+    /// <param name="destinationTile">The destination tile</param>
+    /// <returns>The distance between the two tiles.</returns>
+    public float GetDistanceBetweenTiles<T>(T[,] grid, T startTile, T destinationTile) where T : IWeightedTile
+    {
+        if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
+        {
+            throw new Exception("Do not call this method with non-walkable (or null) tiles");
+        }
+        DijkstraGrid dijkstraGrid = _directionAtlas[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), destinationTile.X, destinationTile.Y)];
+        return dijkstraGrid.GetDistanceToTarget(grid, startTile);
+    }
+    /// <summary>
+    /// Get all the tiles on the path from a start tile to a destination tile. If there is no path between the two tiles then an empty array will be returned.
+    /// </summary>
+    /// <param name="grid">The user grid</param>
+    /// <param name="startTile">The start tile</param>
+    /// <param name="destinationTile">The destination tile</param>
+    /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
+    /// <param name="includeDestination">Include the target tile into the resulting array or not</param>
+    /// <returns>An array of tiles</returns>
+    public T[] GetPath<T>(T[,] grid, T startTile, T destinationTile, bool includeStart = true, bool includeDestination = true) where T : IWeightedTile
+    {
+        if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
+        {
+            throw new Exception("Do not call this method with non-walkable (or null) tiles");
+        }
+        DijkstraGrid dijkstraGrid = _directionAtlas[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), destinationTile.X, destinationTile.Y)];
+        if (!dijkstraGrid.IsTileAccessible(grid, startTile))
+        {
+            return new T[0];
+        }
+        return dijkstraGrid.GetPathToTarget(grid, startTile, includeStart, includeDestination);
+    }
+    /// <summary>
+    /// Serializes a DijkstraAtlas to a byte array. 
+    /// </summary>
+    /// <returns>The serialized DijkstraAtlas.</returns>
+    public byte[] ToByteArray()
+    {
+        int bytesCount = sizeof(int) + _directionAtlas.Length * ((sizeof(byte) + sizeof(float)) * _directionAtlas.Length);
+        byte[] bytes = new byte[bytesCount];
+        int byteIndex = 0;
+        BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _directionAtlas.Length);
+        byteIndex += sizeof(int);
+        for (int i = 0; i < _directionAtlas.Length; i++)
+        {
+            for (int j = 0; j < _directionAtlas.Length; j++)
+            {
+                bytes[byteIndex] = (byte)_directionAtlas[i]._directionGrid[j];
+                byteIndex++;
+                BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), BitConverter.SingleToInt32Bits(_directionAtlas[i]._distanceGrid[j]));
+                byteIndex += sizeof(float);
+            }
+        }
+        return bytes;
+    }
+    /// <summary>
+    /// Asynchronously serializes a DijkstraAtlas to a byte array. 
+    /// </summary>
+    /// <param name="progress">An optional IProgress object to get the deserialization progression</param>
+    /// <param name="cancelToken">An optional CancellationToken object to cancel the serialization</param>
+    /// <returns>The serialized DijkstraAtlas.</returns>
+    public Task<byte[]> ToByteArrayAsync<T>(IProgress<float> progress = null, CancellationToken cancelToken = default) where T : IWeightedTile
+    {
+        Task<byte[]> task = Task.Run(() =>
+        {
+            int bytesCount = sizeof(int) + _directionAtlas.Length * ((sizeof(byte) + sizeof(float)) * _directionAtlas.Length);
+            byte[] bytes = new byte[bytesCount];
+            int byteIndex = 0;
+            BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _directionAtlas.Length);
+            byteIndex += sizeof(int);
+            for (int i = 0; i < _directionAtlas.Length; i++)
+            {
+                if (cancelToken.IsCancellationRequested)
+                {
+                    return null;
+                }
+                progress.Report((float)i / _directionAtlas.Length);
+                for (int j = 0; j < _directionAtlas.Length; j++)
+                {
+                    bytes[byteIndex] = (byte)_directionAtlas[i]._directionGrid[j];
+                    byteIndex++;
+                    BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), BitConverter.SingleToInt32Bits(_directionAtlas[i]._distanceGrid[j]));
+                    byteIndex += sizeof(float);
+                }
+            }
+            return bytes;
+        });
+        return task;
+    }
+    /// <summary>
+    /// Deserializes a DijkstraAtlas from a byte array. 
+    /// </summary>
+    /// <param name="grid">The user grid.</param>
+    /// <param name="bytes">The serialized DijkstraAtlas.</param>
+    /// <returns>The deserialized DijkstraAtlas.</returns>
+    public static DijkstraAtlas FromByteArray<T>(T[,] grid, byte[] bytes) where T : IWeightedTile
+    {
+            if (grid == null)
+            {
+                throw new ArgumentException("The grid cannot be null");
+            }
+            int byteIndex = 0;
+            int count = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
+            byteIndex += sizeof(int);
+            DijkstraGrid[] directionAtlas = new DijkstraGrid[count];
+            for (int i = 0; i < count; i++)
+            {
+                NextTileDirection[] dijkstraGrid = new NextTileDirection[count];
+                float[] distanceGrid = new float[count];
+                for (int j = 0; j < count; j++)
+                {
+                    dijkstraGrid[i] = (NextTileDirection)bytes[byteIndex];
+                    byteIndex++;
+                    distanceGrid[i] = BitConverter.Int32BitsToSingle(BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex)));
+                    byteIndex += sizeof(float);
+                }
+                directionAtlas[i] = new DijkstraGrid(dijkstraGrid, distanceGrid, i);
+            }
+            return new DijkstraAtlas(directionAtlas);
+    }
+    /// <summary>
+    /// Asynchronously deserializes a DijkstraAtlas from a byte array. 
+    /// </summary>
+    /// <param name="grid">The user grid.</param>
+    /// <param name="bytes">The serialized DijkstraAtlas.</param>
+    /// <param name="progress">An optional IProgress object to get the deserialization progression</param>
+    /// <param name="cancelToken">An optional CancellationToken object to cancel the deserialization</param>
+    /// <returns>The deserialized DijkstraAtlas.</returns>
+    public static Task<DijkstraAtlas> FromByteArrayAsync<T>(T[,] grid, byte[] bytes, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : IWeightedTile
+    {
+        Task<DijkstraAtlas> task = Task.Run(() =>
+        {
+            if (grid == null)
+            {
+                throw new ArgumentException("The grid cannot be null");
+            }
+            int byteIndex = 0;
+            int count = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
+            byteIndex += sizeof(int);
+            DijkstraGrid[] directionAtlas = new DijkstraGrid[count];
+            for (int i = 0; i < count; i++)
+            {
+                if (cancelToken.IsCancellationRequested)
+                {
+                    return null;
+                }
+                progress.Report((float)i / count);
+                NextTileDirection[] dijkstraGrid = new NextTileDirection[count];
+                float[] distanceGrid = new float[count];
+                for (int j = 0; j < count; j++)
+                {
+                    dijkstraGrid[i] = (NextTileDirection)bytes[byteIndex];
+                    byteIndex++;
+                    distanceGrid[i] = BitConverter.Int32BitsToSingle(BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex)));
+                    byteIndex += sizeof(float);
+                }
+                directionAtlas[i] = new DijkstraGrid(dijkstraGrid, distanceGrid, i);
+            }
+            return new DijkstraAtlas(directionAtlas);
+        });
+        return task;
+    }
+}

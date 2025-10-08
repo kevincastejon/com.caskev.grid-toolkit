@@ -1183,7 +1183,7 @@ namespace GridToolkitTests
                 _dirs['→'], _dirs['↑'], _dirs['↑'], _dirs['→'], _dirs['→'], _dirs['→'], _dirs['↑'], _dirs['↑'], _dirs['↑'], _dirs['←'], _dirs['↑'], _dirs['↑'], _dirs['↑'], _dirs['0'], _dirs['↑'], _dirs['↑'], _dirs['←'], _dirs['↑'], _dirs['←'], _dirs['↑'], _dirs['←'], _dirs['↑'], _dirs['←'], _dirs['↑'], _dirs['↑'],
                 _dirs['↑'], _dirs['↑'], _dirs['→'], _dirs['→'], _dirs['→'], _dirs['↑'], _dirs['↑'], _dirs['↑'], _dirs['↑'], _dirs['←'], _dirs['↑'], _dirs['↑'], _dirs['↑'], _dirs['0'], _dirs['↑'], _dirs['←'], _dirs['←'], _dirs['←'], _dirs['←'], _dirs['↑'], _dirs['←'], _dirs['↑'], _dirs['←'], _dirs['↑'], _dirs['↑'],
             };
-            float[] expectedDistanceMap = new float[20 * 25]
+            float[] expectedDistanceGrid = new float[20 * 25]
             {
                 32f       , 0f        , 20f       , 19f       , 18f       , 17f       , 16f       , 15f       , 14f       , 13f       , 14f       , 15f       , 16f       , 17f       , 18f       , 19f       , 20f       , 0f        , 22f       , 23f       , 24f       , 25f       , 26f       , 27f       , 28f       ,
                 31f       , 0f        , 19f       , 18f       , 17f       , 16f       , 15f       , 14f       , 13f       , 12f       , 13f       , 14f       , 15f       , 16f       , 17f       , 18f       , 19f       , 0f        , 21f       , 22f       , 23f       , 24f       , 25f       , 26f       , 27f       ,
@@ -1209,9 +1209,9 @@ namespace GridToolkitTests
             for (int i = 0; i < dirMap._directionGrid.Length; i++)
             {
                 NextTileDirection actualDir = dirMap._directionGrid[i];
-                float actualDistance = dirMap._distanceMap[i];
+                float actualDistance = dirMap._distanceGrid[i];
                 Assert.AreEqual(expectedDirMap[i], actualDir, $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDirMap[i]} but got {actualDir}");
-                Assert.IsTrue(Mathf.Approximately(expectedDistanceMap[i], actualDistance), $"Distance for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDistanceMap[i]} but got {actualDistance}");
+                Assert.IsTrue(Mathf.Approximately(expectedDistanceGrid[i], actualDistance), $"Distance for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDistanceGrid[i]} but got {actualDistance}");
             }
         }
         [Test]
@@ -1243,7 +1243,7 @@ namespace GridToolkitTests
                 _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↑'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['0'], _dirs['↑'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'],
                 _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↑'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['0'], _dirs['↑'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'],
             };
-            float[] expectedDistanceMap = new float[20 * 25]
+            float[] expectedDistanceGrid = new float[20 * 25]
             {
                 21.8995f  , 0f        , 14.72793f , 14.31371f , 13.8995f  , 13.48528f , 13.07107f , 12.65686f , 12.24264f , 11.82843f , 12.24264f , 12.65686f , 13.07107f , 13.48528f , 13.8995f  , 14.31371f , 14.72793f , 0f        , 18.48528f , 18.8995f  , 19.31371f , 19.72792f , 20.14214f , 21.14214f , 22.14214f ,
                 20.8995f  , 0f        , 14.31371f , 13.31371f , 12.8995f  , 12.48528f , 12.07107f , 11.65686f , 11.24264f , 10.82843f , 11.24264f , 12.24264f , 12.07107f , 12.48528f , 12.8995f  , 13.31371f , 13.72793f , 0f        , 17.48528f , 17.8995f  , 18.31371f , 18.72793f , 19.72792f , 20.72792f , 21.72792f ,
@@ -1269,9 +1269,9 @@ namespace GridToolkitTests
             for (int i = 0; i < dirMap._directionGrid.Length; i++)
             {
                 NextTileDirection actualDir = dirMap._directionGrid[i];
-                float actualDistance = dirMap._distanceMap[i];
+                float actualDistance = dirMap._distanceGrid[i];
                 Assert.AreEqual(expectedDirMap[i], actualDir, $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDirMap[i]} but got {actualDir}");
-                Assert.IsTrue(Mathf.Abs(expectedDistanceMap[i] - actualDistance) < 0.01f, $"Distance for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDistanceMap[i]} but got {actualDistance}");
+                Assert.IsTrue(Mathf.Abs(expectedDistanceGrid[i] - actualDistance) < 0.01f, $"Distance for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDistanceGrid[i]} but got {actualDistance}");
             }
         }
         [Test]
@@ -1303,7 +1303,7 @@ namespace GridToolkitTests
                 _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↑'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['0'], _dirs['↑'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'],
                 _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↑'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['0'], _dirs['↑'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'],
             };
-            float[] expectedDistanceMap = new float[20 * 25]
+            float[] expectedDistanceGrid = new float[20 * 25]
             {
                 28.48528000f, 0f        , 14.72793000f, 14.31371000f, 13.89950000f, 13.48528000f, 13.07107000f, 12.65686000f, 12.24264000f, 11.82843000f, 12.24264000f, 12.65686000f, 13.07107000f, 13.48528000f, 13.89950000f, 14.31371000f, 14.72793000f, 0f        , 18.48528000f, 18.89950000f, 19.31371000f, 19.72792000f, 20.14214000f, 21.14214000f, 22.14214000f,
                 27.48528000f, 0f        , 14.31371000f, 13.31371000f, 12.89950000f, 12.48528000f, 12.07107000f, 11.65686000f, 11.24264000f, 10.82843000f, 11.24264000f, 12.24264000f, 12.07107000f, 12.48528000f, 12.89950000f, 13.31371000f, 13.72793000f, 0f        , 17.48528000f, 17.89950000f, 18.31371000f, 18.72793000f, 19.72792000f, 20.72792000f, 21.72792000f,
@@ -1329,9 +1329,9 @@ namespace GridToolkitTests
             for (int i = 0; i < dirMap._directionGrid.Length; i++)
             {
                 NextTileDirection actualDir = dirMap._directionGrid[i];
-                float actualDistance = dirMap._distanceMap[i];
+                float actualDistance = dirMap._distanceGrid[i];
                 Assert.AreEqual(expectedDirMap[i], actualDir, $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDirMap[i]} but got {actualDir}");
-                Assert.IsTrue(Mathf.Abs(expectedDistanceMap[i] - actualDistance) < 0.01f, $"Distance for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDistanceMap[i]} but got {actualDistance}");
+                Assert.IsTrue(Mathf.Abs(expectedDistanceGrid[i] - actualDistance) < 0.01f, $"Distance for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDistanceGrid[i]} but got {actualDistance}");
             }
         }
         [Test]
@@ -1363,7 +1363,7 @@ namespace GridToolkitTests
                 _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↑'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['0'], _dirs['↑'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'],
                 _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↑'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['0'], _dirs['↑'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'],
             };
-            float[] expectedDistanceMap = new float[20 * 25]
+            float[] expectedDistanceGrid = new float[20 * 25]
             {
                 29.65685000f, 0f        , 15.89950000f, 14.89950000f, 14.48528000f, 14.07107000f, 13.65686000f, 13.24264000f, 12.82843000f, 12.41421000f, 12.82843000f, 13.82843000f, 14.24264000f, 14.65686000f, 15.07107000f, 15.48528000f, 15.89950000f, 0f        , 20.24264000f, 20.65685000f, 21.07107000f, 21.48528000f, 21.89949000f, 22.31371000f, 23.31371000f,
                 28.65685000f, 0f        , 15.48528000f, 14.48528000f, 13.48528000f, 13.07107000f, 12.65686000f, 12.24264000f, 11.82843000f, 11.41421000f, 12.41421000f, 13.41421000f, 13.24264000f, 13.65686000f, 14.07107000f, 14.48528000f, 14.89950000f, 0f        , 19.24264000f, 19.65685000f, 20.07107000f, 20.48528000f, 20.89950000f, 21.89949000f, 22.89949000f,
@@ -1389,9 +1389,9 @@ namespace GridToolkitTests
             for (int i = 0; i < dirMap._directionGrid.Length; i++)
             {
                 NextTileDirection actualDir = dirMap._directionGrid[i];
-                float actualDistance = dirMap._distanceMap[i];
+                float actualDistance = dirMap._distanceGrid[i];
                 Assert.AreEqual(expectedDirMap[i], actualDir, $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDirMap[i]} but got {actualDir}");
-                Assert.IsTrue(Mathf.Abs(expectedDistanceMap[i] - actualDistance) < 0.01f, $"Distance for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDistanceMap[i]} but got {actualDistance}");
+                Assert.IsTrue(Mathf.Abs(expectedDistanceGrid[i] - actualDistance) < 0.01f, $"Distance for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDistanceGrid[i]} but got {actualDistance}");
             }
         }
         [Test]
@@ -1851,7 +1851,7 @@ namespace GridToolkitTests
                 _dirs['→'], _dirs['↑'], _dirs['↑'], _dirs['→'], _dirs['→'], _dirs['→'], _dirs['↑'], _dirs['↑'], _dirs['↑'], _dirs['←'], _dirs['↑'], _dirs['↑'], _dirs['↑'], _dirs['0'], _dirs['↑'], _dirs['↑'], _dirs['←'], _dirs['↑'], _dirs['←'], _dirs['0'], _dirs['0'], _dirs['0'], _dirs['0'], _dirs['0'], _dirs['0'],
                 _dirs['↑'], _dirs['↑'], _dirs['→'], _dirs['→'], _dirs['→'], _dirs['↑'], _dirs['↑'], _dirs['↑'], _dirs['↑'], _dirs['←'], _dirs['↑'], _dirs['↑'], _dirs['↑'], _dirs['0'], _dirs['↑'], _dirs['←'], _dirs['←'], _dirs['←'], _dirs['0'], _dirs['0'], _dirs['0'], _dirs['0'], _dirs['0'], _dirs['0'], _dirs['0'],
             };
-            float[] expectedDistanceMap = new float[20 * 25]
+            float[] expectedDistanceGrid = new float[20 * 25]
             {
                 0f        , 0f        , 20f       , 19f       , 18f       , 17f       , 16f       , 15f       , 14f       , 13f       , 14f       , 15f       , 16f       , 17f       , 18f       , 19f       , 20f       , 0f        , 0f        , 0f        , 0f        , 0f        , 0f        , 0f        , 0f        ,
                 0f        , 0f        , 19f       , 18f       , 17f       , 16f       , 15f       , 14f       , 13f       , 12f       , 13f       , 14f       , 15f       , 16f       , 17f       , 18f       , 19f       , 0f        , 0f        , 0f        , 0f        , 0f        , 0f        , 0f        , 0f        ,
@@ -1877,9 +1877,9 @@ namespace GridToolkitTests
             for (int i = 0; i < dirMap._directionGrid.Length; i++)
             {
                 NextTileDirection actualDir = dirMap._directionGrid[i];
-                float actualDistance = dirMap._distanceMap[i];
+                float actualDistance = dirMap._distanceGrid[i];
                 Assert.AreEqual(expectedDirMap[i], actualDir, $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDirMap[i]} but got {actualDir}");
-                Assert.IsTrue(Mathf.Approximately(expectedDistanceMap[i], actualDistance), $"Distance for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDistanceMap[i]} but got {actualDistance}");
+                Assert.IsTrue(Mathf.Approximately(expectedDistanceGrid[i], actualDistance), $"Distance for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDistanceGrid[i]} but got {actualDistance}");
             }
         }
         [Test]
@@ -1912,7 +1912,7 @@ namespace GridToolkitTests
                 _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↑'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['0'], _dirs['↑'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['0'], _dirs['0'], _dirs['0'],
                 _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↑'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['0'], _dirs['↑'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['0'], _dirs['0'], _dirs['0'],
             };
-            float[] expectedDistanceMap = new float[20 * 25]
+            float[] expectedDistanceGrid = new float[20 * 25]
             {
                 0f        , 0f        , 14.72793f , 14.31371f , 13.8995f  , 13.48528f , 13.07107f , 12.65686f , 12.24264f , 11.82843f , 12.24264f , 12.65686f , 13.07107f , 13.48528f , 13.8995f  , 14.31371f , 14.72793f , 0f        , 18.48528f , 18.8995f  , 19.31371f , 19.72792f , 0f        , 0f        , 0f        ,
                 0f        , 0f        , 14.31371f , 13.31371f , 12.8995f  , 12.48528f , 12.07107f , 11.65686f , 11.24264f , 10.82843f , 11.24264f , 12.24264f , 12.07107f , 12.48528f , 12.8995f  , 13.31371f , 13.72793f , 0f        , 17.48528f , 17.8995f  , 18.31371f , 18.72793f , 19.72792f , 0f        , 0f        ,
@@ -1938,9 +1938,9 @@ namespace GridToolkitTests
             for (int i = 0; i < dirMap._directionGrid.Length; i++)
             {
                 NextTileDirection actualDir = dirMap._directionGrid[i];
-                float actualDistance = dirMap._distanceMap[i];
+                float actualDistance = dirMap._distanceGrid[i];
                 Assert.AreEqual(expectedDirMap[i], actualDir, $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDirMap[i]} but got {actualDir}");
-                Assert.IsTrue(Mathf.Abs(expectedDistanceMap[i] - actualDistance) < 0.01f, $"Distance for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDistanceMap[i]} but got {actualDistance}");
+                Assert.IsTrue(Mathf.Abs(expectedDistanceGrid[i] - actualDistance) < 0.01f, $"Distance for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDistanceGrid[i]} but got {actualDistance}");
             }
         }
         [Test]
@@ -1973,7 +1973,7 @@ namespace GridToolkitTests
                 _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↑'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['0'], _dirs['↑'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['0'], _dirs['0'], _dirs['0'],
                 _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↑'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['0'], _dirs['↑'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['0'], _dirs['0'], _dirs['0'],
             };
-            float[] expectedDistanceMap = new float[20 * 25]
+            float[] expectedDistanceGrid = new float[20 * 25]
             {
                 0f          , 0f          , 14.72793000f, 14.31371000f, 13.89950000f, 13.48528000f, 13.07107000f, 12.65686000f, 12.24264000f, 11.82843000f, 12.24264000f, 12.65686000f, 13.07107000f, 13.48528000f, 13.89950000f, 14.31371000f, 14.72793000f, 0f          , 18.48528000f, 18.89950000f, 19.31371000f, 19.72792000f, 0f          , 0f          , 0f          ,
                 0f          , 0f          , 14.31371000f, 13.31371000f, 12.89950000f, 12.48528000f, 12.07107000f, 11.65686000f, 11.24264000f, 10.82843000f, 11.24264000f, 12.24264000f, 12.07107000f, 12.48528000f, 12.89950000f, 13.31371000f, 13.72793000f, 0f          , 17.48528000f, 17.89950000f, 18.31371000f, 18.72793000f, 19.72792000f, 0f          , 0f          ,
@@ -1999,9 +1999,9 @@ namespace GridToolkitTests
             for (int i = 0; i < dirMap._directionGrid.Length; i++)
             {
                 NextTileDirection actualDir = dirMap._directionGrid[i];
-                float actualDistance = dirMap._distanceMap[i];
+                float actualDistance = dirMap._distanceGrid[i];
                 Assert.AreEqual(expectedDirMap[i], actualDir, $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDirMap[i]} but got {actualDir}");
-                Assert.IsTrue(Mathf.Abs(expectedDistanceMap[i] - actualDistance) < 0.01f, $"Distance for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDistanceMap[i]} but got {actualDistance}");
+                Assert.IsTrue(Mathf.Abs(expectedDistanceGrid[i] - actualDistance) < 0.01f, $"Distance for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDistanceGrid[i]} but got {actualDistance}");
             }
         }
         [Test]
@@ -2034,7 +2034,7 @@ namespace GridToolkitTests
                 _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↑'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['0'], _dirs['↑'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['0'], _dirs['0'], _dirs['0'], _dirs['0'],
                 _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↗'], _dirs['↑'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['0'], _dirs['↑'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['↖'], _dirs['0'], _dirs['0'], _dirs['0'], _dirs['0'], _dirs['0'],
             };
-            float[] expectedDistanceMap = new float[20 * 25]
+            float[] expectedDistanceGrid = new float[20 * 25]
             {
                 0f          , 0f          , 15.89950000f, 14.89950000f, 14.48528000f, 14.07107000f, 13.65686000f, 13.24264000f, 12.82843000f, 12.41421000f, 12.82843000f, 13.82843000f, 14.24264000f, 14.65686000f, 15.07107000f, 15.48528000f, 15.89950000f, 0f          , 0f          , 0f          , 0f          , 0f          , 0f          , 0f          , 0f          ,
                 0f          , 0f          , 15.48528000f, 14.48528000f, 13.48528000f, 13.07107000f, 12.65686000f, 12.24264000f, 11.82843000f, 11.41421000f, 12.41421000f, 13.41421000f, 13.24264000f, 13.65686000f, 14.07107000f, 14.48528000f, 14.89950000f, 0f          , 19.24264000f, 19.65685000f, 0f          , 0f          , 0f          , 0f          , 0f          ,
@@ -2060,9 +2060,9 @@ namespace GridToolkitTests
             for (int i = 0; i < dirMap._directionGrid.Length; i++)
             {
                 NextTileDirection actualDir = dirMap._directionGrid[i];
-                float actualDistance = dirMap._distanceMap[i];
+                float actualDistance = dirMap._distanceGrid[i];
                 Assert.AreEqual(expectedDirMap[i], actualDir, $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDirMap[i]} but got {actualDir}");
-                Assert.IsTrue(Mathf.Abs(expectedDistanceMap[i] - actualDistance) < 0.01f, $"Distance for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDistanceMap[i]} but got {actualDistance}");
+                Assert.IsTrue(Mathf.Abs(expectedDistanceGrid[i] - actualDistance) < 0.01f, $"Distance for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDistanceGrid[i]} but got {actualDistance}");
             }
         }
         [Test]

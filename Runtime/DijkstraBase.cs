@@ -12,20 +12,20 @@ namespace Caskev.GridToolkit
     public abstract class DijkstraBase
     {
         internal readonly NextTileDirection[] _directionGrid;
-        internal readonly float[] _distanceMap;
+        internal readonly float[] _distanceGrid;
         /// <summary>
         /// The flat index of the target tile.
         /// </summary>
         protected readonly int _target;
 
-        internal DijkstraBase(NextTileDirection[] directionGrid, float[] distanceMap, int target)
+        internal DijkstraBase(NextTileDirection[] directionGrid, float[] distanceGrid, int target)
         {
             _directionGrid = directionGrid;
-            _distanceMap = distanceMap;
+            _distanceGrid = distanceGrid;
             _target = target;
         }
         /// <summary>
-        /// Is the tile is accessible from the target into this this DijkstraPaths. Usefull to check if the tile is usable as a parameter for this DirectionGrid's methods.
+        /// Is the tile is accessible from the target.
         /// </summary>
         /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="tile">The tile to check</param>
@@ -39,7 +39,7 @@ namespace Caskev.GridToolkit
             return _directionGrid[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)] != NextTileDirection.NONE;
         }
         /// <summary>
-        /// Returns the tile that has been used as the target to generate this DijkstraPaths
+        /// Returns the target tile.
         /// </summary>
         /// <param name="grid">A two-dimensional array of tiles</param>
         /// <returns></returns>
@@ -58,7 +58,7 @@ namespace Caskev.GridToolkit
         {
             if (!IsTileAccessible(grid, tile))
             {
-                throw new Exception("Do not call DijkstraPaths method with an inaccessible tile");
+                throw new Exception("Do not call this method with an inaccessible tile");
             }
             return GetNextTile(grid, tile);
         }
@@ -72,7 +72,7 @@ namespace Caskev.GridToolkit
         {
             if (!IsTileAccessible(grid, tile))
             {
-                throw new Exception("Do not call DijkstraPaths method with an inaccessible tile");
+                throw new Exception("Do not call this method with an inaccessible tile");
             }
             return _directionGrid[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)];
         }
@@ -80,16 +80,16 @@ namespace Caskev.GridToolkit
         /// Get the distance from the specified tile to the target.
         /// </summary>
         /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="tile">The tile from which to get the distance to the target tile used to generate this dijkstra map</param>
-        /// <returns>The float distance from the specified tile to the target tile used to generate this dijkstra map</returns>
+        /// <param name="tile">The tile from which to get the distance to the target tile</param>
+        /// <returns>The float distance from the specified tile to the target tile</returns>
         public float GetDistanceToTarget<T>(T[,] grid, T tile) where T : IWeightedTile
         {
             if (!IsTileAccessible(grid, tile))
             {
-                throw new Exception("Do not call DijkstraPaths method with an inaccessible tile");
+                throw new Exception("Do not call this method with an inaccessible tile");
             }
             int tileFlatIndex = GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y);
-            return _distanceMap[tileFlatIndex];
+            return _distanceGrid[tileFlatIndex];
         }
         /// <summary>
         /// Get all the tiles on the path from a tile to the target.
@@ -103,7 +103,7 @@ namespace Caskev.GridToolkit
         {
             if (!IsTileAccessible(grid, startTile))
             {
-                throw new Exception("Do not call DijkstraPaths method with an inaccessible tile");
+                throw new Exception("Do not call this method with an inaccessible tile");
             }
 
             Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _target);
