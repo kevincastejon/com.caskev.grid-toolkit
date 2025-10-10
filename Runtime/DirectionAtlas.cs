@@ -133,11 +133,9 @@ public class DirectionAtlas
     {
         Task<byte[]> task = Task.Run(() =>
         {
-            int bytesCount = sizeof(int) + _directionAtlas.Length * (sizeof(byte) * _directionAtlas.Length);
+            int bytesCount = _directionAtlas.Length * _directionAtlas.Count(x => x != null) + _directionAtlas.Length;
             byte[] bytes = new byte[bytesCount];
             int byteIndex = 0;
-            BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _directionAtlas.Length);
-            byteIndex += sizeof(int);
             for (int i = 0; i < _directionAtlas.Length; i++)
             {
                 if (cancelToken.IsCancellationRequested)
@@ -145,10 +143,21 @@ public class DirectionAtlas
                     return null;
                 }
                 progress.Report((float)i / _directionAtlas.Length);
-                for (int j = 0; j < _directionAtlas.Length; j++)
+                if (_directionAtlas[i] == null)
                 {
-                    bytes[byteIndex] = (byte)_directionAtlas[i]._directionGrid[j];
+                    bytes[byteIndex] = 0;
                     byteIndex++;
+                    continue;
+                }
+                else
+                {
+                    bytes[byteIndex] = 1;
+                    byteIndex++;
+                    for (int j = 0; j < _directionAtlas.Length; j++)
+                    {
+                        bytes[byteIndex] = (byte)_directionAtlas[i]._directionGrid[j];
+                        byteIndex++;
+                    }
                 }
             }
             return bytes;
@@ -208,23 +217,31 @@ public class DirectionAtlas
                 throw new ArgumentException("The grid cannot be null");
             }
             int byteIndex = 0;
-            int count = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
-            byteIndex += sizeof(int);
-            DirectionGrid[] directionAtlas = new DirectionGrid[count];
-            for (int i = 0; i < count; i++)
+            DirectionGrid[] directionAtlas = new DirectionGrid[grid.Length];
+            for (int i = 0; i < grid.Length; i++)
             {
                 if (cancelToken.IsCancellationRequested)
                 {
                     return null;
                 }
-                progress.Report((float)i / count);
-                NextTileDirection[] directionGrid = new NextTileDirection[count];
-                for (int j = 0; j < count; j++)
+                progress.Report((float)i / grid.Length);
+                bool isWalkable = bytes[byteIndex] == 1;
+                byteIndex++;
+                if (!isWalkable)
                 {
-                    directionGrid[i] = (NextTileDirection)bytes[byteIndex];
-                    byteIndex++;
+                    directionAtlas[i] = null;
+                    continue;
                 }
-                directionAtlas[i] = new DirectionGrid(directionGrid, i);
+                else
+                {
+                    NextTileDirection[] directionGrid = new NextTileDirection[grid.Length];
+                    for (int j = 0; j < grid.Length; j++)
+                    {
+                        directionGrid[j] = (NextTileDirection)bytes[byteIndex];
+                        byteIndex++;
+                    }
+                    directionAtlas[i] = new DirectionGrid(directionGrid, i);
+                }
             }
             return new DirectionAtlas(directionAtlas);
         });

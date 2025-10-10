@@ -1,6 +1,8 @@
 using Caskev.GridToolkit;
+using Codice.Utils;
 using System;
 using System.Buffers.Binary;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 /// <summary>
@@ -11,11 +13,11 @@ using System.Threading.Tasks;
 /// </summary>
 public class DijkstraAtlas
 {
-    internal readonly DijkstraGrid[] _directionAtlas;
+    internal readonly DijkstraGrid[] _dijkstraAtlas;
 
-    internal DijkstraAtlas(DijkstraGrid[] directionAtlas)
+    internal DijkstraAtlas(DijkstraGrid[] dijkstraAtlas)
     {
-        _directionAtlas = directionAtlas;
+        _dijkstraAtlas = dijkstraAtlas;
     }
 
     /// <summary>
@@ -31,7 +33,7 @@ public class DijkstraAtlas
         {
             return false;
         }
-        DijkstraGrid dijkstraGrid = _directionAtlas[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), destinationTile.X, destinationTile.Y)];
+        DijkstraGrid dijkstraGrid = _dijkstraAtlas[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), destinationTile.X, destinationTile.Y)];
         return dijkstraGrid.IsTileAccessible(grid, startTile);
     }
     /// <summary>
@@ -41,20 +43,18 @@ public class DijkstraAtlas
     /// <param name="startTile">The start tile</param>
     /// <param name="destinationTile">The destination tile</param>
     /// <returns>A tile object</returns>
-    public bool GetNextTileFromTile<T>(T[,] grid, T startTile, T destinationTile, out T nextTile) where T : IWeightedTile
+    public T GetNextTileFromTile<T>(T[,] grid, T startTile, T destinationTile) where T : IWeightedTile
     {
         if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
         {
             throw new Exception("Do not call this method with non-walkable (or null) tiles");
         }
-        DijkstraGrid dijkstraGrid = _directionAtlas[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), destinationTile.X, destinationTile.Y)];
+        DijkstraGrid dijkstraGrid = _dijkstraAtlas[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), destinationTile.X, destinationTile.Y)];
         if (!dijkstraGrid.IsTileAccessible(grid, startTile))
         {
-            nextTile = default;
-            return false;
+            return default;
         }
-        nextTile = dijkstraGrid.GetNextTileFromTile(grid, startTile);
-        return true;
+        return dijkstraGrid.GetNextTileFromTile(grid, startTile);
     }
     /// <summary>
     /// Get the next tile on the path between a start tile and a destination tile.
@@ -69,7 +69,7 @@ public class DijkstraAtlas
         {
             throw new Exception("Do not call this method with non-walkable (or null) tiles");
         }
-        DijkstraGrid dijkstraGrid = _directionAtlas[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), destinationTile.X, destinationTile.Y)];
+        DijkstraGrid dijkstraGrid = _dijkstraAtlas[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), destinationTile.X, destinationTile.Y)];
         return dijkstraGrid.GetNextTileDirectionFromTile(grid, startTile);
     }
     /// <summary>
@@ -85,7 +85,7 @@ public class DijkstraAtlas
         {
             throw new Exception("Do not call this method with non-walkable (or null) tiles");
         }
-        DijkstraGrid dijkstraGrid = _directionAtlas[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), destinationTile.X, destinationTile.Y)];
+        DijkstraGrid dijkstraGrid = _dijkstraAtlas[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), destinationTile.X, destinationTile.Y)];
         return dijkstraGrid.GetDistanceToTarget(grid, startTile);
     }
     /// <summary>
@@ -103,7 +103,7 @@ public class DijkstraAtlas
         {
             throw new Exception("Do not call this method with non-walkable (or null) tiles");
         }
-        DijkstraGrid dijkstraGrid = _directionAtlas[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), destinationTile.X, destinationTile.Y)];
+        DijkstraGrid dijkstraGrid = _dijkstraAtlas[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), destinationTile.X, destinationTile.Y)];
         if (!dijkstraGrid.IsTileAccessible(grid, startTile))
         {
             return new T[0];
@@ -116,19 +116,28 @@ public class DijkstraAtlas
     /// <returns>The serialized DijkstraAtlas.</returns>
     public byte[] ToByteArray()
     {
-        int bytesCount = sizeof(int) + _directionAtlas.Length * ((sizeof(byte) + sizeof(float)) * _directionAtlas.Length);
+        int bytesCount = _dijkstraAtlas.Length * (_dijkstraAtlas.Count(x => x != null) * (sizeof(float) + 1)) + _dijkstraAtlas.Length;
         byte[] bytes = new byte[bytesCount];
         int byteIndex = 0;
-        BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _directionAtlas.Length);
-        byteIndex += sizeof(int);
-        for (int i = 0; i < _directionAtlas.Length; i++)
+        for (int i = 0; i < _dijkstraAtlas.Length; i++)
         {
-            for (int j = 0; j < _directionAtlas.Length; j++)
+            if (_dijkstraAtlas[i] == null)
             {
-                bytes[byteIndex] = (byte)_directionAtlas[i]._directionGrid[j];
+                bytes[byteIndex] = 0;
                 byteIndex++;
-                BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), BitConverter.SingleToInt32Bits(_directionAtlas[i]._distanceGrid[j]));
-                byteIndex += sizeof(float);
+                continue;
+            }
+            else
+            {
+                bytes[byteIndex] = 1;
+                byteIndex++;
+                for (int j = 0; j < _dijkstraAtlas.Length; j++)
+                {
+                    bytes[byteIndex] = (byte)_dijkstraAtlas[i]._directionGrid[j];
+                    byteIndex++;
+                    BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), BitConverter.SingleToInt32Bits(_dijkstraAtlas[i]._distanceGrid[j]));
+                    byteIndex += sizeof(float);
+                }
             }
         }
         return bytes;
@@ -139,28 +148,37 @@ public class DijkstraAtlas
     /// <param name="progress">An optional IProgress object to get the deserialization progression</param>
     /// <param name="cancelToken">An optional CancellationToken object to cancel the serialization</param>
     /// <returns>The serialized DijkstraAtlas.</returns>
-    public Task<byte[]> ToByteArrayAsync<T>(IProgress<float> progress = null, CancellationToken cancelToken = default) where T : IWeightedTile
+    public Task<byte[]> ToByteArrayAsync<T>(IProgress<float> progress = null, CancellationToken cancelToken = default) where T : ITile
     {
         Task<byte[]> task = Task.Run(() =>
         {
-            int bytesCount = sizeof(int) + _directionAtlas.Length * ((sizeof(byte) + sizeof(float)) * _directionAtlas.Length);
+            int bytesCount = _dijkstraAtlas.Length * (_dijkstraAtlas.Count(x => x != null) * (sizeof(float) + 1)) + _dijkstraAtlas.Length;
             byte[] bytes = new byte[bytesCount];
             int byteIndex = 0;
-            BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _directionAtlas.Length);
-            byteIndex += sizeof(int);
-            for (int i = 0; i < _directionAtlas.Length; i++)
+            for (int i = 0; i < _dijkstraAtlas.Length; i++)
             {
                 if (cancelToken.IsCancellationRequested)
                 {
                     return null;
                 }
-                progress.Report((float)i / _directionAtlas.Length);
-                for (int j = 0; j < _directionAtlas.Length; j++)
+                progress.Report((float)i / _dijkstraAtlas.Length);
+                if (_dijkstraAtlas[i] == null)
                 {
-                    bytes[byteIndex] = (byte)_directionAtlas[i]._directionGrid[j];
+                    bytes[byteIndex] = 0;
                     byteIndex++;
-                    BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), BitConverter.SingleToInt32Bits(_directionAtlas[i]._distanceGrid[j]));
-                    byteIndex += sizeof(float);
+                    continue;
+                }
+                else
+                {
+                    bytes[byteIndex] = 1;
+                    byteIndex++;
+                    for (int j = 0; j < _dijkstraAtlas.Length; j++)
+                    {
+                        bytes[byteIndex] = (byte)_dijkstraAtlas[i]._directionGrid[j];
+                        byteIndex++;
+                        BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), BitConverter.SingleToInt32Bits(_dijkstraAtlas[i]._distanceGrid[j]));
+                        byteIndex += sizeof(float);
+                    }
                 }
             }
             return bytes;
@@ -173,30 +191,38 @@ public class DijkstraAtlas
     /// <param name="grid">The user grid.</param>
     /// <param name="bytes">The serialized DijkstraAtlas.</param>
     /// <returns>The deserialized DijkstraAtlas.</returns>
-    public static DijkstraAtlas FromByteArray<T>(T[,] grid, byte[] bytes) where T : IWeightedTile
+    public static DijkstraAtlas FromByteArray<T>(T[,] grid, byte[] bytes) where T : ITile
     {
-            if (grid == null)
+        if (grid == null)
+        {
+            throw new ArgumentException("The grid cannot be null");
+        }
+        int byteIndex = 0;
+        DijkstraGrid[] dijkstraAtlas = new DijkstraGrid[grid.Length];
+        for (int i = 0; i < grid.Length; i++)
+        {
+            bool isWalkable = bytes[byteIndex] == 1;
+            byteIndex++;
+            if (!isWalkable)
             {
-                throw new ArgumentException("The grid cannot be null");
+                dijkstraAtlas[i] = null;
+                continue;
             }
-            int byteIndex = 0;
-            int count = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
-            byteIndex += sizeof(int);
-            DijkstraGrid[] directionAtlas = new DijkstraGrid[count];
-            for (int i = 0; i < count; i++)
+            else
             {
-                NextTileDirection[] dijkstraGrid = new NextTileDirection[count];
-                float[] distanceGrid = new float[count];
-                for (int j = 0; j < count; j++)
+                NextTileDirection[] directionGrid = new NextTileDirection[grid.Length];
+                float[] distanceGrid = new float[grid.Length];
+                for (int j = 0; j < grid.Length; j++)
                 {
-                    dijkstraGrid[i] = (NextTileDirection)bytes[byteIndex];
+                    directionGrid[j] = (NextTileDirection)bytes[byteIndex];
                     byteIndex++;
                     distanceGrid[i] = BitConverter.Int32BitsToSingle(BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex)));
                     byteIndex += sizeof(float);
                 }
-                directionAtlas[i] = new DijkstraGrid(dijkstraGrid, distanceGrid, i);
+                dijkstraAtlas[i] = new DijkstraGrid(directionGrid, distanceGrid, i);
             }
-            return new DijkstraAtlas(directionAtlas);
+        }
+        return new DijkstraAtlas(dijkstraAtlas);
     }
     /// <summary>
     /// Asynchronously deserializes a DijkstraAtlas from a byte array. 
@@ -206,7 +232,7 @@ public class DijkstraAtlas
     /// <param name="progress">An optional IProgress object to get the deserialization progression</param>
     /// <param name="cancelToken">An optional CancellationToken object to cancel the deserialization</param>
     /// <returns>The deserialized DijkstraAtlas.</returns>
-    public static Task<DijkstraAtlas> FromByteArrayAsync<T>(T[,] grid, byte[] bytes, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : IWeightedTile
+    public static Task<DijkstraAtlas> FromByteArrayAsync<T>(T[,] grid, byte[] bytes, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : ITile
     {
         Task<DijkstraAtlas> task = Task.Run(() =>
         {
@@ -215,28 +241,36 @@ public class DijkstraAtlas
                 throw new ArgumentException("The grid cannot be null");
             }
             int byteIndex = 0;
-            int count = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
-            byteIndex += sizeof(int);
-            DijkstraGrid[] directionAtlas = new DijkstraGrid[count];
-            for (int i = 0; i < count; i++)
+            DijkstraGrid[] dijkstraAtlas = new DijkstraGrid[grid.Length];
+            for (int i = 0; i < grid.Length; i++)
             {
                 if (cancelToken.IsCancellationRequested)
                 {
                     return null;
                 }
-                progress.Report((float)i / count);
-                NextTileDirection[] dijkstraGrid = new NextTileDirection[count];
-                float[] distanceGrid = new float[count];
-                for (int j = 0; j < count; j++)
+                progress.Report((float)i / grid.Length);
+                bool isWalkable = bytes[byteIndex] == 1;
+                byteIndex++;
+                if (!isWalkable)
                 {
-                    dijkstraGrid[i] = (NextTileDirection)bytes[byteIndex];
-                    byteIndex++;
-                    distanceGrid[i] = BitConverter.Int32BitsToSingle(BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex)));
-                    byteIndex += sizeof(float);
+                    dijkstraAtlas[i] = null;
+                    continue;
                 }
-                directionAtlas[i] = new DijkstraGrid(dijkstraGrid, distanceGrid, i);
+                else
+                {
+                    NextTileDirection[] directionGrid = new NextTileDirection[grid.Length];
+                    float[] distanceGrid = new float[grid.Length];
+                    for (int j = 0; j < grid.Length; j++)
+                    {
+                        directionGrid[j] = (NextTileDirection)bytes[byteIndex];
+                        byteIndex++;
+                        distanceGrid[i] = BitConverter.Int32BitsToSingle(BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex)));
+                        byteIndex += sizeof(float);
+                    }
+                    dijkstraAtlas[i] = new DijkstraGrid(directionGrid, distanceGrid, i);
+                }
             }
-            return new DijkstraAtlas(directionAtlas);
+            return new DijkstraAtlas(dijkstraAtlas);
         });
         return task;
     }
