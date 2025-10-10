@@ -1,6 +1,7 @@
 using Caskev.GridToolkit;
 using System;
 using System.Buffers.Binary;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 /// <summary>
@@ -41,7 +42,7 @@ public class DirectionAtlas
     /// <param name="startTile">The start tile</param>
     /// <param name="destinationTile">The destination tile</param>
     /// <returns>A tile object</returns>
-    public bool GetNextTileFromTile<T>(T[,] grid, T startTile, T destinationTile, out T nextTile) where T : ITile
+    public T GetNextTileFromTile<T>(T[,] grid, T startTile, T destinationTile) where T : ITile
     {
         if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
         {
@@ -50,11 +51,9 @@ public class DirectionAtlas
         DirectionGrid directionGrid = _directionAtlas[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), destinationTile.X, destinationTile.Y)];
         if (!directionGrid.IsTileAccessible(grid, startTile))
         {
-            nextTile = default;
-            return false;
+            return default;
         }
-        nextTile = directionGrid.GetNextTileFromTile(grid, startTile);
-        return true;
+        return directionGrid.GetNextTileFromTile(grid, startTile);
     }
     /// <summary>
     /// Get the next tile on the path between a start tile and a destination tile.
@@ -100,17 +99,26 @@ public class DirectionAtlas
     /// <returns>The serialized DirectionAtlas.</returns>
     public byte[] ToByteArray()
     {
-        int bytesCount = sizeof(int) + _directionAtlas.Length * (sizeof(byte) * _directionAtlas.Length);
+        int bytesCount = _directionAtlas.Length * _directionAtlas.Count(x => x != null) + _directionAtlas.Length;
         byte[] bytes = new byte[bytesCount];
         int byteIndex = 0;
-        BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _directionAtlas.Length);
-        byteIndex += sizeof(int);
         for (int i = 0; i < _directionAtlas.Length; i++)
         {
-            for (int j = 0; j < _directionAtlas.Length; j++)
+            if (_directionAtlas[i] == null)
             {
-                bytes[byteIndex] = (byte)_directionAtlas[i]._directionGrid[j];
+                bytes[byteIndex] = 0;
                 byteIndex++;
+                continue;
+            }
+            else
+            {
+                bytes[byteIndex] = 1;
+                byteIndex++;
+                for (int j = 0; j < _directionAtlas.Length; j++)
+                {
+                    bytes[byteIndex] = (byte)_directionAtlas[i]._directionGrid[j];
+                    byteIndex++;
+                }
             }
         }
         return bytes;
@@ -160,18 +168,26 @@ public class DirectionAtlas
             throw new ArgumentException("The grid cannot be null");
         }
         int byteIndex = 0;
-        int count = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
-        byteIndex += sizeof(int);
-        DirectionGrid[] directionAtlas = new DirectionGrid[count];
-        for (int i = 0; i < count; i++)
+        DirectionGrid[] directionAtlas = new DirectionGrid[grid.Length];
+        for (int i = 0; i < grid.Length; i++)
         {
-            NextTileDirection[] directionGrid = new NextTileDirection[count];
-            for (int j = 0; j < count; j++)
+            bool isWalkable = bytes[byteIndex] == 1;
+            byteIndex++;
+            if (!isWalkable)
             {
-                directionGrid[i] = (NextTileDirection)bytes[byteIndex];
-                byteIndex++;
+                directionAtlas[i] = null;
+                continue;
             }
-            directionAtlas[i] = new DirectionGrid(directionGrid, i);
+            else
+            {
+                NextTileDirection[] directionGrid = new NextTileDirection[grid.Length];
+                for (int j = 0; j < grid.Length; j++)
+                {
+                    directionGrid[j] = (NextTileDirection)bytes[byteIndex];
+                    byteIndex++;
+                }
+                directionAtlas[i] = new DirectionGrid(directionGrid, i);
+            }
         }
         return new DirectionAtlas(directionAtlas);
     }
