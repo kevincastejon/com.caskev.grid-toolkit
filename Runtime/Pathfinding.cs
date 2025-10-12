@@ -1,11 +1,9 @@
-using Codice.Utils;
 using PriorityQueueUnityPort;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
-using static UnityEngine.UIElements.UxmlAttributeDescription;
 /// <summary>
 /// Utilitary API to proceed operations on abstract grids such as tile extraction, raycasting, and pathfinding.
 /// </summary>
@@ -368,21 +366,17 @@ namespace Caskev.GridToolkit
             int width = grid.GetLength(0);
             int height = grid.GetLength(1);
             Vector2Int gridDimensions = new Vector2Int(width, height);
-            int totalSize = width * height;
-            NextTileDirection[] directionGrid = new NextTileDirection[totalSize];
-            int[] distanceGrid = new int[totalSize];
-            bool[] visited = new bool[totalSize];
-            List<int> accessibleTilesFlatIndexes = new();
+            Dictionary<int, NextTileDirection > accessibleTiles = new();
+            Dictionary<int, int> accessibleTilesDistances = new();
             int targetIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, targetTile.X, targetTile.Y);
-            visited[targetIndex] = true;
-            directionGrid[targetIndex] = NextTileDirection.SELF;
-            distanceGrid[targetIndex] = 0;
-            accessibleTilesFlatIndexes.Add(targetIndex);
+            accessibleTiles.Add(targetIndex, NextTileDirection.SELF);
+            accessibleTilesDistances.Add(targetIndex, 0);
             Queue<T> frontier = new Queue<T>();
             frontier.Enqueue(targetTile);
             List<T> neighbourgs = new();
             T current = default;
             int neighborIndex = -1;
+            int currentIndex = -1;
             int visitedCount = 0;
             while (frontier.Count > 0)
             {
@@ -398,20 +392,19 @@ namespace Caskev.GridToolkit
                 foreach (T neiTile in neighbourgs)
                 {
                     neighborIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, neiTile.X, neiTile.Y);
-                    int newDistance = distanceGrid[GridUtils.GetFlatIndexFromCoordinates(gridDimensions, current.X, current.Y)] + 1;
-                    if (!visited[neighborIndex] && newDistance <= maxDistance)
+                    currentIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, current.X, current.Y);
+                    int newDistance = accessibleTilesDistances[currentIndex] + 1;
+                    if (!accessibleTiles.ContainsKey(neighborIndex) && newDistance <= maxDistance)
                     {
                         visitedCount++;
-                        accessibleTilesFlatIndexes.Add(neighborIndex);
-                        visited[neighborIndex] = true;
-                        directionGrid[neighborIndex] = GridUtils.GetDirectionBetweenAdjacentTiles(neiTile, current);
-                        distanceGrid[neighborIndex] = newDistance;
+                        accessibleTiles.Add(neighborIndex, GridUtils.GetDirectionBetweenAdjacentTiles(neiTile, current));
+                        accessibleTilesDistances.Add(neighborIndex, newDistance);
                         frontier.Enqueue(neiTile);
                     }
                 }
                 neighbourgs.Clear();
             }
-            return new DirectionField(maxDistance, accessibleTilesFlatIndexes.ToArray(), directionGrid, targetIndex);
+            return new DirectionField(targetIndex, maxDistance, accessibleTiles);
         }
         /// <summary>
         /// Asynchronously generates a DirectionField that holds the direction data between a target tile and all the tiles that are accessible to this target into the specified maximum distance range.
@@ -426,7 +419,7 @@ namespace Caskev.GridToolkit
         /// <param name="progress">An optional IProgress object to get the generation progression</param>
         /// <param name="cancelToken">An optional CancellationToken object to cancel the generation</param>
         /// <returns>A DirectionField object</returns>
-        public static Task<DirectionField> GenerateDirectionFieldAsync<T>(T[,] grid, T targetTile, int maxDistance, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : ITile
+        public static Task<DirectionField> GenerateDirectionFieldAsync<T>(T[,] grid, T targetTile, int maxDistance, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE, CancellationToken cancelToken = default) where T : ITile
         {
             if (maxDistance < 1)
             {
@@ -441,21 +434,17 @@ namespace Caskev.GridToolkit
                 int width = grid.GetLength(0);
                 int height = grid.GetLength(1);
                 Vector2Int gridDimensions = new Vector2Int(width, height);
-                int totalSize = width * height;
-                NextTileDirection[] directionGrid = new NextTileDirection[totalSize];
-                int[] distanceGrid = new int[totalSize];
-                bool[] visited = new bool[totalSize];
-                List<int> accessibleTilesFlatIndexes = new();
+                Dictionary<int, NextTileDirection> accessibleTiles = new();
+                Dictionary<int, int> accessibleTilesDistances = new();
                 int targetIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, targetTile.X, targetTile.Y);
-                visited[targetIndex] = true;
-                directionGrid[targetIndex] = NextTileDirection.SELF;
-                distanceGrid[targetIndex] = 0;
-                accessibleTilesFlatIndexes.Add(targetIndex);
+                accessibleTiles.Add(targetIndex, NextTileDirection.SELF);
+                accessibleTilesDistances.Add(targetIndex, 0);
                 Queue<T> frontier = new Queue<T>();
                 frontier.Enqueue(targetTile);
                 List<T> neighbourgs = new();
                 T current = default;
                 int neighborIndex = -1;
+                int currentIndex = -1;
                 int visitedCount = 0;
                 while (frontier.Count > 0)
                 {
@@ -463,7 +452,6 @@ namespace Caskev.GridToolkit
                     {
                         return null;
                     }
-                    progress?.Report((float)visitedCount / totalSize);
                     current = frontier.Dequeue();
                     if (diagonalsPolicy != DiagonalsPolicy.NONE)
                     {
@@ -476,20 +464,19 @@ namespace Caskev.GridToolkit
                     foreach (T neiTile in neighbourgs)
                     {
                         neighborIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, neiTile.X, neiTile.Y);
-                        int newDistance = distanceGrid[GridUtils.GetFlatIndexFromCoordinates(gridDimensions, current.X, current.Y)] + 1;
-                        if (!visited[neighborIndex] && newDistance <= maxDistance)
+                        currentIndex = GridUtils.GetFlatIndexFromCoordinates(gridDimensions, current.X, current.Y);
+                        int newDistance = accessibleTilesDistances[currentIndex] + 1;
+                        if (!accessibleTiles.ContainsKey(neighborIndex) && newDistance <= maxDistance)
                         {
                             visitedCount++;
-                            accessibleTilesFlatIndexes.Add(neighborIndex);
-                            visited[neighborIndex] = true;
-                            directionGrid[neighborIndex] = GridUtils.GetDirectionBetweenAdjacentTiles(neiTile, current);
-                            distanceGrid[neighborIndex] = newDistance;
+                            accessibleTiles.Add(neighborIndex, GridUtils.GetDirectionBetweenAdjacentTiles(neiTile, current));
+                            accessibleTilesDistances.Add(neighborIndex, newDistance);
                             frontier.Enqueue(neiTile);
                         }
                     }
                     neighbourgs.Clear();
                 }
-                return new DirectionField(maxDistance, accessibleTilesFlatIndexes.ToArray(), directionGrid, targetIndex);
+                return new DirectionField(targetIndex, maxDistance, accessibleTiles);
             });
             return task;
         }
