@@ -226,7 +226,7 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
             DirectionField directionField;
             try
             {
-                directionField = await Pathfinding.GenerateDirectionFieldAsync(_grid.Map, _targetTile, Mathf.FloorToInt(_maxDistance.value), (DiagonalsPolicy)_diagonalsPolicy.value, new Progress<float>((x) => _progressWindow.text = (x * 100).ToString("F0") + "%"), _cts.Token);
+                directionField = await Pathfinding.GenerateDirectionFieldAsync(_grid.Map, _targetTile, Mathf.FloorToInt(_maxDistance.value), (DiagonalsPolicy)_diagonalsPolicy.value, _cts.Token);
             }
             catch (Exception e)
             {
@@ -368,7 +368,7 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
             _cts = new System.Threading.CancellationTokenSource();
             try
             {
-                _dijkstraField = await Pathfinding.GenerateDijkstraFieldAsync(_grid.Map, _targetTile, _maxDistance.value, (DiagonalsPolicy)_diagonalsPolicy.value, _diagonalsWeight.value, new Progress<float>((x) => _progressWindow.text = (x * 100).ToString("F0") + "%"), _cts.Token);
+                _dijkstraField = await Pathfinding.GenerateDijkstraFieldAsync(_grid.Map, _targetTile, _maxDistance.value, (DiagonalsPolicy)_diagonalsPolicy.value, _diagonalsWeight.value, _cts.Token);
             }
             catch (Exception e)
             {
