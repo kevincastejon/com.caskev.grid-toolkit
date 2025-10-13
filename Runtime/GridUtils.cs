@@ -18,32 +18,32 @@ namespace Caskev.GridToolkit
             return y * gridDimensions.y + x;
         }
         /// <summary>
-        /// Converts a NextTileDirection to a Vector2Int.
+        /// Converts a TileDirection to a Vector2Int.
         /// </summary>
-        /// <param name="direction">The NextTileDirection enumeration case</param>
+        /// <param name="direction">The TileDirection enumeration case</param>
         /// <returns>The corresponding Vector2Int</returns>
-        public static Vector2Int NextNodeDirectionToVector2Int(NextTileDirection direction)
+        public static Vector2Int NextNodeDirectionToVector2Int(TileDirection direction)
         {
             switch (direction)
             {
-                case NextTileDirection.LEFT:
+                case TileDirection.LEFT:
                     return Vector2Int.left;
-                case NextTileDirection.RIGHT:
+                case TileDirection.RIGHT:
                     return Vector2Int.right;
-                case NextTileDirection.DOWN:
+                case TileDirection.DOWN:
                     return Vector2Int.down;
-                case NextTileDirection.UP:
+                case TileDirection.UP:
                     return Vector2Int.up;
-                case NextTileDirection.UP_LEFT:
+                case TileDirection.UP_LEFT:
                     return new(-1, 1);
-                case NextTileDirection.UP_RIGHT:
+                case TileDirection.UP_RIGHT:
                     return new(1, 1);
-                case NextTileDirection.DOWN_LEFT:
+                case TileDirection.DOWN_LEFT:
                     return new(-1, -1);
-                case NextTileDirection.DOWN_RIGHT:
+                case TileDirection.DOWN_RIGHT:
                     return new(1, -1);
-                case NextTileDirection.NONE:
-                case NextTileDirection.SELF:
+                case TileDirection.NONE:
+                case TileDirection.SELF:
                 default:
                     return Vector2Int.zero;
             }
@@ -54,22 +54,22 @@ namespace Caskev.GridToolkit
         /// <param name="tileA">The first tile</param>
         /// <param name="tileB">The second tile</param>
         /// <returns>The direction from the first tile to the second tile.</returns>
-        public static NextTileDirection GetDirectionBetweenAdjacentTiles(ITile tileA, ITile tileB)
+        public static TileDirection GetDirectionBetweenAdjacentTiles(ITile tileA, ITile tileB)
         {
             int dx = tileB.X - tileA.X;
             int dy = tileB.Y - tileA.Y;
 
-            if (dx == 0 && dy == 0) return NextTileDirection.SELF;
-            if (dx == 0 && dy == -1) return NextTileDirection.DOWN;
-            if (dx == 0 && dy == 1) return NextTileDirection.UP;
-            if (dx == -1 && dy == 0) return NextTileDirection.LEFT;
-            if (dx == 1 && dy == 0) return NextTileDirection.RIGHT;
-            if (dx == -1 && dy == -1) return NextTileDirection.DOWN_LEFT;
-            if (dx == 1 && dy == -1) return NextTileDirection.DOWN_RIGHT;
-            if (dx == -1 && dy == 1) return NextTileDirection.UP_LEFT;
-            if (dx == 1 && dy == 1) return NextTileDirection.UP_RIGHT;
+            if (dx == 0 && dy == 0) return TileDirection.SELF;
+            if (dx == 0 && dy == -1) return TileDirection.DOWN;
+            if (dx == 0 && dy == 1) return TileDirection.UP;
+            if (dx == -1 && dy == 0) return TileDirection.LEFT;
+            if (dx == 1 && dy == 0) return TileDirection.RIGHT;
+            if (dx == -1 && dy == -1) return TileDirection.DOWN_LEFT;
+            if (dx == 1 && dy == -1) return TileDirection.DOWN_RIGHT;
+            if (dx == -1 && dy == 1) return TileDirection.UP_LEFT;
+            if (dx == 1 && dy == 1) return TileDirection.UP_RIGHT;
 
-            return NextTileDirection.NONE;
+            return TileDirection.NONE;
         }
         /// <summary>
         /// Compare two tiles to check if they share the same coordinates values

@@ -17,7 +17,7 @@ namespace Caskev.GridToolkit
     {
         private readonly int _target;
         private float _maxDistance;
-        internal Dictionary<int, (NextTileDirection, float)> _accessibleTiles;
+        internal Dictionary<int, (TileDirection, float)> _accessibleTiles;
         /// <summary>
         /// The maximum distance used to generate this DirectionField
         /// </summary>
@@ -27,7 +27,7 @@ namespace Caskev.GridToolkit
         /// </summary>
         public int AccessibleTilesCount => _accessibleTiles.Count;
 
-        internal DijkstraField(int target, float maxDistance, Dictionary<int, (NextTileDirection, float)> accessibleTiles)
+        internal DijkstraField(int target, float maxDistance, Dictionary<int, (TileDirection, float)> accessibleTiles)
         {
             _target = target;
             _maxDistance = maxDistance;
@@ -77,7 +77,7 @@ namespace Caskev.GridToolkit
         /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="tile">The tile</param>
         /// <returns>A Vector2Int direction</returns>
-        public NextTileDirection GetNextTileDirectionFromTile<T>(T[,] grid, T tile) where T : ITile
+        public TileDirection GetNextTileDirectionFromTile<T>(T[,] grid, T tile) where T : ITile
         {
             if (!IsTileAccessible(grid, tile))
             {

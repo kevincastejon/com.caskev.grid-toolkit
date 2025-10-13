@@ -9,7 +9,7 @@ namespace GridToolkitTests
     public class Pathfinding_Tests
     {
         TestTile[,] _grid;
-        Dictionary<char, NextTileDirection> _dirs = new() { { '0', NextTileDirection.NONE }, { '.', NextTileDirection.SELF }, { '↑', NextTileDirection.DOWN }, { '↓', NextTileDirection.UP }, { '←', NextTileDirection.LEFT }, { '→', NextTileDirection.RIGHT }, { '↖', NextTileDirection.DOWN_LEFT }, { '↗', NextTileDirection.DOWN_RIGHT }, { '↙', NextTileDirection.UP_LEFT }, { '↘', NextTileDirection.UP_RIGHT } };
+        Dictionary<char, TileDirection> _dirs = new() { { '0', TileDirection.NONE }, { '.', TileDirection.SELF }, { '↑', TileDirection.DOWN }, { '↓', TileDirection.UP }, { '←', TileDirection.LEFT }, { '→', TileDirection.RIGHT }, { '↖', TileDirection.DOWN_LEFT }, { '↗', TileDirection.DOWN_RIGHT }, { '↙', TileDirection.UP_LEFT }, { '↘', TileDirection.UP_RIGHT } };
         [SetUp]
         public void Setup()
         {
@@ -46,7 +46,7 @@ namespace GridToolkitTests
             int targetX = 6;
             int targetY = 10;
             DirectionGrid dirMap = Pathfinding.GenerateDirectionGrid(_grid, GridUtils.GetTile(_grid, targetX, targetY), DiagonalsPolicy.NONE);
-            NextTileDirection[] expectedDirMap = new NextTileDirection[20 * 25]
+            TileDirection[] expectedDirMap = new TileDirection[20 * 25]
             {
                 _dirs['↓'] , _dirs['0'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['0'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'],
                 _dirs['↓'] , _dirs['0'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['←'] , _dirs['←'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['0'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'] , _dirs['↓'],
@@ -71,7 +71,7 @@ namespace GridToolkitTests
             };
             for (int i = 0; i < dirMap._directionGrid.Length; i++)
             {
-                NextTileDirection actualDir = dirMap._directionGrid[i];
+                TileDirection actualDir = dirMap._directionGrid[i];
                 Assert.AreEqual(expectedDirMap[i], actualDir, $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDirMap[i]} but got {actualDir}");
             }
         }
@@ -81,7 +81,7 @@ namespace GridToolkitTests
             int targetX = 6;
             int targetY = 10;
             DirectionGrid dirMap = Pathfinding.GenerateDirectionGrid(_grid, GridUtils.GetTile(_grid, targetX, targetY), DiagonalsPolicy.ALL_DIAGONALS);
-            NextTileDirection[] expectedDirMap = new NextTileDirection[20 * 25]
+            TileDirection[] expectedDirMap = new TileDirection[20 * 25]
             {
                 _dirs['↓'] , _dirs['0'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↓'] , _dirs['↙'] , _dirs['↙'] , _dirs['↓'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['0'] , _dirs['↓'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] ,
                 _dirs['↓'] , _dirs['0'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↓'] , _dirs['↙'] , _dirs['↘'] , _dirs['↓'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['0'] , _dirs['↓'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] ,
@@ -106,7 +106,7 @@ namespace GridToolkitTests
             };
             for (int i = 0; i < dirMap._directionGrid.Length; i++)
             {
-                NextTileDirection actualDir = dirMap._directionGrid[i];
+                TileDirection actualDir = dirMap._directionGrid[i];
                 Assert.AreEqual(expectedDirMap[i], actualDir, $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDirMap[i]} but got {actualDir}");
             }
         }
@@ -116,7 +116,7 @@ namespace GridToolkitTests
             int targetX = 6;
             int targetY = 10;
             DirectionGrid dirMap = Pathfinding.GenerateDirectionGrid(_grid, GridUtils.GetTile(_grid, targetX, targetY), DiagonalsPolicy.DIAGONAL_1FREE);
-            NextTileDirection[] expectedDirMap = new NextTileDirection[20 * 25]
+            TileDirection[] expectedDirMap = new TileDirection[20 * 25]
             {
                 _dirs['↓'] , _dirs['0'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↓'] , _dirs['↙'] , _dirs['↙'] , _dirs['↓'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['0'] , _dirs['↓'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] ,
                 _dirs['↓'] , _dirs['0'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↓'] , _dirs['↙'] , _dirs['↘'] , _dirs['↓'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['0'] , _dirs['↓'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] ,
@@ -141,7 +141,7 @@ namespace GridToolkitTests
             };
             for (int i = 0; i < dirMap._directionGrid.Length; i++)
             {
-                NextTileDirection actualDir = dirMap._directionGrid[i];
+                TileDirection actualDir = dirMap._directionGrid[i];
                 Assert.AreEqual(expectedDirMap[i], actualDir, $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDirMap[i]} but got {actualDir}");
             }
         }
@@ -151,7 +151,7 @@ namespace GridToolkitTests
             int targetX = 6;
             int targetY = 10;
             DirectionGrid dirMap = Pathfinding.GenerateDirectionGrid(_grid, GridUtils.GetTile(_grid, targetX, targetY), DiagonalsPolicy.DIAGONAL_2FREE);
-            NextTileDirection[] expectedDirMap = new NextTileDirection[20 * 25]
+            TileDirection[] expectedDirMap = new TileDirection[20 * 25]
             {
                 _dirs['↓'] , _dirs['0'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↓'] , _dirs['↙'] , _dirs['↘'] , _dirs['↓'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['0'] , _dirs['↓'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] ,
                 _dirs['↓'] , _dirs['0'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↘'] , _dirs['↓'] , _dirs['←'] , _dirs['→'] , _dirs['↓'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['0'] , _dirs['↓'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] , _dirs['↙'] ,
@@ -176,7 +176,7 @@ namespace GridToolkitTests
         };
             for (int i = 0; i < dirMap._directionGrid.Length; i++)
             {
-                NextTileDirection actualDir = dirMap._directionGrid[i];
+                TileDirection actualDir = dirMap._directionGrid[i];
                 Assert.AreEqual(expectedDirMap[i], actualDir, $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDirMap[i]} but got {actualDir}");
             }
         }
@@ -526,8 +526,8 @@ namespace GridToolkitTests
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
             DirectionGrid dirMap = Pathfinding.GenerateDirectionGrid(_grid, target, DiagonalsPolicy.NONE);
-            NextTileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
-            NextTileDirection expectedDir = NextTileDirection.LEFT;
+            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
+            TileDirection expectedDir = TileDirection.LEFT;
             Assert.AreEqual(expectedDir, returnedDir);
         }
         [Test]
@@ -540,8 +540,8 @@ namespace GridToolkitTests
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
             DirectionGrid dirMap = Pathfinding.GenerateDirectionGrid(_grid, target, DiagonalsPolicy.ALL_DIAGONALS);
-            NextTileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
-            NextTileDirection expectedDir = NextTileDirection.UP_RIGHT;
+            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
+            TileDirection expectedDir = TileDirection.UP_RIGHT;
             Assert.AreEqual(expectedDir, returnedDir);
         }
         [Test]
@@ -554,8 +554,8 @@ namespace GridToolkitTests
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
             DirectionGrid dirMap = Pathfinding.GenerateDirectionGrid(_grid, target, DiagonalsPolicy.DIAGONAL_1FREE);
-            NextTileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
-            NextTileDirection expectedDir = NextTileDirection.UP_RIGHT;
+            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
+            TileDirection expectedDir = TileDirection.UP_RIGHT;
             Assert.AreEqual(expectedDir, returnedDir);
         }
         [Test]
@@ -568,8 +568,8 @@ namespace GridToolkitTests
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
             DirectionGrid dirMap = Pathfinding.GenerateDirectionGrid(_grid, target, DiagonalsPolicy.DIAGONAL_2FREE);
-            NextTileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
-            NextTileDirection expectedDir = NextTileDirection.UP;
+            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
+            TileDirection expectedDir = TileDirection.UP;
             Assert.AreEqual(expectedDir, returnedDir);
         }
         [Test]
@@ -602,7 +602,7 @@ namespace GridToolkitTests
             int targetY = 10;
             int maxDistance = 5;
             DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, GridUtils.GetTile(_grid, targetX, targetY), maxDistance, DiagonalsPolicy.NONE);
-            (NextTileDirection, Vector2Int)[] expectedDirMap = new (NextTileDirection, Vector2Int)[] { new(_dirs['↓'], new(9,8)),
+            (TileDirection, Vector2Int)[] expectedDirMap = new (TileDirection, Vector2Int)[] { new(_dirs['↓'], new(9,8)),
                 new(_dirs['↓'], new(5, 9)), new(_dirs['↓'], new(6, 9)), new(_dirs['↓'], new(7, 9)), new(_dirs['↓'], new(8, 9)), new(_dirs['↓'], new(9, 9)), new(_dirs['↓'], new(10, 9)),
                 new(_dirs['→'], new(5, 10)), new(_dirs['.'], new(6, 10)), new(_dirs['←'], new(7, 10)), new(_dirs['←'], new(8, 10)), new(_dirs['←'], new(9, 10)), new(_dirs['←'], new(10, 10)), new(_dirs['←'], new(11, 10)),
                 new(_dirs['↑'], new(5, 11)), new(_dirs['↑'], new(6, 11)), new(_dirs['↑'], new(7, 11)), new(_dirs['↑'], new(8, 11)), new(_dirs['↑'], new(9, 11)), new(_dirs['↑'], new(10, 11)),
@@ -612,7 +612,7 @@ namespace GridToolkitTests
             for (int i = 0; i < dirMap._accessibleTiles.Count; i++)
             {
                 var pair = dirMap._accessibleTiles.ElementAt(i);
-                NextTileDirection actualDir = pair.Value;
+                TileDirection actualDir = pair.Value;
                 Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key);
                 Assert.IsTrue(expectedDirMap.Any(x => x.Item2.x == coords.x && x.Item2.y == coords.y && x.Item1 == actualDir), $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key)} should be {expectedDirMap[i]} but got {actualDir}");
             }
@@ -624,7 +624,7 @@ namespace GridToolkitTests
             int targetY = 10;
             int maxDistance = 5;
             DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, GridUtils.GetTile(_grid, targetX, targetY), maxDistance, DiagonalsPolicy.ALL_DIAGONALS);
-            (NextTileDirection, Vector2Int)[] expectedDirMap = new (NextTileDirection, Vector2Int)[] {
+            (TileDirection, Vector2Int)[] expectedDirMap = new (TileDirection, Vector2Int)[] {
                 new(_dirs['↘'], new(7, 6)), new(_dirs['↘'], new(8, 6)), new(_dirs['↓'], new(9, 6)), new(_dirs['↙'], new(10, 6)), new(_dirs['↙'], new(11, 6)),
                 new(_dirs['→'], new(7, 7)), new(_dirs['↘'], new(8, 7)), new(_dirs['↓'], new(9, 7)), new(_dirs['↙'], new(10, 7)), new(_dirs['←'], new(11, 7)),
                 new(_dirs['↙'], new(9,8)),
@@ -640,7 +640,7 @@ namespace GridToolkitTests
             for (int i = 0; i < dirMap._accessibleTiles.Count; i++)
             {
                 var pair = dirMap._accessibleTiles.ElementAt(i);
-                NextTileDirection actualDir = pair.Value;
+                TileDirection actualDir = pair.Value;
                 Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key);
                 Assert.IsTrue(expectedDirMap.Any(x => x.Item2.x == coords.x && x.Item2.y == coords.y && x.Item1 == actualDir), $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key)} should be {expectedDirMap[i]} but got {actualDir}");
             }
@@ -652,7 +652,7 @@ namespace GridToolkitTests
             int targetY = 10;
             int maxDistance = 5;
             DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, GridUtils.GetTile(_grid, targetX, targetY), maxDistance, DiagonalsPolicy.DIAGONAL_1FREE);
-            (NextTileDirection, Vector2Int)[] expectedDirMap = new (NextTileDirection, Vector2Int)[] {
+            (TileDirection, Vector2Int)[] expectedDirMap = new (TileDirection, Vector2Int)[] {
                 new(_dirs['↘'], new(7, 6)), new(_dirs['↘'], new(8, 6)), new(_dirs['↓'], new(9, 6)), new(_dirs['↙'], new(10, 6)), new(_dirs['↙'], new(11, 6)),
                 new(_dirs['→'], new(7, 7)), new(_dirs['↘'], new(8, 7)), new(_dirs['↓'], new(9, 7)), new(_dirs['↙'], new(10, 7)), new(_dirs['←'], new(11, 7)),
                 new(_dirs['↙'], new(9,8)),
@@ -668,7 +668,7 @@ namespace GridToolkitTests
             for (int i = 0; i < dirMap._accessibleTiles.Count; i++)
             {
                 var pair = dirMap._accessibleTiles.ElementAt(i);
-                NextTileDirection actualDir = pair.Value;
+                TileDirection actualDir = pair.Value;
                 Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key);
                 Assert.IsTrue(expectedDirMap.Any(x => x.Item2.x == coords.x && x.Item2.y == coords.y && x.Item1 == actualDir), $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key)} should be {expectedDirMap[i]} but got {actualDir}");
             }
@@ -680,7 +680,7 @@ namespace GridToolkitTests
             int targetY = 10;
             int maxDistance = 5;
             DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, GridUtils.GetTile(_grid, targetX, targetY), maxDistance, DiagonalsPolicy.DIAGONAL_2FREE);
-            (NextTileDirection, Vector2Int)[] expectedDirMap = new (NextTileDirection, Vector2Int)[] {
+            (TileDirection, Vector2Int)[] expectedDirMap = new (TileDirection, Vector2Int)[] {
                 new(_dirs['↓'], new(9, 7)),
                 new(_dirs['↓'], new(9,8)),
                 new(_dirs['↘'], new(5, 9)), new(_dirs['↓'], new(6, 9)), new(_dirs['↙'], new(7, 9)), new(_dirs['↙'], new(8, 9)), new(_dirs['↙'], new(9, 9)), new(_dirs['↙'], new(10, 9)), new(_dirs['↙'], new(11, 9)),
@@ -695,7 +695,7 @@ namespace GridToolkitTests
             for (int i = 0; i < dirMap._accessibleTiles.Count; i++)
             {
                 var pair = dirMap._accessibleTiles.ElementAt(i);
-                NextTileDirection actualDir = pair.Value;
+                TileDirection actualDir = pair.Value;
                 Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key);
                 Assert.IsTrue(expectedDirMap.Any(x => x.Item2.x == coords.x && x.Item2.y == coords.y && x.Item1 == actualDir), $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key)} should be {expectedDirMap[i]} but got {actualDir}");
             }
@@ -1061,8 +1061,8 @@ namespace GridToolkitTests
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
             DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.NONE);
-            NextTileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
-            NextTileDirection expectedDir = NextTileDirection.UP;
+            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
+            TileDirection expectedDir = TileDirection.UP;
             Assert.AreEqual(expectedDir, returnedDir);
         }
         [Test]
@@ -1076,8 +1076,8 @@ namespace GridToolkitTests
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
             DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.ALL_DIAGONALS);
-            NextTileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
-            NextTileDirection expectedDir = NextTileDirection.DOWN_RIGHT;
+            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
+            TileDirection expectedDir = TileDirection.DOWN_RIGHT;
             Assert.AreEqual(expectedDir, returnedDir);
         }
         [Test]
@@ -1091,8 +1091,8 @@ namespace GridToolkitTests
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
             DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_1FREE);
-            NextTileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
-            NextTileDirection expectedDir = NextTileDirection.UP_RIGHT;
+            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
+            TileDirection expectedDir = TileDirection.UP_RIGHT;
             Assert.AreEqual(expectedDir, returnedDir);
         }
         [Test]
@@ -1106,8 +1106,8 @@ namespace GridToolkitTests
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
             DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_2FREE);
-            NextTileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
-            NextTileDirection expectedDir = NextTileDirection.UP;
+            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
+            TileDirection expectedDir = TileDirection.UP;
             Assert.AreEqual(expectedDir, returnedDir);
         }
 
@@ -1121,7 +1121,7 @@ namespace GridToolkitTests
             int targetX = 6;
             int targetY = 10;
             DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, GridUtils.GetTile(_grid, targetX, targetY), DiagonalsPolicy.NONE);
-            NextTileDirection[] expectedDirMap = new NextTileDirection[20 * 25]
+            TileDirection[] expectedDirMap = new TileDirection[20 * 25]
             {
                 _dirs['↓'], _dirs['0'], _dirs['→'], _dirs['↓'], _dirs['↓'], _dirs['→'], _dirs['↓'], _dirs['↓'], _dirs['→'], _dirs['↓'], _dirs['←'], _dirs['←'], _dirs['↓'], _dirs['↓'], _dirs['↓'], _dirs['↓'], _dirs['↓'], _dirs['0'], _dirs['↓'], _dirs['↓'], _dirs['←'], _dirs['↓'], _dirs['←'], _dirs['↓'], _dirs['↓'],
                 _dirs['↓'], _dirs['0'], _dirs['→'], _dirs['→'], _dirs['→'], _dirs['→'], _dirs['↓'], _dirs['↓'], _dirs['→'], _dirs['↓'], _dirs['←'], _dirs['←'], _dirs['↓'], _dirs['↓'], _dirs['←'], _dirs['↓'], _dirs['↓'], _dirs['0'], _dirs['↓'], _dirs['↓'], _dirs['↓'], _dirs['←'], _dirs['←'], _dirs['↓'], _dirs['←'],
@@ -1169,7 +1169,7 @@ namespace GridToolkitTests
             };
             for (int i = 0; i < dirMap._directionGrid.Length; i++)
             {
-                NextTileDirection actualDir = dirMap._directionGrid[i];
+                TileDirection actualDir = dirMap._directionGrid[i];
                 float actualDistance = dirMap._distanceGrid[i];
                 Assert.AreEqual(expectedDirMap[i], actualDir, $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDirMap[i]} but got {actualDir}");
                 Assert.IsTrue(Mathf.Approximately(expectedDistanceGrid[i], actualDistance), $"Distance for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDistanceGrid[i]} but got {actualDistance}");
@@ -1181,7 +1181,7 @@ namespace GridToolkitTests
             int targetX = 6;
             int targetY = 10;
             DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, GridUtils.GetTile(_grid, targetX, targetY), DiagonalsPolicy.ALL_DIAGONALS);
-            NextTileDirection[] expectedDirMap = new NextTileDirection[20 * 25]
+            TileDirection[] expectedDirMap = new TileDirection[20 * 25]
             {
                 _dirs['↓'], _dirs['0'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↓'], _dirs['↙'], _dirs['↙'], _dirs['↓'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['0'], _dirs['↓'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'],
                 _dirs['↓'], _dirs['0'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↓'], _dirs['↙'], _dirs['←'], _dirs['↓'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['0'], _dirs['↓'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'],
@@ -1229,7 +1229,7 @@ namespace GridToolkitTests
             };
             for (int i = 0; i < dirMap._directionGrid.Length; i++)
             {
-                NextTileDirection actualDir = dirMap._directionGrid[i];
+                TileDirection actualDir = dirMap._directionGrid[i];
                 float actualDistance = dirMap._distanceGrid[i];
                 Assert.AreEqual(expectedDirMap[i], actualDir, $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDirMap[i]} but got {actualDir}");
                 Assert.IsTrue(Mathf.Abs(expectedDistanceGrid[i] - actualDistance) < 0.01f, $"Distance for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDistanceGrid[i]} but got {actualDistance}");
@@ -1241,7 +1241,7 @@ namespace GridToolkitTests
             int targetX = 6;
             int targetY = 10;
             DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, GridUtils.GetTile(_grid, targetX, targetY), DiagonalsPolicy.DIAGONAL_1FREE);
-            NextTileDirection[] expectedDirMap = new NextTileDirection[20 * 25]
+            TileDirection[] expectedDirMap = new TileDirection[20 * 25]
             {
                 _dirs['↓'], _dirs['0'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↓'], _dirs['↙'], _dirs['↙'], _dirs['↓'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['0'], _dirs['↓'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'],
                 _dirs['↓'], _dirs['0'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↓'], _dirs['↙'], _dirs['←'], _dirs['↓'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['0'], _dirs['↓'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'],
@@ -1289,7 +1289,7 @@ namespace GridToolkitTests
             };
             for (int i = 0; i < dirMap._directionGrid.Length; i++)
             {
-                NextTileDirection actualDir = dirMap._directionGrid[i];
+                TileDirection actualDir = dirMap._directionGrid[i];
                 float actualDistance = dirMap._distanceGrid[i];
                 Assert.AreEqual(expectedDirMap[i], actualDir, $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDirMap[i]} but got {actualDir}");
                 Assert.IsTrue(Mathf.Abs(expectedDistanceGrid[i] - actualDistance) < 0.01f, $"Distance for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDistanceGrid[i]} but got {actualDistance}");
@@ -1301,7 +1301,7 @@ namespace GridToolkitTests
             int targetX = 6;
             int targetY = 10;
             DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, GridUtils.GetTile(_grid, targetX, targetY), DiagonalsPolicy.DIAGONAL_2FREE);
-            NextTileDirection[] expectedDirMap = new NextTileDirection[20 * 25]
+            TileDirection[] expectedDirMap = new TileDirection[20 * 25]
             {
                 _dirs['↓'], _dirs['0'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↓'], _dirs['↙'], _dirs['↙'], _dirs['↓'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['0'], _dirs['↓'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'],
                 _dirs['↓'], _dirs['0'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↘'], _dirs['↓'], _dirs['←'], _dirs['←'], _dirs['↓'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['0'], _dirs['↓'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'], _dirs['↙'],
@@ -1349,7 +1349,7 @@ namespace GridToolkitTests
             };
             for (int i = 0; i < dirMap._directionGrid.Length; i++)
             {
-                NextTileDirection actualDir = dirMap._directionGrid[i];
+                TileDirection actualDir = dirMap._directionGrid[i];
                 float actualDistance = dirMap._distanceGrid[i];
                 Assert.AreEqual(expectedDirMap[i], actualDir, $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDirMap[i]} but got {actualDir}");
                 Assert.IsTrue(Mathf.Abs(expectedDistanceGrid[i] - actualDistance) < 0.01f, $"Distance for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), i)} should be {expectedDistanceGrid[i]} but got {actualDistance}");
@@ -1701,8 +1701,8 @@ namespace GridToolkitTests
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
             DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, target, DiagonalsPolicy.NONE);
-            NextTileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
-            NextTileDirection expectedDir = NextTileDirection.LEFT;
+            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
+            TileDirection expectedDir = TileDirection.LEFT;
             Assert.AreEqual(expectedDir, returnedDir);
         }
         [Test]
@@ -1715,8 +1715,8 @@ namespace GridToolkitTests
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
             DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, target, DiagonalsPolicy.ALL_DIAGONALS);
-            NextTileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
-            NextTileDirection expectedDir = NextTileDirection.UP_RIGHT;
+            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
+            TileDirection expectedDir = TileDirection.UP_RIGHT;
             Assert.AreEqual(expectedDir, returnedDir);
         }
         [Test]
@@ -1729,8 +1729,8 @@ namespace GridToolkitTests
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
             DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, target, DiagonalsPolicy.DIAGONAL_1FREE);
-            NextTileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
-            NextTileDirection expectedDir = NextTileDirection.UP_RIGHT;
+            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
+            TileDirection expectedDir = TileDirection.UP_RIGHT;
             Assert.AreEqual(expectedDir, returnedDir);
         }
         [Test]
@@ -1743,8 +1743,8 @@ namespace GridToolkitTests
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
             DijkstraGrid dirMap = Pathfinding.GenerateDijkstraGrid(_grid, target, DiagonalsPolicy.DIAGONAL_2FREE);
-            NextTileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
-            NextTileDirection expectedDir = NextTileDirection.UP;
+            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
+            TileDirection expectedDir = TileDirection.UP;
             Assert.AreEqual(expectedDir, returnedDir);
         }
         [Test]
@@ -1789,12 +1789,12 @@ namespace GridToolkitTests
             int targetY = 10;
             float maxDistance = 5f;
             DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, GridUtils.GetTile(_grid, targetX, targetY), maxDistance, DiagonalsPolicy.NONE);
-            ((NextTileDirection, float), Vector2Int)[] expectedDirMap = new ((NextTileDirection, float), Vector2Int)[] { new((_dirs['.'], 0.00000f), new(6, 10)), new((_dirs['→'], 1.00000f), new(5, 10)), new((_dirs['←'], 1.00000f), new(7, 10)), new((_dirs['↓'], 1.00000f), new(6, 9)), new((_dirs['↑'], 1.00000f), new(6, 11)), new((_dirs['↓'], 2.00000f), new(5, 9)), new((_dirs['↑'], 2.00000f), new(5, 11)), new((_dirs['←'], 2.00000f), new(7, 11)), new((_dirs['←'], 2.00000f), new(8, 10)), new((_dirs['↓'], 2.00000f), new(7, 9)), new((_dirs['←'], 3.00000f), new(8, 9)), new((_dirs['←'], 3.00000f), new(9, 10)), new((_dirs['↑'], 3.00000f), new(8, 11)), new((_dirs['↑'], 3.00000f), new(7, 12)), new((_dirs['↑'], 4.00000f), new(7, 13)), new((_dirs['←'], 4.00000f), new(10, 10)), new((_dirs['↓'], 4.00000f), new(9, 9)), new((_dirs['↑'], 4.00000f), new(9, 11)), new((_dirs['←'], 5.00000f), new(10, 9)), new((_dirs['↓'], 5.00000f), new(9, 8)), new((_dirs['←'], 5.00000f), new(11, 10)), new((_dirs['↑'], 5.00000f), new(10, 11)), new((_dirs['←'], 5.00000f), new(8, 13)), new((_dirs['↑'], 5.00000f), new(7, 14)), };
+            ((TileDirection, float), Vector2Int)[] expectedDirMap = new ((TileDirection, float), Vector2Int)[] { new((_dirs['.'], 0.00000f), new(6, 10)), new((_dirs['→'], 1.00000f), new(5, 10)), new((_dirs['←'], 1.00000f), new(7, 10)), new((_dirs['↓'], 1.00000f), new(6, 9)), new((_dirs['↑'], 1.00000f), new(6, 11)), new((_dirs['↓'], 2.00000f), new(5, 9)), new((_dirs['↑'], 2.00000f), new(5, 11)), new((_dirs['←'], 2.00000f), new(7, 11)), new((_dirs['←'], 2.00000f), new(8, 10)), new((_dirs['↓'], 2.00000f), new(7, 9)), new((_dirs['←'], 3.00000f), new(8, 9)), new((_dirs['←'], 3.00000f), new(9, 10)), new((_dirs['↑'], 3.00000f), new(8, 11)), new((_dirs['↑'], 3.00000f), new(7, 12)), new((_dirs['↑'], 4.00000f), new(7, 13)), new((_dirs['←'], 4.00000f), new(10, 10)), new((_dirs['↓'], 4.00000f), new(9, 9)), new((_dirs['↑'], 4.00000f), new(9, 11)), new((_dirs['←'], 5.00000f), new(10, 9)), new((_dirs['↓'], 5.00000f), new(9, 8)), new((_dirs['←'], 5.00000f), new(11, 10)), new((_dirs['↑'], 5.00000f), new(10, 11)), new((_dirs['←'], 5.00000f), new(8, 13)), new((_dirs['↑'], 5.00000f), new(7, 14)), };
             Assert.AreEqual(expectedDirMap.Length, dirMap.AccessibleTilesCount);
             for (int i = 0; i < dirMap._accessibleTiles.Count; i++)
             {
                 var pair = dirMap._accessibleTiles.ElementAt(i);
-                NextTileDirection actualDir = pair.Value.Item1;
+                TileDirection actualDir = pair.Value.Item1;
                 float actualDist = pair.Value.Item2;
                 Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key);
                 Assert.IsTrue(expectedDirMap.Any(x => x.Item2.x == coords.x && x.Item2.y == coords.y && x.Item1.Item1 == actualDir && Mathf.Approximately(x.Item1.Item2 , actualDist)), $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key)} should be {expectedDirMap[i]} but got {actualDir}");
@@ -1807,12 +1807,12 @@ namespace GridToolkitTests
             int targetY = 10;
             float maxDistance = 5f;
             DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, GridUtils.GetTile(_grid, targetX, targetY), maxDistance, DiagonalsPolicy.ALL_DIAGONALS);
-            ((NextTileDirection, float), Vector2Int)[] expectedDirMap = new ((NextTileDirection, float), Vector2Int)[] { new((_dirs['.'], 0.000f), new(6, 10)), new((_dirs['→'], 1.000f), new(5, 10)), new((_dirs['←'], 1.000f), new(7, 10)), new((_dirs['↓'], 1.000f), new(6, 9)), new((_dirs['↑'], 1.000f), new(6, 11)), new((_dirs['↘'], 1.414f), new(5, 9)), new((_dirs['↙'], 1.414f), new(7, 9)), new((_dirs['↗'], 1.414f), new(5, 11)), new((_dirs['↖'], 1.414f), new(7, 11)), new((_dirs['←'], 2.000f), new(8, 10)), new((_dirs['↙'], 2.414f), new(8, 9)), new((_dirs['↖'], 2.414f), new(8, 11)), new((_dirs['↖'], 2.414f), new(7, 12)), new((_dirs['←'], 3.000f), new(9, 10)), new((_dirs['↙'], 3.414f), new(9, 9)), new((_dirs['↖'], 3.414f), new(9, 11)), new((_dirs['↙'], 3.828f), new(9, 8)), new((_dirs['↑'], 3.414f), new(7, 13)), new((_dirs['↖'], 3.828f), new(8, 13)), new((_dirs['←'], 4.000f), new(10, 10)), new((_dirs['↙'], 4.414f), new(10, 9)), new((_dirs['↖'], 4.414f), new(10, 11)), new((_dirs['↑'], 4.414f), new(7, 14)), new((_dirs['↗'], 4.828f), new(6, 14)), new((_dirs['↖'], 4.828f), new(8, 14)), new((_dirs['←'], 4.828f), new(9, 13)), new((_dirs['↓'], 4.828f), new(9, 7)), new((_dirs['←'], 5.000f), new(11, 10)), };
+            ((TileDirection, float), Vector2Int)[] expectedDirMap = new ((TileDirection, float), Vector2Int)[] { new((_dirs['.'], 0.000f), new(6, 10)), new((_dirs['→'], 1.000f), new(5, 10)), new((_dirs['←'], 1.000f), new(7, 10)), new((_dirs['↓'], 1.000f), new(6, 9)), new((_dirs['↑'], 1.000f), new(6, 11)), new((_dirs['↘'], 1.414f), new(5, 9)), new((_dirs['↙'], 1.414f), new(7, 9)), new((_dirs['↗'], 1.414f), new(5, 11)), new((_dirs['↖'], 1.414f), new(7, 11)), new((_dirs['←'], 2.000f), new(8, 10)), new((_dirs['↙'], 2.414f), new(8, 9)), new((_dirs['↖'], 2.414f), new(8, 11)), new((_dirs['↖'], 2.414f), new(7, 12)), new((_dirs['←'], 3.000f), new(9, 10)), new((_dirs['↙'], 3.414f), new(9, 9)), new((_dirs['↖'], 3.414f), new(9, 11)), new((_dirs['↙'], 3.828f), new(9, 8)), new((_dirs['↑'], 3.414f), new(7, 13)), new((_dirs['↖'], 3.828f), new(8, 13)), new((_dirs['←'], 4.000f), new(10, 10)), new((_dirs['↙'], 4.414f), new(10, 9)), new((_dirs['↖'], 4.414f), new(10, 11)), new((_dirs['↑'], 4.414f), new(7, 14)), new((_dirs['↗'], 4.828f), new(6, 14)), new((_dirs['↖'], 4.828f), new(8, 14)), new((_dirs['←'], 4.828f), new(9, 13)), new((_dirs['↓'], 4.828f), new(9, 7)), new((_dirs['←'], 5.000f), new(11, 10)), };
             Assert.AreEqual(expectedDirMap.Length, dirMap.AccessibleTilesCount);
             for (int i = 0; i < dirMap._accessibleTiles.Count; i++)
             {
                 var pair = dirMap._accessibleTiles.ElementAt(i);
-                NextTileDirection actualDir = pair.Value.Item1;
+                TileDirection actualDir = pair.Value.Item1;
                 float actualDist = pair.Value.Item2;
                 Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key);
                 Assert.IsTrue(expectedDirMap.Any(x => x.Item2.x == coords.x && x.Item2.y == coords.y && x.Item1.Item1 == actualDir && Mathf.Approximately(x.Item1.Item2, actualDist)), $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key)} should be {expectedDirMap[i].Item1.Item1} and got {actualDir}, distance should be {expectedDirMap[i].Item1.Item2} and got {actualDist} ");
@@ -1825,12 +1825,12 @@ namespace GridToolkitTests
             int targetY = 10;
             float maxDistance = 5f;
             DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, GridUtils.GetTile(_grid, targetX, targetY), maxDistance, DiagonalsPolicy.DIAGONAL_1FREE);
-            ((NextTileDirection, float), Vector2Int)[] expectedDirMap = new ((NextTileDirection, float), Vector2Int)[] { new((_dirs['.'], 0.000f), new(6, 10)), new((_dirs['→'], 1.000f), new(5, 10)), new((_dirs['←'], 1.000f), new(7, 10)), new((_dirs['↓'], 1.000f), new(6, 9)), new((_dirs['↑'], 1.000f), new(6, 11)), new((_dirs['↘'], 1.414f), new(5, 9)), new((_dirs['↙'], 1.414f), new(7, 9)), new((_dirs['↗'], 1.414f), new(5, 11)), new((_dirs['↖'], 1.414f), new(7, 11)), new((_dirs['←'], 2.000f), new(8, 10)), new((_dirs['↙'], 2.414f), new(8, 9)), new((_dirs['↖'], 2.414f), new(8, 11)), new((_dirs['↖'], 2.414f), new(7, 12)), new((_dirs['←'], 3.000f), new(9, 10)), new((_dirs['↙'], 3.414f), new(9, 9)), new((_dirs['↖'], 3.414f), new(9, 11)), new((_dirs['↙'], 3.828f), new(9, 8)), new((_dirs['↑'], 3.414f), new(7, 13)), new((_dirs['↖'], 3.828f), new(8, 13)), new((_dirs['←'], 4.000f), new(10, 10)), new((_dirs['↙'], 4.414f), new(10, 9)), new((_dirs['↖'], 4.414f), new(10, 11)), new((_dirs['↑'], 4.414f), new(7, 14)), new((_dirs['↗'], 4.828f), new(6, 14)), new((_dirs['↖'], 4.828f), new(8, 14)), new((_dirs['←'], 4.828f), new(9, 13)), new((_dirs['↓'], 4.828f), new(9, 7)), new((_dirs['←'], 5.000f), new(11, 10)), };
+            ((TileDirection, float), Vector2Int)[] expectedDirMap = new ((TileDirection, float), Vector2Int)[] { new((_dirs['.'], 0.000f), new(6, 10)), new((_dirs['→'], 1.000f), new(5, 10)), new((_dirs['←'], 1.000f), new(7, 10)), new((_dirs['↓'], 1.000f), new(6, 9)), new((_dirs['↑'], 1.000f), new(6, 11)), new((_dirs['↘'], 1.414f), new(5, 9)), new((_dirs['↙'], 1.414f), new(7, 9)), new((_dirs['↗'], 1.414f), new(5, 11)), new((_dirs['↖'], 1.414f), new(7, 11)), new((_dirs['←'], 2.000f), new(8, 10)), new((_dirs['↙'], 2.414f), new(8, 9)), new((_dirs['↖'], 2.414f), new(8, 11)), new((_dirs['↖'], 2.414f), new(7, 12)), new((_dirs['←'], 3.000f), new(9, 10)), new((_dirs['↙'], 3.414f), new(9, 9)), new((_dirs['↖'], 3.414f), new(9, 11)), new((_dirs['↙'], 3.828f), new(9, 8)), new((_dirs['↑'], 3.414f), new(7, 13)), new((_dirs['↖'], 3.828f), new(8, 13)), new((_dirs['←'], 4.000f), new(10, 10)), new((_dirs['↙'], 4.414f), new(10, 9)), new((_dirs['↖'], 4.414f), new(10, 11)), new((_dirs['↑'], 4.414f), new(7, 14)), new((_dirs['↗'], 4.828f), new(6, 14)), new((_dirs['↖'], 4.828f), new(8, 14)), new((_dirs['←'], 4.828f), new(9, 13)), new((_dirs['↓'], 4.828f), new(9, 7)), new((_dirs['←'], 5.000f), new(11, 10)), };
             Assert.AreEqual(expectedDirMap.Length, dirMap.AccessibleTilesCount);
             for (int i = 0; i < dirMap._accessibleTiles.Count; i++)
             {
                 var pair = dirMap._accessibleTiles.ElementAt(i);
-                NextTileDirection actualDir = pair.Value.Item1;
+                TileDirection actualDir = pair.Value.Item1;
                 float actualDist = pair.Value.Item2;
                 Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key);
                 Assert.IsTrue(expectedDirMap.Any(x => x.Item2.x == coords.x && x.Item2.y == coords.y && x.Item1.Item1 == actualDir && Mathf.Approximately(x.Item1.Item2, actualDist)), $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key)} should be {expectedDirMap[i]} but got {actualDir}");
@@ -1843,12 +1843,12 @@ namespace GridToolkitTests
             int targetY = 10;
             float maxDistance = 5f;
             DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, GridUtils.GetTile(_grid, targetX, targetY), maxDistance, DiagonalsPolicy.DIAGONAL_2FREE);
-            ((NextTileDirection, float), Vector2Int)[] expectedDirMap = new ((NextTileDirection, float), Vector2Int)[] { new((_dirs['.'], 0.000f), new(6, 10)), new((_dirs['→'], 1.000f), new(5, 10)), new((_dirs['←'], 1.000f), new(7, 10)), new((_dirs['↓'], 1.000f), new(6, 9)), new((_dirs['↑'], 1.000f), new(6, 11)), new((_dirs['↘'], 1.414f), new(5, 9)), new((_dirs['↙'], 1.414f), new(7, 9)), new((_dirs['↗'], 1.414f), new(5, 11)), new((_dirs['↖'], 1.414f), new(7, 11)), new((_dirs['←'], 2.000f), new(8, 10)), new((_dirs['↙'], 2.414f), new(8, 9)), new((_dirs['↖'], 2.414f), new(8, 11)), new((_dirs['↑'], 2.414f), new(7, 12)), new((_dirs['←'], 3.000f), new(9, 10)), new((_dirs['↙'], 3.414f), new(9, 9)), new((_dirs['↖'], 3.414f), new(9, 11)), new((_dirs['↑'], 3.414f), new(7, 13)), new((_dirs['←'], 4.000f), new(10, 10)), new((_dirs['↙'], 4.414f), new(10, 9)), new((_dirs['↖'], 4.414f), new(10, 11)), new((_dirs['←'], 4.414f), new(8, 13)), new((_dirs['↑'], 4.414f), new(7, 14)), new((_dirs['↖'], 4.828f), new(8, 14)), new((_dirs['↓'], 4.414f), new(9, 8)), new((_dirs['←'], 5.000f), new(11, 10)), };
+            ((TileDirection, float), Vector2Int)[] expectedDirMap = new ((TileDirection, float), Vector2Int)[] { new((_dirs['.'], 0.000f), new(6, 10)), new((_dirs['→'], 1.000f), new(5, 10)), new((_dirs['←'], 1.000f), new(7, 10)), new((_dirs['↓'], 1.000f), new(6, 9)), new((_dirs['↑'], 1.000f), new(6, 11)), new((_dirs['↘'], 1.414f), new(5, 9)), new((_dirs['↙'], 1.414f), new(7, 9)), new((_dirs['↗'], 1.414f), new(5, 11)), new((_dirs['↖'], 1.414f), new(7, 11)), new((_dirs['←'], 2.000f), new(8, 10)), new((_dirs['↙'], 2.414f), new(8, 9)), new((_dirs['↖'], 2.414f), new(8, 11)), new((_dirs['↑'], 2.414f), new(7, 12)), new((_dirs['←'], 3.000f), new(9, 10)), new((_dirs['↙'], 3.414f), new(9, 9)), new((_dirs['↖'], 3.414f), new(9, 11)), new((_dirs['↑'], 3.414f), new(7, 13)), new((_dirs['←'], 4.000f), new(10, 10)), new((_dirs['↙'], 4.414f), new(10, 9)), new((_dirs['↖'], 4.414f), new(10, 11)), new((_dirs['←'], 4.414f), new(8, 13)), new((_dirs['↑'], 4.414f), new(7, 14)), new((_dirs['↖'], 4.828f), new(8, 14)), new((_dirs['↓'], 4.414f), new(9, 8)), new((_dirs['←'], 5.000f), new(11, 10)), };
             Assert.AreEqual(expectedDirMap.Length, dirMap.AccessibleTilesCount);
             for (int i = 0; i < dirMap._accessibleTiles.Count; i++)
             {
                 var pair = dirMap._accessibleTiles.ElementAt(i);
-                NextTileDirection actualDir = pair.Value.Item1;
+                TileDirection actualDir = pair.Value.Item1;
                 float actualDist = pair.Value.Item2;
                 Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key);
                 Assert.IsTrue(expectedDirMap.Any(x => x.Item2.x == coords.x && x.Item2.y == coords.y && x.Item1.Item1 == actualDir && Mathf.Approximately(x.Item1.Item2, actualDist)), $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key)} should be {expectedDirMap[i]} but got {actualDir}");
@@ -2215,8 +2215,8 @@ namespace GridToolkitTests
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
             float maxDistance = 20f;
             DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.NONE);
-            NextTileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
-            NextTileDirection expectedDir = NextTileDirection.LEFT;
+            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
+            TileDirection expectedDir = TileDirection.LEFT;
             Assert.AreEqual(expectedDir, returnedDir);
         }
         [Test]
@@ -2230,8 +2230,8 @@ namespace GridToolkitTests
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
             float maxDistance = 20f;
             DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.ALL_DIAGONALS);
-            NextTileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
-            NextTileDirection expectedDir = NextTileDirection.UP_RIGHT;
+            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
+            TileDirection expectedDir = TileDirection.UP_RIGHT;
             Assert.AreEqual(expectedDir, returnedDir);
         }
         [Test]
@@ -2245,8 +2245,8 @@ namespace GridToolkitTests
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
             float maxDistance = 20f;
             DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_1FREE);
-            NextTileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
-            NextTileDirection expectedDir = NextTileDirection.UP_RIGHT;
+            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
+            TileDirection expectedDir = TileDirection.UP_RIGHT;
             Assert.AreEqual(expectedDir, returnedDir);
         }
         [Test]
@@ -2260,8 +2260,8 @@ namespace GridToolkitTests
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
             float maxDistance = 20f;
             DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_2FREE);
-            NextTileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
-            NextTileDirection expectedDir = NextTileDirection.UP;
+            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
+            TileDirection expectedDir = TileDirection.UP;
             Assert.AreEqual(expectedDir, returnedDir);
         }
         [Test]
@@ -2594,8 +2594,8 @@ namespace GridToolkitTests
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
             DirectionAtlas dirAtlas = Pathfinding.GenerateDirectionAtlas(_grid, DiagonalsPolicy.NONE);
-            NextTileDirection returnedDir = dirAtlas.GetNextTileDirectionFromTile(_grid, start, target);
-            NextTileDirection expectedDir = NextTileDirection.LEFT;
+            TileDirection returnedDir = dirAtlas.GetNextTileDirectionFromTile(_grid, start, target);
+            TileDirection expectedDir = TileDirection.LEFT;
             Assert.AreEqual(expectedDir, returnedDir);
         }
         [Test]
@@ -2608,8 +2608,8 @@ namespace GridToolkitTests
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
             DirectionAtlas dirAtlas = Pathfinding.GenerateDirectionAtlas(_grid, DiagonalsPolicy.ALL_DIAGONALS);
-            NextTileDirection returnedDir = dirAtlas.GetNextTileDirectionFromTile(_grid, start, target);
-            NextTileDirection expectedDir = NextTileDirection.UP_RIGHT;
+            TileDirection returnedDir = dirAtlas.GetNextTileDirectionFromTile(_grid, start, target);
+            TileDirection expectedDir = TileDirection.UP_RIGHT;
             Assert.AreEqual(expectedDir, returnedDir);
         }
         [Test]
@@ -2622,8 +2622,8 @@ namespace GridToolkitTests
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
             DirectionAtlas dirAtlas = Pathfinding.GenerateDirectionAtlas(_grid, DiagonalsPolicy.DIAGONAL_1FREE);
-            NextTileDirection returnedDir = dirAtlas.GetNextTileDirectionFromTile(_grid, start, target);
-            NextTileDirection expectedDir = NextTileDirection.UP_RIGHT;
+            TileDirection returnedDir = dirAtlas.GetNextTileDirectionFromTile(_grid, start, target);
+            TileDirection expectedDir = TileDirection.UP_RIGHT;
             Assert.AreEqual(expectedDir, returnedDir);
         }
         [Test]
@@ -2636,8 +2636,8 @@ namespace GridToolkitTests
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
             DirectionAtlas dirAtlas = Pathfinding.GenerateDirectionAtlas(_grid, DiagonalsPolicy.DIAGONAL_2FREE);
-            NextTileDirection returnedDir = dirAtlas.GetNextTileDirectionFromTile(_grid, start, target);
-            NextTileDirection expectedDir = NextTileDirection.UP;
+            TileDirection returnedDir = dirAtlas.GetNextTileDirectionFromTile(_grid, start, target);
+            TileDirection expectedDir = TileDirection.UP;
             Assert.AreEqual(expectedDir, returnedDir);
         }
         [Test]
@@ -2878,8 +2878,8 @@ namespace GridToolkitTests
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
             DijkstraAtlas dijAtlas = Pathfinding.GenerateDijkstraAtlas(_grid, DiagonalsPolicy.NONE);
-            NextTileDirection returnedDir = dijAtlas.GetNextTileDirectionFromTile(_grid, start, target);
-            NextTileDirection expectedDir = NextTileDirection.LEFT;
+            TileDirection returnedDir = dijAtlas.GetNextTileDirectionFromTile(_grid, start, target);
+            TileDirection expectedDir = TileDirection.LEFT;
             Assert.AreEqual(expectedDir, returnedDir);
         }
         [Test]
@@ -2892,8 +2892,8 @@ namespace GridToolkitTests
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
             DijkstraAtlas dijAtlas = Pathfinding.GenerateDijkstraAtlas(_grid, DiagonalsPolicy.ALL_DIAGONALS);
-            NextTileDirection returnedDir = dijAtlas.GetNextTileDirectionFromTile(_grid, start, target);
-            NextTileDirection expectedDir = NextTileDirection.UP_RIGHT;
+            TileDirection returnedDir = dijAtlas.GetNextTileDirectionFromTile(_grid, start, target);
+            TileDirection expectedDir = TileDirection.UP_RIGHT;
             Assert.AreEqual(expectedDir, returnedDir);
         }
         [Test]
@@ -2906,8 +2906,8 @@ namespace GridToolkitTests
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
             DijkstraAtlas dijAtlas = Pathfinding.GenerateDijkstraAtlas(_grid, DiagonalsPolicy.DIAGONAL_1FREE);
-            NextTileDirection returnedDir = dijAtlas.GetNextTileDirectionFromTile(_grid, start, target);
-            NextTileDirection expectedDir = NextTileDirection.UP_RIGHT;
+            TileDirection returnedDir = dijAtlas.GetNextTileDirectionFromTile(_grid, start, target);
+            TileDirection expectedDir = TileDirection.UP_RIGHT;
             Assert.AreEqual(expectedDir, returnedDir);
         }
         [Test]
@@ -2920,8 +2920,8 @@ namespace GridToolkitTests
             TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
             TestTile start = GridUtils.GetTile(_grid, startX, startY);
             DijkstraAtlas dijAtlas = Pathfinding.GenerateDijkstraAtlas(_grid, DiagonalsPolicy.DIAGONAL_2FREE);
-            NextTileDirection returnedDir = dijAtlas.GetNextTileDirectionFromTile(_grid, start, target);
-            NextTileDirection expectedDir = NextTileDirection.UP;
+            TileDirection returnedDir = dijAtlas.GetNextTileDirectionFromTile(_grid, start, target);
+            TileDirection expectedDir = TileDirection.UP;
             Assert.AreEqual(expectedDir, returnedDir);
         }
         [Test]

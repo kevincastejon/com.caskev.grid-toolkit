@@ -535,19 +535,19 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
                     bool hasDirection = _dijkstraAtlas.HasPath(_grid.Map, _grid.Map[i, j], _targetTile);
                     if (hasDirection)
                     {
-                        NextTileDirection nextDirection = _dijkstraAtlas.GetNextTileDirectionFromTile(_grid.Map, _grid.Map[i, j], _targetTile);
+                        TileDirection nextDirection = _dijkstraAtlas.GetNextTileDirectionFromTile(_grid.Map, _grid.Map[i, j], _targetTile);
                         switch (nextDirection)
                         {
-                            case NextTileDirection.RIGHT: angle = 0f; break;
-                            case NextTileDirection.UP: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -90f : 90f; break;
-                            case NextTileDirection.LEFT: angle = 180f; break;
-                            case NextTileDirection.DOWN: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 90f : -90f; break;
-                            case NextTileDirection.UP_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -45f : 45f; break;
-                            case NextTileDirection.UP_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -135f : 135f; break;
-                            case NextTileDirection.DOWN_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 135f : -135f; break;
-                            case NextTileDirection.DOWN_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 45f : -45f; break;
-                            case NextTileDirection.NONE: break;
-                            case NextTileDirection.SELF: default: hasDirection = false; break;
+                            case TileDirection.RIGHT: angle = 0f; break;
+                            case TileDirection.UP: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -90f : 90f; break;
+                            case TileDirection.LEFT: angle = 180f; break;
+                            case TileDirection.DOWN: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 90f : -90f; break;
+                            case TileDirection.UP_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -45f : 45f; break;
+                            case TileDirection.UP_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -135f : 135f; break;
+                            case TileDirection.DOWN_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 135f : -135f; break;
+                            case TileDirection.DOWN_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 45f : -45f; break;
+                            case TileDirection.NONE: break;
+                            case TileDirection.SELF: default: hasDirection = false; break;
                         }
                     }
                     Quaternion rot = Quaternion.Euler(0f, 0f, angle);
@@ -578,19 +578,19 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
                     bool hasDirection = _dijkstraGrid.IsTileAccessible(_grid.Map, _grid.Map[i, j]);
                     if (hasDirection)
                     {
-                        NextTileDirection nextDirection = _dijkstraGrid.GetNextTileDirectionFromTile(_grid.Map, _grid.Map[i, j]);
+                        TileDirection nextDirection = _dijkstraGrid.GetNextTileDirectionFromTile(_grid.Map, _grid.Map[i, j]);
                         switch (nextDirection)
                         {
-                            case NextTileDirection.RIGHT: angle = 0f; break;
-                            case NextTileDirection.UP: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -90f : 90f; break;
-                            case NextTileDirection.LEFT: angle = 180f; break;
-                            case NextTileDirection.DOWN: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 90f : -90f; break;
-                            case NextTileDirection.UP_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -45f : 45f; break;
-                            case NextTileDirection.UP_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -135f : 135f; break;
-                            case NextTileDirection.DOWN_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 135f : -135f; break;
-                            case NextTileDirection.DOWN_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 45f : -45f; break;
-                            case NextTileDirection.NONE: break;
-                            case NextTileDirection.SELF: default: hasDirection = false; break;
+                            case TileDirection.RIGHT: angle = 0f; break;
+                            case TileDirection.UP: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -90f : 90f; break;
+                            case TileDirection.LEFT: angle = 180f; break;
+                            case TileDirection.DOWN: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 90f : -90f; break;
+                            case TileDirection.UP_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -45f : 45f; break;
+                            case TileDirection.UP_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -135f : 135f; break;
+                            case TileDirection.DOWN_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 135f : -135f; break;
+                            case TileDirection.DOWN_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 45f : -45f; break;
+                            case TileDirection.NONE: break;
+                            case TileDirection.SELF: default: hasDirection = false; break;
                         }
                     }
                     Quaternion rot = Quaternion.Euler(0f, 0f, angle);
@@ -621,19 +621,19 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
                     bool hasDirection = _dijkstraField.IsTileAccessible(_grid.Map, _grid.Map[i, j]);
                     if (hasDirection)
                     {
-                        NextTileDirection nextDirection = _dijkstraField.GetNextTileDirectionFromTile(_grid.Map, _grid.Map[i, j]);
+                        TileDirection nextDirection = _dijkstraField.GetNextTileDirectionFromTile(_grid.Map, _grid.Map[i, j]);
                         switch (nextDirection)
                         {
-                            case NextTileDirection.RIGHT: angle = 0f; break;
-                            case NextTileDirection.UP: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -90f : 90f; break;
-                            case NextTileDirection.LEFT: angle = 180f; break;
-                            case NextTileDirection.DOWN: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 90f : -90f; break;
-                            case NextTileDirection.UP_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -45f : 45f; break;
-                            case NextTileDirection.UP_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -135f : 135f; break;
-                            case NextTileDirection.DOWN_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 135f : -135f; break;
-                            case NextTileDirection.DOWN_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 45f : -45f; break;
-                            case NextTileDirection.NONE: break;
-                            case NextTileDirection.SELF: default: hasDirection = false; break;
+                            case TileDirection.RIGHT: angle = 0f; break;
+                            case TileDirection.UP: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -90f : 90f; break;
+                            case TileDirection.LEFT: angle = 180f; break;
+                            case TileDirection.DOWN: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 90f : -90f; break;
+                            case TileDirection.UP_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -45f : 45f; break;
+                            case TileDirection.UP_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -135f : 135f; break;
+                            case TileDirection.DOWN_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 135f : -135f; break;
+                            case TileDirection.DOWN_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 45f : -45f; break;
+                            case TileDirection.NONE: break;
+                            case TileDirection.SELF: default: hasDirection = false; break;
                         }
                     }
                     Quaternion rot = Quaternion.Euler(0f, 0f, angle);
@@ -668,17 +668,17 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
                 float angle = 0f;
                 if (i < _uniquePath.Length - 1)
                 {
-                    NextTileDirection direction = GridUtils.GetDirectionBetweenAdjacentTiles(_uniquePath[i], _uniquePath[i + 1]);
+                    TileDirection direction = GridUtils.GetDirectionBetweenAdjacentTiles(_uniquePath[i], _uniquePath[i + 1]);
                     switch (direction)
                     {
-                        case NextTileDirection.RIGHT: angle = 0f; break;
-                        case NextTileDirection.UP: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -90f : 90f; break;
-                        case NextTileDirection.LEFT: angle = 180f; break;
-                        case NextTileDirection.DOWN: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 90f : -90f; break;
-                        case NextTileDirection.UP_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -45f : 45f; break;
-                        case NextTileDirection.UP_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -135f : 135f; break;
-                        case NextTileDirection.DOWN_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 135f : -135f; break;
-                        case NextTileDirection.DOWN_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 45f : -45f; break;
+                        case TileDirection.RIGHT: angle = 0f; break;
+                        case TileDirection.UP: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -90f : 90f; break;
+                        case TileDirection.LEFT: angle = 180f; break;
+                        case TileDirection.DOWN: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 90f : -90f; break;
+                        case TileDirection.UP_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -45f : 45f; break;
+                        case TileDirection.UP_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -135f : 135f; break;
+                        case TileDirection.DOWN_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 135f : -135f; break;
+                        case TileDirection.DOWN_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 45f : -45f; break;
                     }
                     Quaternion rot = Quaternion.Euler(0f, 0f, angle);
                     Transform arrow = _directionSprites[_uniquePath[i].Y, _uniquePath[i].X];
@@ -703,19 +703,19 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
                     bool hasDirection = _directionAtlas.HasPath(_grid.Map, _grid.Map[i, j], _targetTile);
                     if (hasDirection)
                     {
-                        NextTileDirection nextDirection = _directionAtlas.GetNextTileDirectionFromTile(_grid.Map, _grid.Map[i, j], _targetTile);
+                        TileDirection nextDirection = _directionAtlas.GetNextTileDirectionFromTile(_grid.Map, _grid.Map[i, j], _targetTile);
                         switch (nextDirection)
                         {
-                            case NextTileDirection.RIGHT: angle = 0f; break;
-                            case NextTileDirection.UP: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -90f : 90f; break;
-                            case NextTileDirection.LEFT: angle = 180f; break;
-                            case NextTileDirection.DOWN: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 90f : -90f; break;
-                            case NextTileDirection.UP_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -45f : 45f; break;
-                            case NextTileDirection.UP_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -135f : 135f; break;
-                            case NextTileDirection.DOWN_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 135f : -135f; break;
-                            case NextTileDirection.DOWN_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 45f : -45f; break;
-                            case NextTileDirection.NONE: break;
-                            case NextTileDirection.SELF: default: hasDirection = false; break;
+                            case TileDirection.RIGHT: angle = 0f; break;
+                            case TileDirection.UP: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -90f : 90f; break;
+                            case TileDirection.LEFT: angle = 180f; break;
+                            case TileDirection.DOWN: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 90f : -90f; break;
+                            case TileDirection.UP_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -45f : 45f; break;
+                            case TileDirection.UP_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -135f : 135f; break;
+                            case TileDirection.DOWN_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 135f : -135f; break;
+                            case TileDirection.DOWN_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 45f : -45f; break;
+                            case TileDirection.NONE: break;
+                            case TileDirection.SELF: default: hasDirection = false; break;
                         }
                     }
                     Quaternion rot = Quaternion.Euler(0f, 0f, angle);
@@ -746,19 +746,19 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
                     bool hasDirection = _directionGrid.IsTileAccessible(_grid.Map, _grid.Map[i, j]);
                     if (hasDirection)
                     {
-                        NextTileDirection nextDirection = _directionGrid.GetNextTileDirectionFromTile(_grid.Map, _grid.Map[i, j]);
+                        TileDirection nextDirection = _directionGrid.GetNextTileDirectionFromTile(_grid.Map, _grid.Map[i, j]);
                         switch (nextDirection)
                         {
-                            case NextTileDirection.RIGHT: angle = 0f; break;
-                            case NextTileDirection.UP: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -90f : 90f; break;
-                            case NextTileDirection.LEFT: angle = 180f; break;
-                            case NextTileDirection.DOWN: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 90f : -90f; break;
-                            case NextTileDirection.UP_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -45f : 45f; break;
-                            case NextTileDirection.UP_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -135f : 135f; break;
-                            case NextTileDirection.DOWN_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 135f : -135f; break;
-                            case NextTileDirection.DOWN_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 45f : -45f; break;
-                            case NextTileDirection.NONE: break;
-                            case NextTileDirection.SELF: default: hasDirection = false; break;
+                            case TileDirection.RIGHT: angle = 0f; break;
+                            case TileDirection.UP: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -90f : 90f; break;
+                            case TileDirection.LEFT: angle = 180f; break;
+                            case TileDirection.DOWN: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 90f : -90f; break;
+                            case TileDirection.UP_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -45f : 45f; break;
+                            case TileDirection.UP_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -135f : 135f; break;
+                            case TileDirection.DOWN_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 135f : -135f; break;
+                            case TileDirection.DOWN_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 45f : -45f; break;
+                            case TileDirection.NONE: break;
+                            case TileDirection.SELF: default: hasDirection = false; break;
                         }
                     }
                     Quaternion rot = Quaternion.Euler(0f, 0f, angle);
@@ -789,19 +789,19 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
                     bool hasDirection = _directionField.IsTileAccessible(_grid.Map, _grid.Map[i, j]);
                     if (hasDirection)
                     {
-                        NextTileDirection nextDirection = _directionField.GetNextTileDirectionFromTile(_grid.Map, _grid.Map[i, j]);
+                        TileDirection nextDirection = _directionField.GetNextTileDirectionFromTile(_grid.Map, _grid.Map[i, j]);
                         switch (nextDirection)
                         {
-                            case NextTileDirection.RIGHT: angle = 0f; break;
-                            case NextTileDirection.UP: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -90f : 90f; break;
-                            case NextTileDirection.LEFT: angle = 180f; break;
-                            case NextTileDirection.DOWN: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 90f : -90f; break;
-                            case NextTileDirection.UP_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -45f : 45f; break;
-                            case NextTileDirection.UP_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -135f : 135f; break;
-                            case NextTileDirection.DOWN_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 135f : -135f; break;
-                            case NextTileDirection.DOWN_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 45f : -45f; break;
-                            case NextTileDirection.NONE: break;
-                            case NextTileDirection.SELF: default: hasDirection = false; break;
+                            case TileDirection.RIGHT: angle = 0f; break;
+                            case TileDirection.UP: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -90f : 90f; break;
+                            case TileDirection.LEFT: angle = 180f; break;
+                            case TileDirection.DOWN: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 90f : -90f; break;
+                            case TileDirection.UP_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -45f : 45f; break;
+                            case TileDirection.UP_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -135f : 135f; break;
+                            case TileDirection.DOWN_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 135f : -135f; break;
+                            case TileDirection.DOWN_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 45f : -45f; break;
+                            case TileDirection.NONE: break;
+                            case TileDirection.SELF: default: hasDirection = false; break;
                         }
                     }
                     Quaternion rot = Quaternion.Euler(0f, 0f, angle);

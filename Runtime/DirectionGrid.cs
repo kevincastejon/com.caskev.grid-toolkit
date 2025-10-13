@@ -16,9 +16,9 @@ namespace Caskev.GridToolkit
     /// </summary>
     public class DirectionGrid
     {
-        internal readonly NextTileDirection[] _directionGrid;
+        internal readonly TileDirection[] _directionGrid;
         private readonly int _target;
-        internal DirectionGrid(NextTileDirection[] directionGrid, int target)
+        internal DirectionGrid(TileDirection[] directionGrid, int target)
         {
             _directionGrid = directionGrid;
             _target = target;
@@ -35,7 +35,7 @@ namespace Caskev.GridToolkit
             {
                 return false;
             }
-            return _directionGrid[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)] != NextTileDirection.NONE;
+            return _directionGrid[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)] != TileDirection.NONE;
         }
         /// <summary>
         /// Returns the target tile.
@@ -67,7 +67,7 @@ namespace Caskev.GridToolkit
         /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="tile">The tile</param>
         /// <returns>A Vector2Int direction</returns>
-        public NextTileDirection GetNextTileDirectionFromTile<T>(T[,] grid, T tile) where T : ITile
+        public TileDirection GetNextTileDirectionFromTile<T>(T[,] grid, T tile) where T : ITile
         {
             if (!IsTileAccessible(grid, tile))
             {
@@ -209,10 +209,10 @@ namespace Caskev.GridToolkit
             byteIndex += sizeof(int);
             int count = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
             byteIndex += sizeof(int);
-            NextTileDirection[] directionGrid = new NextTileDirection[count];
+            TileDirection[] directionGrid = new TileDirection[count];
             for (int i = 0; i < count; i++)
             {
-                directionGrid[i] = (NextTileDirection)bytes[byteIndex];
+                directionGrid[i] = (TileDirection)bytes[byteIndex];
                 byteIndex++;
             }
             return new DirectionGrid(directionGrid, target);
@@ -238,7 +238,7 @@ namespace Caskev.GridToolkit
                 byteIndex += sizeof(int);
                 int count = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
                 byteIndex += sizeof(int);
-                NextTileDirection[] directionGrid = new NextTileDirection[count];
+                TileDirection[] directionGrid = new TileDirection[count];
                 for (int i = 0; i < count; i++)
                 {
                     if (cancelToken.IsCancellationRequested)
@@ -246,7 +246,7 @@ namespace Caskev.GridToolkit
                         return null;
                     }
                     progress.Report((float)i / count);
-                    directionGrid[i] = (NextTileDirection)bytes[byteIndex];
+                    directionGrid[i] = (TileDirection)bytes[byteIndex];
                     byteIndex++;
                 }
                 return new DirectionGrid(directionGrid, target);

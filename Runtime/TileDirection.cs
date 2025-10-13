@@ -6,7 +6,7 @@ namespace Caskev.GridToolkit
     /// <summary>
     /// An enumeration representing the possible directions to move to reach a neighboring tile
     /// </summary>
-    public enum NextTileDirection : byte
+    public enum TileDirection : byte
     {
         NONE,
         SELF,

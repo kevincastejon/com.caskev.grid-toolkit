@@ -63,7 +63,7 @@ namespace Caskev.GridToolkit
         /// <param name="startTile">The start tile</param>
         /// <param name="destinationTile">The destination tile</param>
         /// <returns>A Vector2Int direction</returns>
-        public NextTileDirection GetNextTileDirectionFromTile<T>(T[,] grid, T startTile, T destinationTile) where T : IWeightedTile
+        public TileDirection GetNextTileDirectionFromTile<T>(T[,] grid, T startTile, T destinationTile) where T : IWeightedTile
         {
             if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
             {
@@ -210,11 +210,11 @@ namespace Caskev.GridToolkit
                 }
                 else
                 {
-                    NextTileDirection[] directionGrid = new NextTileDirection[grid.Length];
+                    TileDirection[] directionGrid = new TileDirection[grid.Length];
                     float[] distanceGrid = new float[grid.Length];
                     for (int j = 0; j < grid.Length; j++)
                     {
-                        directionGrid[j] = (NextTileDirection)bytes[byteIndex];
+                        directionGrid[j] = (TileDirection)bytes[byteIndex];
                         byteIndex++;
                         distanceGrid[i] = BitConverter.Int32BitsToSingle(BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex)));
                         byteIndex += sizeof(float);
@@ -258,11 +258,11 @@ namespace Caskev.GridToolkit
                     }
                     else
                     {
-                        NextTileDirection[] directionGrid = new NextTileDirection[grid.Length];
+                        TileDirection[] directionGrid = new TileDirection[grid.Length];
                         float[] distanceGrid = new float[grid.Length];
                         for (int j = 0; j < grid.Length; j++)
                         {
-                            directionGrid[j] = (NextTileDirection)bytes[byteIndex];
+                            directionGrid[j] = (TileDirection)bytes[byteIndex];
                             byteIndex++;
                             distanceGrid[i] = BitConverter.Int32BitsToSingle(BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex)));
                             byteIndex += sizeof(float);
