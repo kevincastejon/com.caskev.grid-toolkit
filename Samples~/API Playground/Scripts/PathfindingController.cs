@@ -14,11 +14,12 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
     {
         public enum PathfindingType
         {
-            DIRECTION_GRID,
-            DIJKSTRA_GRID,
+            DIRECTION_PATH,
+            DIJKSTRA_PATH,
             DIRECTION_FIELD,
             DIJKSTRA_FIELD,
-            UNIQUE_PATH,
+            DIRECTION_GRID,
+            DIJKSTRA_GRID,
             DIRECTION_ATLAS,
             DIJKSTRA_ATLAS,
         }
@@ -41,7 +42,8 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
         private DijkstraGrid _dijkstraGrid;
         private DijkstraAtlas _dijkstraAtlas;
         private DijkstraField _dijkstraField;
-        private Tile[] _uniquePath;
+        private DirectionPath _directionPath;
+        private DijkstraPath _dijkstraPath;
         private Tile _targetTile;
         private Tile _startTile;
         private bool _walling;
@@ -153,7 +155,7 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
         }
         private void UpdateParameters()
         {
-            _diagonalsWeight.transform.parent.gameObject.SetActive((((PathfindingType)_pathfindingType.value) == PathfindingType.DIJKSTRA_GRID || ((PathfindingType)_pathfindingType.value) == PathfindingType.DIJKSTRA_FIELD || ((PathfindingType)_pathfindingType.value) == PathfindingType.DIJKSTRA_ATLAS || ((PathfindingType)_pathfindingType.value) == PathfindingType.UNIQUE_PATH) && ((DiagonalsPolicy)_diagonalsPolicy.value) != DiagonalsPolicy.NONE);
+            _diagonalsWeight.transform.parent.gameObject.SetActive((((PathfindingType)_pathfindingType.value) == PathfindingType.DIJKSTRA_GRID || ((PathfindingType)_pathfindingType.value) == PathfindingType.DIJKSTRA_FIELD || ((PathfindingType)_pathfindingType.value) == PathfindingType.DIJKSTRA_ATLAS || ((PathfindingType)_pathfindingType.value) == PathfindingType.DIJKSTRA_PATH) && ((DiagonalsPolicy)_diagonalsPolicy.value) != DiagonalsPolicy.NONE);
             _maxDistance.transform.parent.gameObject.SetActive(((PathfindingType)_pathfindingType.value) == PathfindingType.DIRECTION_FIELD || ((PathfindingType)_pathfindingType.value) == PathfindingType.DIJKSTRA_FIELD);
             GenerateMap();
         }
@@ -179,8 +181,11 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
                 case PathfindingType.DIJKSTRA_FIELD:
                     GenerateDijkstraField();
                     break;
-                case PathfindingType.UNIQUE_PATH:
-                    GenerateUniquePath();
+                case PathfindingType.DIJKSTRA_PATH:
+                    GenerateDijkstraPath();
+                    break;
+                case PathfindingType.DIRECTION_PATH:
+                    GenerateDirectionPath();
                     break;
                 default:
                     break;
@@ -405,14 +410,14 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
             }
             _grid.TintHighlightedTiles(allAccessibleTiles);
         }
-        private async void GenerateUniquePath()
+        private async void GenerateDijkstraPath()
         {
             _canvasGroup.interactable = false;
             _progressWindow.transform.parent.gameObject.SetActive(true);
             _cts = new System.Threading.CancellationTokenSource();
             try
             {
-                _uniquePath = await Pathfinding.GenerateUniquePathAsync(_grid.Map, _targetTile, _startTile, (DiagonalsPolicy)_diagonalsPolicy.value, _diagonalsWeight.value, true, true, new Progress<float>((x) => _progressWindow.text = (x * 100).ToString("F0") + "%"), _cts.Token);
+                _dijkstraPath = await Pathfinding.GenerateDijkstraPathAsync(_grid.Map, _targetTile, _startTile, (DiagonalsPolicy)_diagonalsPolicy.value, _diagonalsWeight.value, true, true, _cts.Token);
             }
             catch (Exception e)
             {
@@ -426,19 +431,54 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
             _cts = null;
             UpdateDirectionSprites();
             UpdateDistanceSprites();
-            if (_uniquePath == null)
+            if (_dijkstraPath == null)
             {
                 _grid.TintPathTiles(new Tile[0]);
                 HideDirectionSprites();
             }
             else
             {
-                _grid.TintPathTiles(_uniquePath);
+                _grid.TintPathTiles(_dijkstraPath.GetPathToTarget(_grid.Map));
             }
             _grid.TintCenter(_targetTile);
             _grid.TintStart(_startTile);
             _grid.TintHighlightedTiles(new Tile[0]);
         }
+        private async void GenerateDirectionPath()
+        {
+            _canvasGroup.interactable = false;
+            _progressWindow.transform.parent.gameObject.SetActive(true);
+            _cts = new System.Threading.CancellationTokenSource();
+            try
+            {
+                _directionPath = await Pathfinding.GenerateDirectionPathAsync(_grid.Map, _targetTile, _startTile, (DiagonalsPolicy)_diagonalsPolicy.value, _diagonalsWeight.value, true, true, _cts.Token);
+            }
+            catch (Exception e)
+            {
+                _progressWindow.transform.parent.gameObject.SetActive(false);
+                _canvasGroup.interactable = true;
+                _cts = null;
+                throw e;
+            }
+            _progressWindow.transform.parent.gameObject.SetActive(false);
+            _canvasGroup.interactable = true;
+            _cts = null;
+            UpdateDirectionSprites();
+            UpdateDistanceSprites();
+            if (_directionPath == null)
+            {
+                _grid.TintPathTiles(new Tile[0]);
+                HideDirectionSprites();
+            }
+            else
+            {
+                _grid.TintPathTiles(_directionPath.GetPathToTarget(_grid.Map));
+            }
+            _grid.TintCenter(_targetTile);
+            _grid.TintStart(_startTile);
+            _grid.TintHighlightedTiles(new Tile[0]);
+        }
+
         private void HideDirectionSprites()
         {
             foreach (Transform arrow in _directionSprites)
@@ -481,8 +521,11 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
                 case PathfindingType.DIJKSTRA_ATLAS:
                     UpdateDirectionSpritesFromDijkstraAtlas();
                     break;
-                case PathfindingType.UNIQUE_PATH:
-                    UpdateDirectionSpritesFromUniquePath();
+                case PathfindingType.DIJKSTRA_PATH:
+                    UpdateDirectionSpritesFromDijkstraPath();
+                    break;
+                case PathfindingType.DIRECTION_PATH:
+                    UpdateDirectionSpritesFromDirectionPath();
                     break;
                 default:
                     break;
@@ -492,6 +535,9 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
         {
             switch ((PathfindingType)_pathfindingType.value)
             {
+                case PathfindingType.DIJKSTRA_PATH:
+                    UpdateDistanceSpritesFromDijkstraPath();
+                    break;
                 case PathfindingType.DIJKSTRA_GRID:
                     UpdateDistanceSpritesFromDijkstraGrid();
                     break;
@@ -649,9 +695,9 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
                 }
             }
         }
-        private void UpdateDirectionSpritesFromUniquePath()
+        private void UpdateDirectionSpritesFromDijkstraPath()
         {
-            if (_uniquePath == null)
+            if (_dijkstraPath == null)
             {
                 return;
             }
@@ -663,12 +709,12 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
                     arrow.gameObject.SetActive(false);
                 }
             }
-            for (int i = 0; i < _uniquePath.Length; i++)
+            for (int i = 0; i < _dijkstraPath.Length; i++)
             {
                 float angle = 0f;
-                if (i < _uniquePath.Length - 1)
+                if (i < _dijkstraPath.Length - 1)
                 {
-                    TileDirection direction = GridUtils.GetDirectionBetweenAdjacentTiles(_uniquePath[i], _uniquePath[i + 1]);
+                    TileDirection direction = GridUtils.GetDirectionBetweenAdjacentTiles(_dijkstraPath.GetTileOnThePath(_grid.Map, i), _dijkstraPath.GetTileOnThePath(_grid.Map, i + 1));
                     switch (direction)
                     {
                         case TileDirection.RIGHT: angle = 0f; break;
@@ -681,7 +727,45 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
                         case TileDirection.DOWN_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 45f : -45f; break;
                     }
                     Quaternion rot = Quaternion.Euler(0f, 0f, angle);
-                    Transform arrow = _directionSprites[_uniquePath[i].Y, _uniquePath[i].X];
+                    Transform arrow = _directionSprites[_dijkstraPath.GetTileOnThePath(_grid.Map, i).Y, _dijkstraPath.GetTileOnThePath(_grid.Map, i).X];
+                    arrow.gameObject.SetActive(true);
+                    arrow.rotation = rot;
+                }
+            }
+        }
+        private void UpdateDirectionSpritesFromDirectionPath()
+        {
+            if (_directionPath == null)
+            {
+                return;
+            }
+            for (int i = 0; i < _grid.Map.GetLength(0); i++)
+            {
+                for (int j = 0; j < _grid.Map.GetLength(1); j++)
+                {
+                    Transform arrow = _directionSprites[i, j];
+                    arrow.gameObject.SetActive(false);
+                }
+            }
+            for (int i = 0; i < _directionPath.Length; i++)
+            {
+                float angle = 0f;
+                if (i < _directionPath.Length - 1)
+                {
+                    TileDirection direction = GridUtils.GetDirectionBetweenAdjacentTiles(_directionPath.GetTileOnThePath(_grid.Map, i), _directionPath.GetTileOnThePath(_grid.Map, i + 1));
+                    switch (direction)
+                    {
+                        case TileDirection.RIGHT: angle = 0f; break;
+                        case TileDirection.UP: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -90f : 90f; break;
+                        case TileDirection.LEFT: angle = 180f; break;
+                        case TileDirection.DOWN: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 90f : -90f; break;
+                        case TileDirection.UP_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -45f : 45f; break;
+                        case TileDirection.UP_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? -135f : 135f; break;
+                        case TileDirection.DOWN_LEFT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 135f : -135f; break;
+                        case TileDirection.DOWN_RIGHT: angle = _grid.TileMap.transform.parent.localScale.y < 0 ? 45f : -45f; break;
+                    }
+                    Quaternion rot = Quaternion.Euler(0f, 0f, angle);
+                    Transform arrow = _directionSprites[_directionPath.GetTileOnThePath(_grid.Map, i).Y, _directionPath.GetTileOnThePath(_grid.Map, i).X];
                     arrow.gameObject.SetActive(true);
                     arrow.rotation = rot;
                 }
@@ -879,6 +963,31 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
                 }
             }
         }
+        private void UpdateDistanceSpritesFromDijkstraPath()
+        {
+            if (_dijkstraPath == null)
+            {
+                return;
+            }
+            for (int i = 0; i < _grid.Map.GetLength(0); i++)
+            {
+                for (int j = 0; j < _grid.Map.GetLength(1); j++)
+                {
+                    Transform distanceSprite = _distanceSprites[i, j];
+                    bool isWall = !_dijkstraPath.IsOnPath(_grid.Map, _grid.Map[i, j]);
+                    if (isWall)
+                    {
+                        distanceSprite.gameObject.SetActive(false);
+                    }
+                    else
+                    {
+                        distanceSprite.gameObject.SetActive(true);
+                        distanceSprite.GetComponent<TextMeshPro>().text = _dijkstraPath.GetDistanceToTarget(_grid.Map, _grid.Map[i, j]).ToString("F0");
+                    }
+                }
+            }
+        }
+
         private void UpdateDistanceSpritesFromDijkstraAtlas()
         {
             if (_dijkstraAtlas == null)
@@ -968,8 +1077,11 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
                         _grid.ClearPathTiles();
                     }
                     break;
-                case PathfindingType.UNIQUE_PATH:
-                    GenerateUniquePath();
+                case PathfindingType.DIJKSTRA_PATH:
+                    GenerateDijkstraPath();
+                    break;
+                case PathfindingType.DIRECTION_PATH:
+                    GenerateDirectionPath();
                     break;
                 default:
                     break;

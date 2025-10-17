@@ -38,6 +38,2018 @@ namespace GridToolkitTests
             _grid = GridFactory.Build(map);
         }
 
+        #region DirectionPath
+
+        [TestCase(true, true)]
+        [TestCase(false, true)]
+        [TestCase(true, false)]
+        [TestCase(false, false)]
+        public void GenerateDirectionPath_NoDiagonals(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = includeTarget ? new(6, 10) : null;
+            TestTile start = includeStart ? new(2, 10) : null;
+            DirectionPath path = Pathfinding.GenerateDirectionPath(_grid, GridUtils.GetTile(_grid, targetX, targetY), GridUtils.GetTile(_grid, startX, startY), DiagonalsPolicy.NONE, 1.414f, includeStart, includeTarget);
+            for (int i = 0; i < path.Length; i++)
+            {
+                Debug.Log(path.GetTileOnThePath(_grid, i));
+            }
+            List<TestTile> expectedPath = new() { start, new(2, 11), new(2, 12), new(2, 13), new(2, 14), new(1, 14), new(1, 15), new(1, 16), new(2, 16), new(3, 16), new(4, 16), new(5, 16), new(6, 16), new(7, 16), new(7, 15), new(7, 14), new(7, 13), new(7, 12), new(7, 11), new(6, 11), target };
+            expectedPath.RemoveAll(x => x == null);
+            Assert.AreEqual(expectedPath.Count, path.Length, $"Path length should be {expectedPath.Count} but got {path.Length}");
+            for (int i = 0; i < path.Length; i++)
+            {
+                Assert.IsTrue(expectedPath[i].X == path.GetTileOnThePath(_grid, i).X && expectedPath[i].Y == path.GetTileOnThePath(_grid, i).Y, $"Tile {i} on the path should be {expectedPath[i]} but got {path.GetTileOnThePath(_grid, i)}");
+            }
+        }
+        [TestCase(true, true)]
+        [TestCase(false, true)]
+        [TestCase(true, false)]
+        [TestCase(false, false)]
+        public void GenerateDirectionPath_AllDiagonals(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = includeTarget ? new(6, 10) : null;
+            TestTile start = includeStart ? new(2, 10) : null;
+            DirectionPath path = Pathfinding.GenerateDirectionPath(_grid, GridUtils.GetTile(_grid, targetX, targetY), GridUtils.GetTile(_grid, startX, startY), DiagonalsPolicy.ALL_DIAGONALS, 1.414f, includeStart, includeTarget);
+            for (int i = 0; i < path.Length; i++)
+            {
+                Debug.Log(path.GetTileOnThePath(_grid, i));
+            }
+            List<TestTile> expectedPath = new() { start, new(2, 11), new(3, 12), new(4, 13), new(5, 13), new(6, 14), new(7, 13), new(7, 12), new(6, 11), target };
+            expectedPath.RemoveAll(x => x == null);
+            Assert.AreEqual(expectedPath.Count, path.Length, $"Path length should be {expectedPath.Count} but got {path.Length}");
+            for (int i = 0; i < path.Length; i++)
+            {
+                Assert.IsTrue(expectedPath[i].X == path.GetTileOnThePath(_grid, i).X && expectedPath[i].Y == path.GetTileOnThePath(_grid, i).Y, $"Tile {i} on the path should be {expectedPath[i]} but got {path.GetTileOnThePath(_grid, i)}");
+            }
+        }
+        [TestCase(true, true)]
+        [TestCase(false, true)]
+        [TestCase(true, false)]
+        [TestCase(false, false)]
+        public void GenerateDirectionPath_DiagonalsOneFree(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = includeTarget ? new(6, 10) : null;
+            TestTile start = includeStart ? new(2, 10) : null;
+            DirectionPath path = Pathfinding.GenerateDirectionPath(_grid, GridUtils.GetTile(_grid, targetX, targetY), GridUtils.GetTile(_grid, startX, startY), DiagonalsPolicy.DIAGONAL_1FREE, 1.414f, includeStart, includeTarget);
+            for (int i = 0; i < path.Length; i++)
+            {
+                Debug.Log(path.GetTileOnThePath(_grid, i));
+            }
+            List<TestTile> expectedPath = new() { start, new(2, 11), new(2, 12), new(2, 13), new(2, 14), new(1, 15), new(2, 16), new(3, 16), new(4, 16), new(5, 16), new(6, 16), new(7, 15), new(7, 14), new(7, 13), new(7, 12), new(6, 11), target };
+            expectedPath.RemoveAll(x => x == null);
+            Assert.AreEqual(expectedPath.Count, path.Length, $"Path length should be {expectedPath.Count} but got {path.Length}");
+            for (int i = 0; i < path.Length; i++)
+            {
+                Assert.IsTrue(expectedPath[i].X == path.GetTileOnThePath(_grid, i).X && expectedPath[i].Y == path.GetTileOnThePath(_grid, i).Y, $"Tile {i} on the path should be {expectedPath[i]} but got {path.GetTileOnThePath(_grid, i)}");
+            }
+        }
+        [TestCase(true, true)]
+        [TestCase(false, true)]
+        [TestCase(true, false)]
+        [TestCase(false, false)]
+        public void GenerateDirectionPath_DiagonalsTwoFree(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = includeTarget ? new(6, 10) : null;
+            TestTile start = includeStart ? new(2, 10) : null;
+            DirectionPath path = Pathfinding.GenerateDirectionPath(_grid, GridUtils.GetTile(_grid, targetX, targetY), GridUtils.GetTile(_grid, startX, startY), DiagonalsPolicy.DIAGONAL_2FREE, 1.414f, includeStart, includeTarget);
+            for (int i = 0; i < path.Length; i++)
+            {
+                Debug.Log(path.GetTileOnThePath(_grid, i));
+            }
+            List<TestTile> expectedPath = new() { start, new(2, 11), new(2, 12), new(2, 13), new(1, 14), new(1, 15), new(1, 16), new(2, 16), new(3, 16), new(4, 16), new(5, 16), new(6, 16), new(7, 16), new(7, 15), new(7, 14), new(7, 13), new(7, 12), new(7, 11), target };
+            expectedPath.RemoveAll(x => x == null);
+            Assert.AreEqual(expectedPath.Count, path.Length, $"Path length should be {expectedPath.Count} but got {path.Length}");
+            for (int i = 0; i < path.Length; i++)
+            {
+                Assert.IsTrue(expectedPath[i].X == path.GetTileOnThePath(_grid, i).X && expectedPath[i].Y == path.GetTileOnThePath(_grid, i).Y, $"Tile {i} on the path should be {expectedPath[i]} but got {path.GetTileOnThePath(_grid, i)}");
+            }
+        }
+
+        [Test]
+        public void DirectionPath_IsTileOnPath()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            int accessibleTileX = 7;
+            int accessibleTileY = 14;
+            int inaccessibleTileX = 1;
+            int inaccessibleTileY = 3;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionPath dirMap = Pathfinding.GenerateDirectionPath(_grid, target, start);
+            Assert.IsTrue(dirMap.IsOnPath(_grid, GridUtils.GetTile(_grid, accessibleTileX, accessibleTileY)));
+            Assert.IsFalse(dirMap.IsOnPath(_grid, GridUtils.GetTile(_grid, inaccessibleTileX, inaccessibleTileY)));
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DirectionPath_GetPathToTarget_NoDiagonals(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionPath dirMap = Pathfinding.GenerateDirectionPath(_grid, target, start, DiagonalsPolicy.NONE);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                startTile, new(2,11), new(2,12), new(2,13), new(2,14), new(1,14), new(1,15), new(1,16), new(2,16), new(3,16), new(4,16), new(5,16), new(6,16), new(7,16), new(7,15), new(7,14), new(7,13), new(7,12), new(7,11), new(6,11), targetTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DirectionPath_GetPathToTarget_AllDiagonals(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionPath dirMap = Pathfinding.GenerateDirectionPath(_grid, target, start, DiagonalsPolicy.ALL_DIAGONALS);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                startTile, new(2,11), new(3,12), new(4,13), new(5,13), new(6,14), new(7,13), new(7,12), new(6,11), targetTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DirectionPath_GetPathToTarget_Diagonals1Free(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionPath dirMap = Pathfinding.GenerateDirectionPath(_grid, target, start, DiagonalsPolicy.DIAGONAL_1FREE);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                startTile, new(2,11), new(2,12), new(2,13), new(2,14), new(1,15), new(2,16), new(3,16), new(4,16), new(5,16), new(6,16), new(7,15), new(7,14), new(7,13), new(7,12), new(6,11), targetTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DirectionPath_GetPathToTarget_Diagonals2Free(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionPath dirMap = Pathfinding.GenerateDirectionPath(_grid, target, start, DiagonalsPolicy.DIAGONAL_2FREE);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                startTile, new(2,11), new(2,12), new(2,13), new(1,14), new(1,15), new(1,16), new(2,16), new(3,16), new(4,16), new(5,16), new(6,16), new(7,16), new(7,15), new(7,14), new(7,13), new(7,12), new(7,11), targetTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DirectionPath_GetPathFromTarget_NoDiagonals(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionPath dirMap = Pathfinding.GenerateDirectionPath(_grid, target, start, DiagonalsPolicy.NONE);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                targetTile, new(6,11), new(7,11), new(7,12), new(7,13), new(7,14), new(7,15), new(7,16), new(6,16), new(5,16), new(4,16), new(3,16), new(2,16), new(1,16), new(1,15), new(1,14), new(2,14), new(2,13), new(2,12), new(2,11), startTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DirectionPath_GetPathFromTarget_AllDiagonals(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionPath dirMap = Pathfinding.GenerateDirectionPath(_grid, target, start, DiagonalsPolicy.ALL_DIAGONALS);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                targetTile, new(6,11), new(7,12), new(7,13), new(6,14), new(5,13), new(4,13), new(3,12), new(2,11), startTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DirectionPath_GetPathFromTarget_Diagonals1Free(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionPath dirMap = Pathfinding.GenerateDirectionPath(_grid, target, start, DiagonalsPolicy.DIAGONAL_1FREE);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                targetTile, new(6,11), new(7,12), new(7,13), new(7,14), new(7,15), new(6,16), new(5,16), new(4,16), new(3,16), new(2,16), new(1,15), new(2,14), new(2,13), new(2,12), new(2,11), startTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DirectionPath_GetPathFromTarget_Diagonals2Free(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionPath dirMap = Pathfinding.GenerateDirectionPath(_grid, target, start, DiagonalsPolicy.DIAGONAL_2FREE);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                targetTile, new(7,11), new(7,12), new(7,13), new(7,14), new(7,15), new(7,16), new(6,16), new(5,16), new(4,16), new(3,16), new(2,16), new(1,16), new(1,15), new(1,14), new(2,13), new(2,12), new(2,11), startTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [Test]
+        public void DirectionPath_GetNextTileFromTile_NoDiagonals()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 5;
+            int startY = 13;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionPath dirMap = Pathfinding.GenerateDirectionPath(_grid, target, start, DiagonalsPolicy.NONE);
+            TestTile returnedTile = dirMap.GetNextTile(_grid, start);
+            TestTile expectedTile = new(4, 13);
+            Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
+        }
+        [Test]
+        public void DirectionPath_GetNextTileFromTile_AllDiagonals()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 5;
+            int startY = 13;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionPath dirMap = Pathfinding.GenerateDirectionPath(_grid, target, start, DiagonalsPolicy.ALL_DIAGONALS);
+            TestTile returnedTile = dirMap.GetNextTile(_grid, start);
+            TestTile expectedTile = new(6, 14);
+            Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
+        }
+        [Test]
+        public void DirectionPath_GetNextTileFromTile_Diagonals1Free()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 1;
+            int startY = 15;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionPath dirMap = Pathfinding.GenerateDirectionPath(_grid, target, start, DiagonalsPolicy.DIAGONAL_1FREE);
+            TestTile returnedTile = dirMap.GetNextTile(_grid, start);
+            TestTile expectedTile = new(2, 16);
+            Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
+        }
+        [Test]
+        public void DirectionPath_GetNextTileFromTile_Diagonals2Free()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 1;
+            int startY = 15;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionPath dirMap = Pathfinding.GenerateDirectionPath(_grid, target, start, DiagonalsPolicy.DIAGONAL_2FREE);
+            TestTile returnedTile = dirMap.GetNextTile(_grid, start);
+            TestTile expectedTile = new(1, 16);
+            Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
+        }
+        [Test]
+        public void DirectionPath_GetNextTileDirectionFromTile_NoDiagonals()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 5;
+            int startY = 13;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionPath dirMap = Pathfinding.GenerateDirectionPath(_grid, target, start, DiagonalsPolicy.NONE);
+            TileDirection returnedDir = dirMap.GetNextDirection(_grid, start);
+            TileDirection expectedDir = TileDirection.LEFT;
+            Assert.AreEqual(expectedDir, returnedDir);
+        }
+        [Test]
+        public void DirectionPath_GetNextTileDirectionFromTile_AllDiagonals()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 5;
+            int startY = 13;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionPath dirMap = Pathfinding.GenerateDirectionPath(_grid, target, start, DiagonalsPolicy.ALL_DIAGONALS);
+            TileDirection returnedDir = dirMap.GetNextDirection(_grid, start);
+            TileDirection expectedDir = TileDirection.UP_RIGHT;
+            Assert.AreEqual(expectedDir, returnedDir);
+        }
+        [Test]
+        public void DirectionPath_GetNextTileDirectionFromTile_Diagonals1Free()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 1;
+            int startY = 15;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionPath dirMap = Pathfinding.GenerateDirectionPath(_grid, target, start, DiagonalsPolicy.DIAGONAL_1FREE);
+            TileDirection returnedDir = dirMap.GetNextDirection(_grid, start);
+            TileDirection expectedDir = TileDirection.UP_RIGHT;
+            Assert.AreEqual(expectedDir, returnedDir);
+        }
+        [Test]
+        public void DirectionPath_GetNextTileDirectionFromTile_Diagonals2Free()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 1;
+            int startY = 15;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionPath dirMap = Pathfinding.GenerateDirectionPath(_grid, target, start, DiagonalsPolicy.DIAGONAL_2FREE);
+            TileDirection returnedDir = dirMap.GetNextDirection(_grid, start);
+            TileDirection expectedDir = TileDirection.UP;
+            Assert.AreEqual(expectedDir, returnedDir);
+        }
+        #endregion
+
+        #region DijkstraPath
+
+        [TestCase(true, true)]
+        [TestCase(false, true)]
+        [TestCase(true, false)]
+        [TestCase(false, false)]
+        public void GenerateDijkstraPath_NoDiagonals(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = includeTarget ? new(6, 10) : null;
+            TestTile start = includeStart ? new(2, 10) : null;
+            DijkstraPath path = Pathfinding.GenerateDijkstraPath(_grid, GridUtils.GetTile(_grid, targetX, targetY), GridUtils.GetTile(_grid, startX, startY), DiagonalsPolicy.NONE, 1.414f, includeStart, includeTarget);
+            for (int i = 0; i < path.Length; i++)
+            {
+                Debug.Log(path.GetTileOnThePath(_grid, i));
+            }
+            List<TestTile> expectedPath = new() { start, new(2, 11), new(2, 12), new(2, 13), new(2, 14), new(1, 14), new(1, 15), new(1, 16), new(2, 16), new(3, 16), new(4, 16), new(5, 16), new(6, 16), new(7, 16), new(7, 15), new(7, 14), new(7, 13), new(7, 12), new(7, 11), new(6, 11), target };
+            expectedPath.RemoveAll(x => x == null);
+            Assert.AreEqual(expectedPath.Count, path.Length, $"Path length should be {expectedPath.Count} but got {path.Length}");
+            for (int i = 0; i < path.Length; i++)
+            {
+                Assert.IsTrue(expectedPath[i].X == path.GetTileOnThePath(_grid, i).X && expectedPath[i].Y == path.GetTileOnThePath(_grid, i).Y, $"Tile {i} on the path should be {expectedPath[i]} but got {path.GetTileOnThePath(_grid, i)}");
+            }
+        }
+        [TestCase(true, true)]
+        [TestCase(false, true)]
+        [TestCase(true, false)]
+        [TestCase(false, false)]
+        public void GenerateDijkstraPath_AllDiagonals(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = includeTarget ? new(6, 10) : null;
+            TestTile start = includeStart ? new(2, 10) : null;
+            DijkstraPath path = Pathfinding.GenerateDijkstraPath(_grid, GridUtils.GetTile(_grid, targetX, targetY), GridUtils.GetTile(_grid, startX, startY), DiagonalsPolicy.ALL_DIAGONALS, 1.414f, includeStart, includeTarget);
+            for (int i = 0; i < path.Length; i++)
+            {
+                Debug.Log(path.GetTileOnThePath(_grid, i));
+            }
+            List<TestTile> expectedPath = new() { start, new(2, 11), new(3, 12), new(4, 13), new(5, 13), new(6, 14), new(7, 13), new(7, 12), new(6, 11), target };
+            expectedPath.RemoveAll(x => x == null);
+            Assert.AreEqual(expectedPath.Count, path.Length, $"Path length should be {expectedPath.Count} but got {path.Length}");
+            for (int i = 0; i < path.Length; i++)
+            {
+                Assert.IsTrue(expectedPath[i].X == path.GetTileOnThePath(_grid, i).X && expectedPath[i].Y == path.GetTileOnThePath(_grid, i).Y, $"Tile {i} on the path should be {expectedPath[i]} but got {path.GetTileOnThePath(_grid, i)}");
+            }
+        }
+        [TestCase(true, true)]
+        [TestCase(false, true)]
+        [TestCase(true, false)]
+        [TestCase(false, false)]
+        public void GenerateDijkstraPath_DiagonalsOneFree(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = includeTarget ? new(6, 10) : null;
+            TestTile start = includeStart ? new(2, 10) : null;
+            DijkstraPath path = Pathfinding.GenerateDijkstraPath(_grid, GridUtils.GetTile(_grid, targetX, targetY), GridUtils.GetTile(_grid, startX, startY), DiagonalsPolicy.DIAGONAL_1FREE, 1.414f, includeStart, includeTarget);
+            for (int i = 0; i < path.Length; i++)
+            {
+                Debug.Log(path.GetTileOnThePath(_grid, i));
+            }
+            List<TestTile> expectedPath = new() { start, new(2, 11), new(2, 12), new(2, 13), new(2, 14), new(1, 15), new(2, 16), new(3, 16), new(4, 16), new(5, 16), new(6, 16), new(7, 15), new(7, 14), new(7, 13), new(7, 12), new(6, 11), target };
+            expectedPath.RemoveAll(x => x == null);
+            Assert.AreEqual(expectedPath.Count, path.Length, $"Path length should be {expectedPath.Count} but got {path.Length}");
+            for (int i = 0; i < path.Length; i++)
+            {
+                Assert.IsTrue(expectedPath[i].X == path.GetTileOnThePath(_grid, i).X && expectedPath[i].Y == path.GetTileOnThePath(_grid, i).Y, $"Tile {i} on the path should be {expectedPath[i]} but got {path.GetTileOnThePath(_grid, i)}");
+            }
+        }
+        [TestCase(true, true)]
+        [TestCase(false, true)]
+        [TestCase(true, false)]
+        [TestCase(false, false)]
+        public void GenerateDijkstraPath_DiagonalsTwoFree(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = includeTarget ? new(6, 10) : null;
+            TestTile start = includeStart ? new(2, 10) : null;
+            DijkstraPath path = Pathfinding.GenerateDijkstraPath(_grid, GridUtils.GetTile(_grid, targetX, targetY), GridUtils.GetTile(_grid, startX, startY), DiagonalsPolicy.DIAGONAL_2FREE, 1.414f, includeStart, includeTarget);
+            for (int i = 0; i < path.Length; i++)
+            {
+                Debug.Log(path.GetTileOnThePath(_grid, i));
+            }
+            List<TestTile> expectedPath = new() { start, new(2, 11), new(2, 12), new(2, 13), new(1, 14), new(1, 15), new(1, 16), new(2, 16), new(3, 16), new(4, 16), new(5, 16), new(6, 16), new(7, 16), new(7, 15), new(7, 14), new(7, 13), new(7, 12), new(7, 11), target };
+            expectedPath.RemoveAll(x => x == null);
+            Assert.AreEqual(expectedPath.Count, path.Length, $"Path length should be {expectedPath.Count} but got {path.Length}");
+            for (int i = 0; i < path.Length; i++)
+            {
+                Assert.IsTrue(expectedPath[i].X == path.GetTileOnThePath(_grid, i).X && expectedPath[i].Y == path.GetTileOnThePath(_grid, i).Y, $"Tile {i} on the path should be {expectedPath[i]} but got {path.GetTileOnThePath(_grid, i)}");
+            }
+        }
+
+        [Test]
+        public void DijkstraPath_IsTileOnPath()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            int accessibleTileX = 7;
+            int accessibleTileY = 14;
+            int inaccessibleTileX = 1;
+            int inaccessibleTileY = 3;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DijkstraPath dirMap = Pathfinding.GenerateDijkstraPath(_grid, target, start);
+            Assert.IsTrue(dirMap.IsOnPath(_grid, GridUtils.GetTile(_grid, accessibleTileX, accessibleTileY)));
+            Assert.IsFalse(dirMap.IsOnPath(_grid, GridUtils.GetTile(_grid, inaccessibleTileX, inaccessibleTileY)));
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DijkstraPath_GetPathToTarget_NoDiagonals(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DijkstraPath dirMap = Pathfinding.GenerateDijkstraPath(_grid, target, start, DiagonalsPolicy.NONE);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                startTile, new(2,11), new(2,12), new(2,13), new(2,14), new(1,14), new(1,15), new(1,16), new(2,16), new(3,16), new(4,16), new(5,16), new(6,16), new(7,16), new(7,15), new(7,14), new(7,13), new(7,12), new(7,11), new(6,11), targetTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DijkstraPath_GetPathToTarget_AllDiagonals(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DijkstraPath dirMap = Pathfinding.GenerateDijkstraPath(_grid, target, start, DiagonalsPolicy.ALL_DIAGONALS);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                startTile, new(2,11), new(3,12), new(4,13), new(5,13), new(6,14), new(7,13), new(7,12), new(6,11), targetTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DijkstraPath_GetPathToTarget_Diagonals1Free(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DijkstraPath dirMap = Pathfinding.GenerateDijkstraPath(_grid, target, start, DiagonalsPolicy.DIAGONAL_1FREE);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                startTile, new(2,11), new(2,12), new(2,13), new(2,14), new(1,15), new(2,16), new(3,16), new(4,16), new(5,16), new(6,16), new(7,15), new(7,14), new(7,13), new(7,12), new(6,11), targetTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DijkstraPath_GetPathToTarget_Diagonals2Free(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DijkstraPath dirMap = Pathfinding.GenerateDijkstraPath(_grid, target, start, DiagonalsPolicy.DIAGONAL_2FREE);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                startTile, new(2,11), new(2,12), new(2,13), new(1,14), new(1,15), new(1,16), new(2,16), new(3,16), new(4,16), new(5,16), new(6,16), new(7,16), new(7,15), new(7,14), new(7,13), new(7,12), new(7,11), targetTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DijkstraPath_GetPathFromTarget_NoDiagonals(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DijkstraPath dirMap = Pathfinding.GenerateDijkstraPath(_grid, target, start, DiagonalsPolicy.NONE);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                targetTile, new(6,11), new(7,11), new(7,12), new(7,13), new(7,14), new(7,15), new(7,16), new(6,16), new(5,16), new(4,16), new(3,16), new(2,16), new(1,16), new(1,15), new(1,14), new(2,14), new(2,13), new(2,12), new(2,11), startTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DijkstraPath_GetPathFromTarget_AllDiagonals(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DijkstraPath dirMap = Pathfinding.GenerateDijkstraPath(_grid, target, start, DiagonalsPolicy.ALL_DIAGONALS);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                targetTile, new(6,11), new(7,12), new(7,13), new(6,14), new(5,13), new(4,13), new(3,12), new(2,11), startTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DijkstraPath_GetPathFromTarget_Diagonals1Free(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DijkstraPath dirMap = Pathfinding.GenerateDijkstraPath(_grid, target, start, DiagonalsPolicy.DIAGONAL_1FREE);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                targetTile, new(6,11), new(7,12), new(7,13), new(7,14), new(7,15), new(6,16), new(5,16), new(4,16), new(3,16), new(2,16), new(1,15), new(2,14), new(2,13), new(2,12), new(2,11), startTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DijkstraPath_GetPathFromTarget_Diagonals2Free(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DijkstraPath dirMap = Pathfinding.GenerateDijkstraPath(_grid, target, start, DiagonalsPolicy.DIAGONAL_2FREE);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                targetTile, new(7,11), new(7,12), new(7,13), new(7,14), new(7,15), new(7,16), new(6,16), new(5,16), new(4,16), new(3,16), new(2,16), new(1,16), new(1,15), new(1,14), new(2,13), new(2,12), new(2,11), startTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [Test]
+        public void DijkstraPath_GetNextTileFromTile_NoDiagonals()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 5;
+            int startY = 13;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DijkstraPath dirMap = Pathfinding.GenerateDijkstraPath(_grid, target, start, DiagonalsPolicy.NONE);
+            TestTile returnedTile = dirMap.GetNextTile(_grid, start);
+            TestTile expectedTile = new(4, 13);
+            Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
+        }
+        [Test]
+        public void DijkstraPath_GetNextTileFromTile_AllDiagonals()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 5;
+            int startY = 13;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DijkstraPath dirMap = Pathfinding.GenerateDijkstraPath(_grid, target, start, DiagonalsPolicy.ALL_DIAGONALS);
+            TestTile returnedTile = dirMap.GetNextTile(_grid, start);
+            TestTile expectedTile = new(6, 14);
+            Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
+        }
+        [Test]
+        public void DijkstraPath_GetNextTileFromTile_Diagonals1Free()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 1;
+            int startY = 15;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DijkstraPath dirMap = Pathfinding.GenerateDijkstraPath(_grid, target, start, DiagonalsPolicy.DIAGONAL_1FREE);
+            TestTile returnedTile = dirMap.GetNextTile(_grid, start);
+            TestTile expectedTile = new(2, 16);
+            Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
+        }
+        [Test]
+        public void DijkstraPath_GetNextTileFromTile_Diagonals2Free()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 1;
+            int startY = 15;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DijkstraPath dirMap = Pathfinding.GenerateDijkstraPath(_grid, target, start, DiagonalsPolicy.DIAGONAL_2FREE);
+            TestTile returnedTile = dirMap.GetNextTile(_grid, start);
+            TestTile expectedTile = new(1, 16);
+            Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
+        }
+        [Test]
+        public void DijkstraPath_GetNextTileDirectionFromTile_NoDiagonals()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 5;
+            int startY = 13;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DijkstraPath dirMap = Pathfinding.GenerateDijkstraPath(_grid, target, start, DiagonalsPolicy.NONE);
+            TileDirection returnedDir = dirMap.GetNextDirection(_grid, start);
+            TileDirection expectedDir = TileDirection.LEFT;
+            Assert.AreEqual(expectedDir, returnedDir);
+        }
+        [Test]
+        public void DijkstraPath_GetNextTileDirectionFromTile_AllDiagonals()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 5;
+            int startY = 13;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DijkstraPath dirMap = Pathfinding.GenerateDijkstraPath(_grid, target, start, DiagonalsPolicy.ALL_DIAGONALS);
+            TileDirection returnedDir = dirMap.GetNextDirection(_grid, start);
+            TileDirection expectedDir = TileDirection.UP_RIGHT;
+            Assert.AreEqual(expectedDir, returnedDir);
+        }
+        [Test]
+        public void DijkstraPath_GetNextTileDirectionFromTile_Diagonals1Free()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 1;
+            int startY = 15;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DijkstraPath dirMap = Pathfinding.GenerateDijkstraPath(_grid, target, start, DiagonalsPolicy.DIAGONAL_1FREE);
+            TileDirection returnedDir = dirMap.GetNextDirection(_grid, start);
+            TileDirection expectedDir = TileDirection.UP_RIGHT;
+            Assert.AreEqual(expectedDir, returnedDir);
+        }
+        [Test]
+        public void DijkstraPath_GetNextTileDirectionFromTile_Diagonals2Free()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 1;
+            int startY = 15;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DijkstraPath dirMap = Pathfinding.GenerateDijkstraPath(_grid, target, start, DiagonalsPolicy.DIAGONAL_2FREE);
+            TileDirection returnedDir = dirMap.GetNextDirection(_grid, start);
+            TileDirection expectedDir = TileDirection.UP;
+            Assert.AreEqual(expectedDir, returnedDir);
+        }
+        [Test]
+        public void DijkstraPath_GetDistanceToTarget()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DijkstraPath dirMap = Pathfinding.GenerateDijkstraPath(_grid, target, start);
+            Assert.IsTrue(Mathf.Approximately(20f, dirMap.GetDistanceToTarget(_grid, start)));
+        }
+        #endregion
+
+        #region DirectionField
+
+        [Test]
+        public void GenerateDirectionField_NoDiagonals()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int maxDistance = 5;
+            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, GridUtils.GetTile(_grid, targetX, targetY), maxDistance, DiagonalsPolicy.NONE);
+            (TileDirection, Vector2Int)[] expectedDirMap = new (TileDirection, Vector2Int)[] { new(_dirs['↓'], new(9,8)),
+                new(_dirs['↓'], new(5, 9)), new(_dirs['↓'], new(6, 9)), new(_dirs['↓'], new(7, 9)), new(_dirs['↓'], new(8, 9)), new(_dirs['↓'], new(9, 9)), new(_dirs['↓'], new(10, 9)),
+                new(_dirs['→'], new(5, 10)), new(_dirs['.'], new(6, 10)), new(_dirs['←'], new(7, 10)), new(_dirs['←'], new(8, 10)), new(_dirs['←'], new(9, 10)), new(_dirs['←'], new(10, 10)), new(_dirs['←'], new(11, 10)),
+                new(_dirs['↑'], new(5, 11)), new(_dirs['↑'], new(6, 11)), new(_dirs['↑'], new(7, 11)), new(_dirs['↑'], new(8, 11)), new(_dirs['↑'], new(9, 11)), new(_dirs['↑'], new(10, 11)),
+                new(_dirs['↑'], new(7, 12)), new(_dirs['↑'], new(7, 13)), new(_dirs['↑'], new(7, 14)), new(_dirs['←'], new(8, 13))
+            };
+            Assert.AreEqual(expectedDirMap.Length, dirMap.AccessibleTilesCount);
+            for (int i = 0; i < dirMap._accessibleTiles.Count; i++)
+            {
+                var pair = dirMap._accessibleTiles.ElementAt(i);
+                TileDirection actualDir = pair.Value;
+                Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key);
+                Assert.IsTrue(expectedDirMap.Any(x => x.Item2.x == coords.x && x.Item2.y == coords.y && x.Item1 == actualDir), $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key)} should be {expectedDirMap[i]} but got {actualDir}");
+            }
+        }
+        [Test]
+        public void GenerateDirectionField_AllDiagonals()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int maxDistance = 5;
+            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, GridUtils.GetTile(_grid, targetX, targetY), maxDistance, DiagonalsPolicy.ALL_DIAGONALS);
+            (TileDirection, Vector2Int)[] expectedDirMap = new (TileDirection, Vector2Int)[] {
+                new(_dirs['↘'], new(7, 6)), new(_dirs['↘'], new(8, 6)), new(_dirs['↓'], new(9, 6)), new(_dirs['↙'], new(10, 6)), new(_dirs['↙'], new(11, 6)),
+                new(_dirs['→'], new(7, 7)), new(_dirs['↘'], new(8, 7)), new(_dirs['↓'], new(9, 7)), new(_dirs['↙'], new(10, 7)), new(_dirs['←'], new(11, 7)),
+                new(_dirs['↙'], new(9,8)),
+                new(_dirs['↘'], new(5, 9)), new(_dirs['↓'], new(6, 9)), new(_dirs['↙'], new(7, 9)), new(_dirs['↙'], new(8, 9)), new(_dirs['↙'], new(9, 9)), new(_dirs['↙'], new(10, 9)), new(_dirs['↙'], new(11, 9)),
+                new(_dirs['→'], new(5, 10)), new(_dirs['.'], new(6, 10)), new(_dirs['←'], new(7, 10)), new(_dirs['←'], new(8, 10)), new(_dirs['←'], new(9, 10)), new(_dirs['←'], new(10, 10)), new(_dirs['←'], new(11, 10)),
+                new(_dirs['↗'], new(5, 11)), new(_dirs['↑'], new(6, 11)), new(_dirs['↖'], new(7, 11)), new(_dirs['↖'], new(8, 11)), new(_dirs['↖'], new(9, 11)), new(_dirs['↖'], new(10, 11)), new(_dirs['↖'], new(11, 11)),
+                new(_dirs['↖'], new(7, 12)),
+                new(_dirs['↘'], new(5, 13)), new(_dirs['↑'], new(7, 13)), new(_dirs['↖'], new(8, 13)), new(_dirs['←'], new(9, 13)), new(_dirs['←'], new(10, 13)),
+                new(_dirs['↗'], new(6, 14)), new(_dirs['↑'], new(7, 14)), new(_dirs['↖'], new(8, 14)), new(_dirs['↖'], new(9, 14)), new(_dirs['↖'], new(10, 14)),
+                new(_dirs['↑'], new(7, 15)), new(_dirs['↖'], new(8, 15)), new(_dirs['↖'], new(9, 15)), new(_dirs['↖'], new(10, 15)),
+            };
+            Assert.AreEqual(expectedDirMap.Length, dirMap.AccessibleTilesCount);
+            for (int i = 0; i < dirMap._accessibleTiles.Count; i++)
+            {
+                var pair = dirMap._accessibleTiles.ElementAt(i);
+                TileDirection actualDir = pair.Value;
+                Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key);
+                Assert.IsTrue(expectedDirMap.Any(x => x.Item2.x == coords.x && x.Item2.y == coords.y && x.Item1 == actualDir), $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key)} should be {expectedDirMap[i]} but got {actualDir}");
+            }
+        }
+        [Test]
+        public void GenerateDirectionField_OneFreeDiagonals()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int maxDistance = 5;
+            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, GridUtils.GetTile(_grid, targetX, targetY), maxDistance, DiagonalsPolicy.DIAGONAL_1FREE);
+            (TileDirection, Vector2Int)[] expectedDirMap = new (TileDirection, Vector2Int)[] {
+                new(_dirs['↘'], new(7, 6)), new(_dirs['↘'], new(8, 6)), new(_dirs['↓'], new(9, 6)), new(_dirs['↙'], new(10, 6)), new(_dirs['↙'], new(11, 6)),
+                new(_dirs['→'], new(7, 7)), new(_dirs['↘'], new(8, 7)), new(_dirs['↓'], new(9, 7)), new(_dirs['↙'], new(10, 7)), new(_dirs['←'], new(11, 7)),
+                new(_dirs['↙'], new(9,8)),
+                new(_dirs['↘'], new(5, 9)), new(_dirs['↓'], new(6, 9)), new(_dirs['↙'], new(7, 9)), new(_dirs['↙'], new(8, 9)), new(_dirs['↙'], new(9, 9)), new(_dirs['↙'], new(10, 9)), new(_dirs['↙'], new(11, 9)),
+                new(_dirs['→'], new(5, 10)), new(_dirs['.'], new(6, 10)), new(_dirs['←'], new(7, 10)), new(_dirs['←'], new(8, 10)), new(_dirs['←'], new(9, 10)), new(_dirs['←'], new(10, 10)), new(_dirs['←'], new(11, 10)),
+                new(_dirs['↗'], new(5, 11)), new(_dirs['↑'], new(6, 11)), new(_dirs['↖'], new(7, 11)), new(_dirs['↖'], new(8, 11)), new(_dirs['↖'], new(9, 11)), new(_dirs['↖'], new(10, 11)), new(_dirs['↖'], new(11, 11)),
+                new(_dirs['↖'], new(7, 12)),
+                new(_dirs['↑'], new(7, 13)), new(_dirs['↖'], new(8, 13)), new(_dirs['←'], new(9, 13)), new(_dirs['←'], new(10, 13)),
+                new(_dirs['↗'], new(6, 14)), new(_dirs['↑'], new(7, 14)), new(_dirs['↖'], new(8, 14)), new(_dirs['↖'], new(9, 14)), new(_dirs['↖'], new(10, 14)),
+                new(_dirs['↑'], new(7, 15)), new(_dirs['↖'], new(8, 15)), new(_dirs['↖'], new(9, 15)), new(_dirs['↖'], new(10, 15)),
+            };
+            Assert.AreEqual(expectedDirMap.Length, dirMap.AccessibleTilesCount);
+            for (int i = 0; i < dirMap._accessibleTiles.Count; i++)
+            {
+                var pair = dirMap._accessibleTiles.ElementAt(i);
+                TileDirection actualDir = pair.Value;
+                Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key);
+                Assert.IsTrue(expectedDirMap.Any(x => x.Item2.x == coords.x && x.Item2.y == coords.y && x.Item1 == actualDir), $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key)} should be {expectedDirMap[i]} but got {actualDir}");
+            }
+        }
+        [Test]
+        public void GenerateDirectionField_TwoFreeDiagonals()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int maxDistance = 5;
+            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, GridUtils.GetTile(_grid, targetX, targetY), maxDistance, DiagonalsPolicy.DIAGONAL_2FREE);
+            (TileDirection, Vector2Int)[] expectedDirMap = new (TileDirection, Vector2Int)[] {
+                new(_dirs['↓'], new(9, 7)),
+                new(_dirs['↓'], new(9,8)),
+                new(_dirs['↘'], new(5, 9)), new(_dirs['↓'], new(6, 9)), new(_dirs['↙'], new(7, 9)), new(_dirs['↙'], new(8, 9)), new(_dirs['↙'], new(9, 9)), new(_dirs['↙'], new(10, 9)), new(_dirs['↙'], new(11, 9)),
+                new(_dirs['→'], new(5, 10)), new(_dirs['.'], new(6, 10)), new(_dirs['←'], new(7, 10)), new(_dirs['←'], new(8, 10)), new(_dirs['←'], new(9, 10)), new(_dirs['←'], new(10, 10)), new(_dirs['←'], new(11, 10)),
+                new(_dirs['↗'], new(5, 11)), new(_dirs['↑'], new(6, 11)), new(_dirs['↖'], new(7, 11)), new(_dirs['↖'], new(8, 11)), new(_dirs['↖'], new(9, 11)), new(_dirs['↖'], new(10, 11)), new(_dirs['↖'], new(11, 11)),
+                new(_dirs['↑'], new(7, 12)),
+                new(_dirs['↑'], new(7, 13)), new(_dirs['←'], new(8, 13)), new(_dirs['←'], new(9, 13)),
+                new(_dirs['→'], new(6, 14)), new(_dirs['↑'], new(7, 14)), new(_dirs['↖'], new(8, 14)), new(_dirs['↖'], new(9, 14)),
+                new(_dirs['↑'], new(7, 15)), new(_dirs['↖'], new(8, 15)), new(_dirs['↖'], new(9, 15)),
+            };
+            Assert.AreEqual(expectedDirMap.Length, dirMap.AccessibleTilesCount);
+            for (int i = 0; i < dirMap._accessibleTiles.Count; i++)
+            {
+                var pair = dirMap._accessibleTiles.ElementAt(i);
+                TileDirection actualDir = pair.Value;
+                Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key);
+                Assert.IsTrue(expectedDirMap.Any(x => x.Item2.x == coords.x && x.Item2.y == coords.y && x.Item1 == actualDir), $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key)} should be {expectedDirMap[i]} but got {actualDir}");
+            }
+        }
+        [Test]
+        public void DirectionField_GetTargetTile()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int maxDistance = 20;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance);
+            TestTile returnedTarget = dirMap.GetTargetTile(_grid);
+            Assert.IsTrue(GridUtils.TileEquals(target, returnedTarget), $"Target is [{target.X}, {target.Y}] but returned tile is {returnedTarget.X}, {returnedTarget.Y}");
+        }
+        [Test]
+        public void DirectionField_IsTileAccessible()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int accessibleTileX = 2;
+            int accessibleTileY = 1;
+            int inaccessibleTileX = 1;
+            int inaccessibleTileY = 3;
+            int maxDistance = 20;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance);
+            Assert.IsTrue(dirMap.IsTileAccessible(_grid, GridUtils.GetTile(_grid, accessibleTileX, accessibleTileY)));
+            Assert.IsFalse(dirMap.IsTileAccessible(_grid, GridUtils.GetTile(_grid, inaccessibleTileX, inaccessibleTileY)));
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DirectionField_GetPathToTarget_NoDiagonals(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            int maxDistance = 20;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.NONE);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, start, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                startTile, new(2,11), new(2,12), new(2,13), new(2,14), new(1,14), new(1,15), new(1,16), new(2,16), new(3,16), new(4,16), new(5,16), new(6,16), new(7,16), new(7,15), new(7,14), new(7,13), new(7,12), new(7,11), new(7,10), targetTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DirectionField_GetPathToTarget_AllDiagonals(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            int maxDistance = 20;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.ALL_DIAGONALS);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, start, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                startTile, new(3,11), new(3,12), new(4,13), new(5,13), new(6,14), new(7,13), new(7,12), new(6,11), targetTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DirectionField_GetPathToTarget_Diagonals1Free(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            int maxDistance = 20;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_1FREE);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, start, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                startTile, new(2,11), new(2,12), new(1,13), new(1,14), new(1,15), new(2,16), new(3,16), new(4,16), new(5,16), new(6,16), new(7,15), new(7,14), new(7,13), new(7,12), new(6,11), targetTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DirectionField_GetPathToTarget_Diagonals2Free(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            int maxDistance = 20;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_2FREE);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, start, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                startTile, new(2,11), new(2,12), new(2,13), new(1,14), new(1,15), new(1,16), new(2,16), new(3,16), new(4,16), new(5,16), new(6,16), new(7,16), new(7,15), new(7,14), new(7,13), new(7,12), new(7,11), targetTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DirectionField_GetPathFromTarget_NoDiagonals(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            int maxDistance = 20;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.NONE);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, start, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                targetTile, new(7,10), new(7,11), new(7,12), new(7,13), new(7,14), new(7,15), new(7,16), new(6,16), new(5,16), new(4,16), new(3,16), new(2,16), new(1,16), new(1,15), new(1,14), new(2,14), new(2,13), new(2,12), new(2,11), startTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DirectionField_GetPathFromTarget_AllDiagonals(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            int maxDistance = 20;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.ALL_DIAGONALS);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, start, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                targetTile, new(6,11), new(7,12), new(7,13), new(6,14), new(5,13), new(4,13), new(3,12), new(3,11), startTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DirectionField_GetPathFromTarget_Diagonals1Free(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            int maxDistance = 20;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_1FREE);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, start, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                targetTile, new(6,11), new(7,12), new(7,13), new(7,14), new(7,15), new(6,16), new(5,16), new(4,16), new(3,16), new(2,16), new(1,15), new(1,14), new(1,13), new(2,12), new(2,11), startTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DirectionField_GetPathFromTarget_Diagonals2Free(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            int maxDistance = 20;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_2FREE);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, start, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                targetTile, new(7,11), new(7,12), new(7,13), new(7,14), new(7,15), new(7,16), new(6,16), new(5,16), new(4,16), new(3,16), new(2,16), new(1,16), new(1,15), new(1,14), new(2,13), new(2,12), new(2,11), startTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [Test]
+        public void DirectionField_GetNextTileFromTile_NoDiagonals()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 5;
+            int startY = 13;
+            int maxDistance = 20;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.NONE);
+            TestTile returnedTile = dirMap.GetNextTileFromTile(_grid, start);
+            TestTile expectedTile = new(4, 13);
+            Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
+        }
+        [Test]
+        public void DirectionField_GetNextTileFromTile_AllDiagonals()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 5;
+            int startY = 13;
+            int maxDistance = 14;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.ALL_DIAGONALS);
+            TestTile returnedTile = dirMap.GetNextTileFromTile(_grid, start);
+            TestTile expectedTile = new(6, 14);
+            Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
+        }
+        [Test]
+        public void DirectionField_GetNextTileFromTile_Diagonals1Free()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 1;
+            int startY = 15;
+            int maxDistance = 14;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_1FREE);
+            TestTile returnedTile = dirMap.GetNextTileFromTile(_grid, start);
+            TestTile expectedTile = new(2, 16);
+            Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
+        }
+        [Test]
+        public void DirectionField_GetNextTileFromTile_Diagonals2Free()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 1;
+            int startY = 15;
+            int maxDistance = 14;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_2FREE);
+            TestTile returnedTile = dirMap.GetNextTileFromTile(_grid, start);
+            TestTile expectedTile = new(1, 16);
+            Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
+        }
+        [Test]
+        public void DirectionField_GetNextTileDirectionFromTile_NoDiagonals()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 1;
+            int startY = 15;
+            int maxDistance = 14;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.NONE);
+            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
+            TileDirection expectedDir = TileDirection.UP;
+            Assert.AreEqual(expectedDir, returnedDir);
+        }
+        [Test]
+        public void DirectionField_GetNextTileDirectionFromTile_AllDiagonals()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 1;
+            int startY = 15;
+            int maxDistance = 9;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.ALL_DIAGONALS);
+            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
+            TileDirection expectedDir = TileDirection.DOWN_RIGHT;
+            Assert.AreEqual(expectedDir, returnedDir);
+        }
+        [Test]
+        public void DirectionField_GetNextTileDirectionFromTile_Diagonals1Free()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 1;
+            int startY = 15;
+            int maxDistance = 13;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_1FREE);
+            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
+            TileDirection expectedDir = TileDirection.UP_RIGHT;
+            Assert.AreEqual(expectedDir, returnedDir);
+        }
+        [Test]
+        public void DirectionField_GetNextTileDirectionFromTile_Diagonals2Free()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 1;
+            int startY = 15;
+            int maxDistance = 14;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_2FREE);
+            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
+            TileDirection expectedDir = TileDirection.UP;
+            Assert.AreEqual(expectedDir, returnedDir);
+        }
+
+        #endregion
+
+        #region DijkstraField
+
+        [Test]
+        public void GenerateDijkstraField_NoDiagonals()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            float maxDistance = 5f;
+            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, GridUtils.GetTile(_grid, targetX, targetY), maxDistance, DiagonalsPolicy.NONE);
+            ((TileDirection, float), Vector2Int)[] expectedDirMap = new ((TileDirection, float), Vector2Int)[] { new((_dirs['.'], 0.00000f), new(6, 10)), new((_dirs['→'], 1.00000f), new(5, 10)), new((_dirs['←'], 1.00000f), new(7, 10)), new((_dirs['↓'], 1.00000f), new(6, 9)), new((_dirs['↑'], 1.00000f), new(6, 11)), new((_dirs['↓'], 2.00000f), new(5, 9)), new((_dirs['↑'], 2.00000f), new(5, 11)), new((_dirs['←'], 2.00000f), new(7, 11)), new((_dirs['←'], 2.00000f), new(8, 10)), new((_dirs['↓'], 2.00000f), new(7, 9)), new((_dirs['←'], 3.00000f), new(8, 9)), new((_dirs['←'], 3.00000f), new(9, 10)), new((_dirs['↑'], 3.00000f), new(8, 11)), new((_dirs['↑'], 3.00000f), new(7, 12)), new((_dirs['↑'], 4.00000f), new(7, 13)), new((_dirs['←'], 4.00000f), new(10, 10)), new((_dirs['↓'], 4.00000f), new(9, 9)), new((_dirs['↑'], 4.00000f), new(9, 11)), new((_dirs['←'], 5.00000f), new(10, 9)), new((_dirs['↓'], 5.00000f), new(9, 8)), new((_dirs['←'], 5.00000f), new(11, 10)), new((_dirs['↑'], 5.00000f), new(10, 11)), new((_dirs['←'], 5.00000f), new(8, 13)), new((_dirs['↑'], 5.00000f), new(7, 14)), };
+            Assert.AreEqual(expectedDirMap.Length, dirMap.AccessibleTilesCount);
+            for (int i = 0; i < dirMap._accessibleTiles.Count; i++)
+            {
+                var pair = dirMap._accessibleTiles.ElementAt(i);
+                TileDirection actualDir = pair.Value.Item1;
+                float actualDist = pair.Value.Item2;
+                Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key);
+                Assert.IsTrue(expectedDirMap.Any(x => x.Item2.x == coords.x && x.Item2.y == coords.y && x.Item1.Item1 == actualDir && Mathf.Approximately(x.Item1.Item2 , actualDist)), $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key)} should be {expectedDirMap[i]} but got {actualDir}");
+            }
+        }
+        [Test]
+        public void GenerateDijkstraField_AllDiagonals()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            float maxDistance = 5f;
+            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, GridUtils.GetTile(_grid, targetX, targetY), maxDistance, DiagonalsPolicy.ALL_DIAGONALS);
+            ((TileDirection, float), Vector2Int)[] expectedDirMap = new ((TileDirection, float), Vector2Int)[] { new((_dirs['.'], 0.000f), new(6, 10)), new((_dirs['→'], 1.000f), new(5, 10)), new((_dirs['←'], 1.000f), new(7, 10)), new((_dirs['↓'], 1.000f), new(6, 9)), new((_dirs['↑'], 1.000f), new(6, 11)), new((_dirs['↘'], 1.414f), new(5, 9)), new((_dirs['↙'], 1.414f), new(7, 9)), new((_dirs['↗'], 1.414f), new(5, 11)), new((_dirs['↖'], 1.414f), new(7, 11)), new((_dirs['←'], 2.000f), new(8, 10)), new((_dirs['↙'], 2.414f), new(8, 9)), new((_dirs['↖'], 2.414f), new(8, 11)), new((_dirs['↖'], 2.414f), new(7, 12)), new((_dirs['←'], 3.000f), new(9, 10)), new((_dirs['↙'], 3.414f), new(9, 9)), new((_dirs['↖'], 3.414f), new(9, 11)), new((_dirs['↙'], 3.828f), new(9, 8)), new((_dirs['↑'], 3.414f), new(7, 13)), new((_dirs['↖'], 3.828f), new(8, 13)), new((_dirs['←'], 4.000f), new(10, 10)), new((_dirs['↙'], 4.414f), new(10, 9)), new((_dirs['↖'], 4.414f), new(10, 11)), new((_dirs['↑'], 4.414f), new(7, 14)), new((_dirs['↗'], 4.828f), new(6, 14)), new((_dirs['↖'], 4.828f), new(8, 14)), new((_dirs['←'], 4.828f), new(9, 13)), new((_dirs['↓'], 4.828f), new(9, 7)), new((_dirs['←'], 5.000f), new(11, 10)), };
+            Assert.AreEqual(expectedDirMap.Length, dirMap.AccessibleTilesCount);
+            for (int i = 0; i < dirMap._accessibleTiles.Count; i++)
+            {
+                var pair = dirMap._accessibleTiles.ElementAt(i);
+                TileDirection actualDir = pair.Value.Item1;
+                float actualDist = pair.Value.Item2;
+                Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key);
+                Assert.IsTrue(expectedDirMap.Any(x => x.Item2.x == coords.x && x.Item2.y == coords.y && x.Item1.Item1 == actualDir && Mathf.Approximately(x.Item1.Item2, actualDist)), $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key)} should be {expectedDirMap[i].Item1.Item1} and got {actualDir}, distance should be {expectedDirMap[i].Item1.Item2} and got {actualDist} ");
+            }
+        }
+        [Test]
+        public void GenerateDijkstraField_OneFreeDiagonals()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            float maxDistance = 5f;
+            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, GridUtils.GetTile(_grid, targetX, targetY), maxDistance, DiagonalsPolicy.DIAGONAL_1FREE);
+            ((TileDirection, float), Vector2Int)[] expectedDirMap = new ((TileDirection, float), Vector2Int)[] { new((_dirs['.'], 0.000f), new(6, 10)), new((_dirs['→'], 1.000f), new(5, 10)), new((_dirs['←'], 1.000f), new(7, 10)), new((_dirs['↓'], 1.000f), new(6, 9)), new((_dirs['↑'], 1.000f), new(6, 11)), new((_dirs['↘'], 1.414f), new(5, 9)), new((_dirs['↙'], 1.414f), new(7, 9)), new((_dirs['↗'], 1.414f), new(5, 11)), new((_dirs['↖'], 1.414f), new(7, 11)), new((_dirs['←'], 2.000f), new(8, 10)), new((_dirs['↙'], 2.414f), new(8, 9)), new((_dirs['↖'], 2.414f), new(8, 11)), new((_dirs['↖'], 2.414f), new(7, 12)), new((_dirs['←'], 3.000f), new(9, 10)), new((_dirs['↙'], 3.414f), new(9, 9)), new((_dirs['↖'], 3.414f), new(9, 11)), new((_dirs['↙'], 3.828f), new(9, 8)), new((_dirs['↑'], 3.414f), new(7, 13)), new((_dirs['↖'], 3.828f), new(8, 13)), new((_dirs['←'], 4.000f), new(10, 10)), new((_dirs['↙'], 4.414f), new(10, 9)), new((_dirs['↖'], 4.414f), new(10, 11)), new((_dirs['↑'], 4.414f), new(7, 14)), new((_dirs['↗'], 4.828f), new(6, 14)), new((_dirs['↖'], 4.828f), new(8, 14)), new((_dirs['←'], 4.828f), new(9, 13)), new((_dirs['↓'], 4.828f), new(9, 7)), new((_dirs['←'], 5.000f), new(11, 10)), };
+            Assert.AreEqual(expectedDirMap.Length, dirMap.AccessibleTilesCount);
+            for (int i = 0; i < dirMap._accessibleTiles.Count; i++)
+            {
+                var pair = dirMap._accessibleTiles.ElementAt(i);
+                TileDirection actualDir = pair.Value.Item1;
+                float actualDist = pair.Value.Item2;
+                Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key);
+                Assert.IsTrue(expectedDirMap.Any(x => x.Item2.x == coords.x && x.Item2.y == coords.y && x.Item1.Item1 == actualDir && Mathf.Approximately(x.Item1.Item2, actualDist)), $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key)} should be {expectedDirMap[i]} but got {actualDir}");
+            }
+        }
+        [Test]
+        public void GenerateDijkstraField_TwoFreeDiagonals()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            float maxDistance = 5f;
+            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, GridUtils.GetTile(_grid, targetX, targetY), maxDistance, DiagonalsPolicy.DIAGONAL_2FREE);
+            ((TileDirection, float), Vector2Int)[] expectedDirMap = new ((TileDirection, float), Vector2Int)[] { new((_dirs['.'], 0.000f), new(6, 10)), new((_dirs['→'], 1.000f), new(5, 10)), new((_dirs['←'], 1.000f), new(7, 10)), new((_dirs['↓'], 1.000f), new(6, 9)), new((_dirs['↑'], 1.000f), new(6, 11)), new((_dirs['↘'], 1.414f), new(5, 9)), new((_dirs['↙'], 1.414f), new(7, 9)), new((_dirs['↗'], 1.414f), new(5, 11)), new((_dirs['↖'], 1.414f), new(7, 11)), new((_dirs['←'], 2.000f), new(8, 10)), new((_dirs['↙'], 2.414f), new(8, 9)), new((_dirs['↖'], 2.414f), new(8, 11)), new((_dirs['↑'], 2.414f), new(7, 12)), new((_dirs['←'], 3.000f), new(9, 10)), new((_dirs['↙'], 3.414f), new(9, 9)), new((_dirs['↖'], 3.414f), new(9, 11)), new((_dirs['↑'], 3.414f), new(7, 13)), new((_dirs['←'], 4.000f), new(10, 10)), new((_dirs['↙'], 4.414f), new(10, 9)), new((_dirs['↖'], 4.414f), new(10, 11)), new((_dirs['←'], 4.414f), new(8, 13)), new((_dirs['↑'], 4.414f), new(7, 14)), new((_dirs['↖'], 4.828f), new(8, 14)), new((_dirs['↓'], 4.414f), new(9, 8)), new((_dirs['←'], 5.000f), new(11, 10)), };
+            Assert.AreEqual(expectedDirMap.Length, dirMap.AccessibleTilesCount);
+            for (int i = 0; i < dirMap._accessibleTiles.Count; i++)
+            {
+                var pair = dirMap._accessibleTiles.ElementAt(i);
+                TileDirection actualDir = pair.Value.Item1;
+                float actualDist = pair.Value.Item2;
+                Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key);
+                Assert.IsTrue(expectedDirMap.Any(x => x.Item2.x == coords.x && x.Item2.y == coords.y && x.Item1.Item1 == actualDir && Mathf.Approximately(x.Item1.Item2, actualDist)), $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key)} should be {expectedDirMap[i]} but got {actualDir}");
+            }
+        }
+        [Test]
+        public void DijkstraField_GetTargetTile()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            float maxDistance = 20f;
+            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance);
+            TestTile returnedTarget = dirMap.GetTargetTile(_grid);
+            Assert.IsTrue(GridUtils.TileEquals(target, returnedTarget), $"Target is [{target.X}, {target.Y}] but returned tile is {returnedTarget.X}, {returnedTarget.Y}");
+        }
+        [Test]
+        public void DijkstraField_IsTileAccessible()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int accessibleTileX = 2;
+            int accessibleTileY = 1;
+            int inaccessibleTileX = 1;
+            int inaccessibleTileY = 3;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            float maxDistance = 20f;
+            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance);
+            Assert.IsTrue(dirMap.IsTileAccessible(_grid, GridUtils.GetTile(_grid, accessibleTileX, accessibleTileY)));
+            Assert.IsFalse(dirMap.IsTileAccessible(_grid, GridUtils.GetTile(_grid, inaccessibleTileX, inaccessibleTileY)));
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DijkstraField_GetPathToTarget_NoDiagonals(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            float maxDistance = 20f;
+            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.NONE);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, start, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                startTile, new(2,11), new(2,12), new(2,13), new(2,14), new(1,14), new(1,15), new(1,16), new(2,16), new(3,16), new(4,16), new(5,16), new(6,16), new(7,16), new(7,15), new(7,14), new(7,13), new(7,12), new(7,11), new(6,11), targetTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DijkstraField_GetPathToTarget_AllDiagonals(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            float maxDistance = 20f;
+            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.ALL_DIAGONALS);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, start, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                startTile, new(3,11), new(3,12), new(4,13), new(5,13), new(6,14), new(7,13), new(7,12), new(6,11), targetTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DijkstraField_GetPathToTarget_Diagonals1Free(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            float maxDistance = 20f;
+            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_1FREE);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, start, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                startTile, new(2,11), new(2,12), new(1,13), new(1,14), new(1,15), new(2,16), new(3,16), new(4,16), new(5,16), new(6,16), new(7,15), new(7,14), new(7,13), new(7,12), new(6,11), targetTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DijkstraField_GetPathToTarget_Diagonals2Free(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            float maxDistance = 20f;
+            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_2FREE);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, start, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                startTile, new(2,11), new(2,12), new(2,13), new(1,14), new(1,15), new(1,16), new(2,16), new(3,16), new(4,16), new(5,16), new(6,16), new(7,16), new(7,15), new(7,14), new(7,13), new(7,12), new(7,11), targetTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DijkstraField_GetPathFromTarget_NoDiagonals(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            float maxDistance = 20f;
+            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.NONE);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, start, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                targetTile, new(6,11), new(7,11), new(7,12), new(7,13), new(7,14), new(7,15), new(7,16), new(6,16), new(5,16), new(4,16), new(3,16), new(2,16), new(1,16), new(1,15), new(1,14), new(2,14), new(2,13), new(2,12), new(2,11), startTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DijkstraField_GetPathFromTarget_AllDiagonals(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            float maxDistance = 20f;
+            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.ALL_DIAGONALS);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, start, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                targetTile, new(6,11), new(7,12), new(7,13), new(6,14), new(5,13), new(4,13), new(3,12), new(3,11), startTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DijkstraField_GetPathFromTarget_Diagonals1Free(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            float maxDistance = 20f;
+            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_1FREE);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, start, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                targetTile, new(6,11), new(7,12), new(7,13), new(7,14), new(7,15), new(6,16), new(5,16), new(4,16), new(3,16), new(2,16), new(1,15), new(1,14), new(1,13), new(2,12), new(2,11), startTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void DijkstraField_GetPathFromTarget_Diagonals2Free(bool includeStart, bool includeTarget)
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            float maxDistance = 20f;
+            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_2FREE);
+            TestTile targetTile = includeTarget ? target : null;
+            TestTile startTile = includeStart ? start : null;
+            TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, start, includeStart, includeTarget);
+            List<TestTile> expectedPathList = new(){
+                targetTile, new(7,11), new(7,12), new(7,13), new(7,14), new(7,15), new(7,16), new(6,16), new(5,16), new(4,16), new(3,16), new(2,16), new(1,16), new(1,15), new(1,14), new(2,13), new(2,12), new(2,11), startTile
+            };
+            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
+            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
+            for (int i = 0; i < expectedPath.Length; i++)
+            {
+                TestTile actualTile = returnedPath[i];
+                TestTile expectedTile = expectedPath[i];
+                if (expectedTile == null)
+                {
+                    continue;
+                }
+                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
+            }
+        }
+        [Test]
+        public void DijkstraField_GetNextTileFromTile_NoDiagonals()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 5;
+            int startY = 13;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            float maxDistance = 20f;
+            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.NONE);
+            TestTile returnedTile = dirMap.GetNextTileFromTile(_grid, start);
+            TestTile expectedTile = new(4, 13);
+            Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
+        }
+        [Test]
+        public void DijkstraField_GetNextTileFromTile_AllDiagonals()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 5;
+            int startY = 13;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            float maxDistance = 20f;
+            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.ALL_DIAGONALS);
+            TestTile returnedTile = dirMap.GetNextTileFromTile(_grid, start);
+            TestTile expectedTile = new(6, 14);
+            Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
+        }
+        [Test]
+        public void DijkstraField_GetNextTileFromTile_Diagonals1Free()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 1;
+            int startY = 15;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            float maxDistance = 20f;
+            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_1FREE);
+            TestTile returnedTile = dirMap.GetNextTileFromTile(_grid, start);
+            TestTile expectedTile = new(2, 16);
+            Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
+        }
+        [Test]
+        public void DijkstraField_GetNextTileFromTile_Diagonals2Free()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 1;
+            int startY = 15;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            float maxDistance = 20f;
+            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_2FREE);
+            TestTile returnedTile = dirMap.GetNextTileFromTile(_grid, start);
+            TestTile expectedTile = new(1, 16);
+            Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
+        }
+        [Test]
+        public void DijkstraField_GetNextTileDirectionFromTile_NoDiagonals()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 5;
+            int startY = 13;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            float maxDistance = 20f;
+            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.NONE);
+            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
+            TileDirection expectedDir = TileDirection.LEFT;
+            Assert.AreEqual(expectedDir, returnedDir);
+        }
+        [Test]
+        public void DijkstraField_GetNextTileDirectionFromTile_AllDiagonals()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 5;
+            int startY = 13;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            float maxDistance = 20f;
+            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.ALL_DIAGONALS);
+            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
+            TileDirection expectedDir = TileDirection.UP_RIGHT;
+            Assert.AreEqual(expectedDir, returnedDir);
+        }
+        [Test]
+        public void DijkstraField_GetNextTileDirectionFromTile_Diagonals1Free()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 1;
+            int startY = 15;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            float maxDistance = 20f;
+            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_1FREE);
+            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
+            TileDirection expectedDir = TileDirection.UP_RIGHT;
+            Assert.AreEqual(expectedDir, returnedDir);
+        }
+        [Test]
+        public void DijkstraField_GetNextTileDirectionFromTile_Diagonals2Free()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 1;
+            int startY = 15;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            float maxDistance = 20f;
+            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_2FREE);
+            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
+            TileDirection expectedDir = TileDirection.UP;
+            Assert.AreEqual(expectedDir, returnedDir);
+        }
+        [Test]
+        public void DijkstraField_GetDistanceToTarget()
+        {
+            int targetX = 6;
+            int targetY = 10;
+            int startX = 2;
+            int startY = 10;
+            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
+            TestTile start = GridUtils.GetTile(_grid, startX, startY);
+            float maxDistance = 20f;
+            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance);
+            Assert.IsTrue(Mathf.Approximately(20f, dirMap.GetDistanceToTarget(_grid, start)));
+        }
+
+        #endregion
+
         #region DirectionGrid
 
         [Test]
@@ -589,526 +2601,6 @@ namespace GridToolkitTests
             {
                 Assert.AreEqual(dirMap._directionGrid[i], deserializedDirMap._directionGrid[i]);
             }
-        }
-
-        #endregion
-
-        #region DirectionField
-
-        [Test]
-        public void GenerateDirectionField_NoDiagonals()
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int maxDistance = 5;
-            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, GridUtils.GetTile(_grid, targetX, targetY), maxDistance, DiagonalsPolicy.NONE);
-            (TileDirection, Vector2Int)[] expectedDirMap = new (TileDirection, Vector2Int)[] { new(_dirs['↓'], new(9,8)),
-                new(_dirs['↓'], new(5, 9)), new(_dirs['↓'], new(6, 9)), new(_dirs['↓'], new(7, 9)), new(_dirs['↓'], new(8, 9)), new(_dirs['↓'], new(9, 9)), new(_dirs['↓'], new(10, 9)),
-                new(_dirs['→'], new(5, 10)), new(_dirs['.'], new(6, 10)), new(_dirs['←'], new(7, 10)), new(_dirs['←'], new(8, 10)), new(_dirs['←'], new(9, 10)), new(_dirs['←'], new(10, 10)), new(_dirs['←'], new(11, 10)),
-                new(_dirs['↑'], new(5, 11)), new(_dirs['↑'], new(6, 11)), new(_dirs['↑'], new(7, 11)), new(_dirs['↑'], new(8, 11)), new(_dirs['↑'], new(9, 11)), new(_dirs['↑'], new(10, 11)),
-                new(_dirs['↑'], new(7, 12)), new(_dirs['↑'], new(7, 13)), new(_dirs['↑'], new(7, 14)), new(_dirs['←'], new(8, 13))
-            };
-            Assert.AreEqual(expectedDirMap.Length, dirMap.AccessibleTilesCount);
-            for (int i = 0; i < dirMap._accessibleTiles.Count; i++)
-            {
-                var pair = dirMap._accessibleTiles.ElementAt(i);
-                TileDirection actualDir = pair.Value;
-                Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key);
-                Assert.IsTrue(expectedDirMap.Any(x => x.Item2.x == coords.x && x.Item2.y == coords.y && x.Item1 == actualDir), $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key)} should be {expectedDirMap[i]} but got {actualDir}");
-            }
-        }
-        [Test]
-        public void GenerateDirectionField_AllDiagonals()
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int maxDistance = 5;
-            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, GridUtils.GetTile(_grid, targetX, targetY), maxDistance, DiagonalsPolicy.ALL_DIAGONALS);
-            (TileDirection, Vector2Int)[] expectedDirMap = new (TileDirection, Vector2Int)[] {
-                new(_dirs['↘'], new(7, 6)), new(_dirs['↘'], new(8, 6)), new(_dirs['↓'], new(9, 6)), new(_dirs['↙'], new(10, 6)), new(_dirs['↙'], new(11, 6)),
-                new(_dirs['→'], new(7, 7)), new(_dirs['↘'], new(8, 7)), new(_dirs['↓'], new(9, 7)), new(_dirs['↙'], new(10, 7)), new(_dirs['←'], new(11, 7)),
-                new(_dirs['↙'], new(9,8)),
-                new(_dirs['↘'], new(5, 9)), new(_dirs['↓'], new(6, 9)), new(_dirs['↙'], new(7, 9)), new(_dirs['↙'], new(8, 9)), new(_dirs['↙'], new(9, 9)), new(_dirs['↙'], new(10, 9)), new(_dirs['↙'], new(11, 9)),
-                new(_dirs['→'], new(5, 10)), new(_dirs['.'], new(6, 10)), new(_dirs['←'], new(7, 10)), new(_dirs['←'], new(8, 10)), new(_dirs['←'], new(9, 10)), new(_dirs['←'], new(10, 10)), new(_dirs['←'], new(11, 10)),
-                new(_dirs['↗'], new(5, 11)), new(_dirs['↑'], new(6, 11)), new(_dirs['↖'], new(7, 11)), new(_dirs['↖'], new(8, 11)), new(_dirs['↖'], new(9, 11)), new(_dirs['↖'], new(10, 11)), new(_dirs['↖'], new(11, 11)),
-                new(_dirs['↖'], new(7, 12)),
-                new(_dirs['↘'], new(5, 13)), new(_dirs['↑'], new(7, 13)), new(_dirs['↖'], new(8, 13)), new(_dirs['←'], new(9, 13)), new(_dirs['←'], new(10, 13)),
-                new(_dirs['↗'], new(6, 14)), new(_dirs['↑'], new(7, 14)), new(_dirs['↖'], new(8, 14)), new(_dirs['↖'], new(9, 14)), new(_dirs['↖'], new(10, 14)),
-                new(_dirs['↑'], new(7, 15)), new(_dirs['↖'], new(8, 15)), new(_dirs['↖'], new(9, 15)), new(_dirs['↖'], new(10, 15)),
-            };
-            Assert.AreEqual(expectedDirMap.Length, dirMap.AccessibleTilesCount);
-            for (int i = 0; i < dirMap._accessibleTiles.Count; i++)
-            {
-                var pair = dirMap._accessibleTiles.ElementAt(i);
-                TileDirection actualDir = pair.Value;
-                Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key);
-                Assert.IsTrue(expectedDirMap.Any(x => x.Item2.x == coords.x && x.Item2.y == coords.y && x.Item1 == actualDir), $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key)} should be {expectedDirMap[i]} but got {actualDir}");
-            }
-        }
-        [Test]
-        public void GenerateDirectionField_OneFreeDiagonals()
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int maxDistance = 5;
-            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, GridUtils.GetTile(_grid, targetX, targetY), maxDistance, DiagonalsPolicy.DIAGONAL_1FREE);
-            (TileDirection, Vector2Int)[] expectedDirMap = new (TileDirection, Vector2Int)[] {
-                new(_dirs['↘'], new(7, 6)), new(_dirs['↘'], new(8, 6)), new(_dirs['↓'], new(9, 6)), new(_dirs['↙'], new(10, 6)), new(_dirs['↙'], new(11, 6)),
-                new(_dirs['→'], new(7, 7)), new(_dirs['↘'], new(8, 7)), new(_dirs['↓'], new(9, 7)), new(_dirs['↙'], new(10, 7)), new(_dirs['←'], new(11, 7)),
-                new(_dirs['↙'], new(9,8)),
-                new(_dirs['↘'], new(5, 9)), new(_dirs['↓'], new(6, 9)), new(_dirs['↙'], new(7, 9)), new(_dirs['↙'], new(8, 9)), new(_dirs['↙'], new(9, 9)), new(_dirs['↙'], new(10, 9)), new(_dirs['↙'], new(11, 9)),
-                new(_dirs['→'], new(5, 10)), new(_dirs['.'], new(6, 10)), new(_dirs['←'], new(7, 10)), new(_dirs['←'], new(8, 10)), new(_dirs['←'], new(9, 10)), new(_dirs['←'], new(10, 10)), new(_dirs['←'], new(11, 10)),
-                new(_dirs['↗'], new(5, 11)), new(_dirs['↑'], new(6, 11)), new(_dirs['↖'], new(7, 11)), new(_dirs['↖'], new(8, 11)), new(_dirs['↖'], new(9, 11)), new(_dirs['↖'], new(10, 11)), new(_dirs['↖'], new(11, 11)),
-                new(_dirs['↖'], new(7, 12)),
-                new(_dirs['↑'], new(7, 13)), new(_dirs['↖'], new(8, 13)), new(_dirs['←'], new(9, 13)), new(_dirs['←'], new(10, 13)),
-                new(_dirs['↗'], new(6, 14)), new(_dirs['↑'], new(7, 14)), new(_dirs['↖'], new(8, 14)), new(_dirs['↖'], new(9, 14)), new(_dirs['↖'], new(10, 14)),
-                new(_dirs['↑'], new(7, 15)), new(_dirs['↖'], new(8, 15)), new(_dirs['↖'], new(9, 15)), new(_dirs['↖'], new(10, 15)),
-            };
-            Assert.AreEqual(expectedDirMap.Length, dirMap.AccessibleTilesCount);
-            for (int i = 0; i < dirMap._accessibleTiles.Count; i++)
-            {
-                var pair = dirMap._accessibleTiles.ElementAt(i);
-                TileDirection actualDir = pair.Value;
-                Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key);
-                Assert.IsTrue(expectedDirMap.Any(x => x.Item2.x == coords.x && x.Item2.y == coords.y && x.Item1 == actualDir), $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key)} should be {expectedDirMap[i]} but got {actualDir}");
-            }
-        }
-        [Test]
-        public void GenerateDirectionField_TwoFreeDiagonals()
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int maxDistance = 5;
-            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, GridUtils.GetTile(_grid, targetX, targetY), maxDistance, DiagonalsPolicy.DIAGONAL_2FREE);
-            (TileDirection, Vector2Int)[] expectedDirMap = new (TileDirection, Vector2Int)[] {
-                new(_dirs['↓'], new(9, 7)),
-                new(_dirs['↓'], new(9,8)),
-                new(_dirs['↘'], new(5, 9)), new(_dirs['↓'], new(6, 9)), new(_dirs['↙'], new(7, 9)), new(_dirs['↙'], new(8, 9)), new(_dirs['↙'], new(9, 9)), new(_dirs['↙'], new(10, 9)), new(_dirs['↙'], new(11, 9)),
-                new(_dirs['→'], new(5, 10)), new(_dirs['.'], new(6, 10)), new(_dirs['←'], new(7, 10)), new(_dirs['←'], new(8, 10)), new(_dirs['←'], new(9, 10)), new(_dirs['←'], new(10, 10)), new(_dirs['←'], new(11, 10)),
-                new(_dirs['↗'], new(5, 11)), new(_dirs['↑'], new(6, 11)), new(_dirs['↖'], new(7, 11)), new(_dirs['↖'], new(8, 11)), new(_dirs['↖'], new(9, 11)), new(_dirs['↖'], new(10, 11)), new(_dirs['↖'], new(11, 11)),
-                new(_dirs['↑'], new(7, 12)),
-                new(_dirs['↑'], new(7, 13)), new(_dirs['←'], new(8, 13)), new(_dirs['←'], new(9, 13)),
-                new(_dirs['→'], new(6, 14)), new(_dirs['↑'], new(7, 14)), new(_dirs['↖'], new(8, 14)), new(_dirs['↖'], new(9, 14)),
-                new(_dirs['↑'], new(7, 15)), new(_dirs['↖'], new(8, 15)), new(_dirs['↖'], new(9, 15)),
-            };
-            Assert.AreEqual(expectedDirMap.Length, dirMap.AccessibleTilesCount);
-            for (int i = 0; i < dirMap._accessibleTiles.Count; i++)
-            {
-                var pair = dirMap._accessibleTiles.ElementAt(i);
-                TileDirection actualDir = pair.Value;
-                Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key);
-                Assert.IsTrue(expectedDirMap.Any(x => x.Item2.x == coords.x && x.Item2.y == coords.y && x.Item1 == actualDir), $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key)} should be {expectedDirMap[i]} but got {actualDir}");
-            }
-        }
-        [Test]
-        public void DirectionField_GetTargetTile()
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int maxDistance = 20;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance);
-            TestTile returnedTarget = dirMap.GetTargetTile(_grid);
-            Assert.IsTrue(GridUtils.TileEquals(target, returnedTarget), $"Target is [{target.X}, {target.Y}] but returned tile is {returnedTarget.X}, {returnedTarget.Y}");
-        }
-        [Test]
-        public void DirectionField_IsTileAccessible()
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int accessibleTileX = 2;
-            int accessibleTileY = 1;
-            int inaccessibleTileX = 1;
-            int inaccessibleTileY = 3;
-            int maxDistance = 20;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance);
-            Assert.IsTrue(dirMap.IsTileAccessible(_grid, GridUtils.GetTile(_grid, accessibleTileX, accessibleTileY)));
-            Assert.IsFalse(dirMap.IsTileAccessible(_grid, GridUtils.GetTile(_grid, inaccessibleTileX, inaccessibleTileY)));
-        }
-        [TestCase(false, false)]
-        [TestCase(true, false)]
-        [TestCase(false, true)]
-        [TestCase(true, true)]
-        public void DirectionField_GetPathToTarget_NoDiagonals(bool includeStart, bool includeTarget)
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 2;
-            int startY = 10;
-            int maxDistance = 20;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.NONE);
-            TestTile targetTile = includeTarget ? target : null;
-            TestTile startTile = includeStart ? start : null;
-            TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, start, includeStart, includeTarget);
-            List<TestTile> expectedPathList = new(){
-                startTile, new(2,11), new(2,12), new(2,13), new(2,14), new(1,14), new(1,15), new(1,16), new(2,16), new(3,16), new(4,16), new(5,16), new(6,16), new(7,16), new(7,15), new(7,14), new(7,13), new(7,12), new(7,11), new(7,10), targetTile
-            };
-            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
-            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
-            for (int i = 0; i < expectedPath.Length; i++)
-            {
-                TestTile actualTile = returnedPath[i];
-                TestTile expectedTile = expectedPath[i];
-                if (expectedTile == null)
-                {
-                    continue;
-                }
-                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
-            }
-        }
-        [TestCase(false, false)]
-        [TestCase(true, false)]
-        [TestCase(false, true)]
-        [TestCase(true, true)]
-        public void DirectionField_GetPathToTarget_AllDiagonals(bool includeStart, bool includeTarget)
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 2;
-            int startY = 10;
-            int maxDistance = 20;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.ALL_DIAGONALS);
-            TestTile targetTile = includeTarget ? target : null;
-            TestTile startTile = includeStart ? start : null;
-            TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, start, includeStart, includeTarget);
-            List<TestTile> expectedPathList = new(){
-                startTile, new(3,11), new(3,12), new(4,13), new(5,13), new(6,14), new(7,13), new(7,12), new(6,11), targetTile
-            };
-            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
-            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
-            for (int i = 0; i < expectedPath.Length; i++)
-            {
-                TestTile actualTile = returnedPath[i];
-                TestTile expectedTile = expectedPath[i];
-                if (expectedTile == null)
-                {
-                    continue;
-                }
-                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
-            }
-        }
-        [TestCase(false, false)]
-        [TestCase(true, false)]
-        [TestCase(false, true)]
-        [TestCase(true, true)]
-        public void DirectionField_GetPathToTarget_Diagonals1Free(bool includeStart, bool includeTarget)
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 2;
-            int startY = 10;
-            int maxDistance = 20;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_1FREE);
-            TestTile targetTile = includeTarget ? target : null;
-            TestTile startTile = includeStart ? start : null;
-            TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, start, includeStart, includeTarget);
-            List<TestTile> expectedPathList = new(){
-                startTile, new(2,11), new(2,12), new(1,13), new(1,14), new(1,15), new(2,16), new(3,16), new(4,16), new(5,16), new(6,16), new(7,15), new(7,14), new(7,13), new(7,12), new(6,11), targetTile
-            };
-            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
-            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
-            for (int i = 0; i < expectedPath.Length; i++)
-            {
-                TestTile actualTile = returnedPath[i];
-                TestTile expectedTile = expectedPath[i];
-                if (expectedTile == null)
-                {
-                    continue;
-                }
-                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
-            }
-        }
-        [TestCase(false, false)]
-        [TestCase(true, false)]
-        [TestCase(false, true)]
-        [TestCase(true, true)]
-        public void DirectionField_GetPathToTarget_Diagonals2Free(bool includeStart, bool includeTarget)
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 2;
-            int startY = 10;
-            int maxDistance = 20;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_2FREE);
-            TestTile targetTile = includeTarget ? target : null;
-            TestTile startTile = includeStart ? start : null;
-            TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, start, includeStart, includeTarget);
-            List<TestTile> expectedPathList = new(){
-                startTile, new(2,11), new(2,12), new(2,13), new(1,14), new(1,15), new(1,16), new(2,16), new(3,16), new(4,16), new(5,16), new(6,16), new(7,16), new(7,15), new(7,14), new(7,13), new(7,12), new(7,11), targetTile
-            };
-            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
-            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
-            for (int i = 0; i < expectedPath.Length; i++)
-            {
-                TestTile actualTile = returnedPath[i];
-                TestTile expectedTile = expectedPath[i];
-                if (expectedTile == null)
-                {
-                    continue;
-                }
-                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
-            }
-        }
-        [TestCase(false, false)]
-        [TestCase(true, false)]
-        [TestCase(false, true)]
-        [TestCase(true, true)]
-        public void DirectionField_GetPathFromTarget_NoDiagonals(bool includeStart, bool includeTarget)
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 2;
-            int startY = 10;
-            int maxDistance = 20;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.NONE);
-            TestTile targetTile = includeTarget ? target : null;
-            TestTile startTile = includeStart ? start : null;
-            TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, start, includeStart, includeTarget);
-            List<TestTile> expectedPathList = new(){
-                targetTile, new(7,10), new(7,11), new(7,12), new(7,13), new(7,14), new(7,15), new(7,16), new(6,16), new(5,16), new(4,16), new(3,16), new(2,16), new(1,16), new(1,15), new(1,14), new(2,14), new(2,13), new(2,12), new(2,11), startTile
-            };
-            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
-            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
-            for (int i = 0; i < expectedPath.Length; i++)
-            {
-                TestTile actualTile = returnedPath[i];
-                TestTile expectedTile = expectedPath[i];
-                if (expectedTile == null)
-                {
-                    continue;
-                }
-                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
-            }
-        }
-        [TestCase(false, false)]
-        [TestCase(true, false)]
-        [TestCase(false, true)]
-        [TestCase(true, true)]
-        public void DirectionField_GetPathFromTarget_AllDiagonals(bool includeStart, bool includeTarget)
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 2;
-            int startY = 10;
-            int maxDistance = 20;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.ALL_DIAGONALS);
-            TestTile targetTile = includeTarget ? target : null;
-            TestTile startTile = includeStart ? start : null;
-            TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, start, includeStart, includeTarget);
-            List<TestTile> expectedPathList = new(){
-                targetTile, new(6,11), new(7,12), new(7,13), new(6,14), new(5,13), new(4,13), new(3,12), new(3,11), startTile
-            };
-            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
-            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
-            for (int i = 0; i < expectedPath.Length; i++)
-            {
-                TestTile actualTile = returnedPath[i];
-                TestTile expectedTile = expectedPath[i];
-                if (expectedTile == null)
-                {
-                    continue;
-                }
-                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
-            }
-        }
-        [TestCase(false, false)]
-        [TestCase(true, false)]
-        [TestCase(false, true)]
-        [TestCase(true, true)]
-        public void DirectionField_GetPathFromTarget_Diagonals1Free(bool includeStart, bool includeTarget)
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 2;
-            int startY = 10;
-            int maxDistance = 20;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_1FREE);
-            TestTile targetTile = includeTarget ? target : null;
-            TestTile startTile = includeStart ? start : null;
-            TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, start, includeStart, includeTarget);
-            List<TestTile> expectedPathList = new(){
-                targetTile, new(6,11), new(7,12), new(7,13), new(7,14), new(7,15), new(6,16), new(5,16), new(4,16), new(3,16), new(2,16), new(1,15), new(1,14), new(1,13), new(2,12), new(2,11), startTile
-            };
-            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
-            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
-            for (int i = 0; i < expectedPath.Length; i++)
-            {
-                TestTile actualTile = returnedPath[i];
-                TestTile expectedTile = expectedPath[i];
-                if (expectedTile == null)
-                {
-                    continue;
-                }
-                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
-            }
-        }
-        [TestCase(false, false)]
-        [TestCase(true, false)]
-        [TestCase(false, true)]
-        [TestCase(true, true)]
-        public void DirectionField_GetPathFromTarget_Diagonals2Free(bool includeStart, bool includeTarget)
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 2;
-            int startY = 10;
-            int maxDistance = 20;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_2FREE);
-            TestTile targetTile = includeTarget ? target : null;
-            TestTile startTile = includeStart ? start : null;
-            TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, start, includeStart, includeTarget);
-            List<TestTile> expectedPathList = new(){
-                targetTile, new(7,11), new(7,12), new(7,13), new(7,14), new(7,15), new(7,16), new(6,16), new(5,16), new(4,16), new(3,16), new(2,16), new(1,16), new(1,15), new(1,14), new(2,13), new(2,12), new(2,11), startTile
-            };
-            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
-            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
-            for (int i = 0; i < expectedPath.Length; i++)
-            {
-                TestTile actualTile = returnedPath[i];
-                TestTile expectedTile = expectedPath[i];
-                if (expectedTile == null)
-                {
-                    continue;
-                }
-                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
-            }
-        }
-        [Test]
-        public void DirectionField_GetNextTileFromTile_NoDiagonals()
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 5;
-            int startY = 13;
-            int maxDistance = 20;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.NONE);
-            TestTile returnedTile = dirMap.GetNextTileFromTile(_grid, start);
-            TestTile expectedTile = new(4, 13);
-            Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
-        }
-        [Test]
-        public void DirectionField_GetNextTileFromTile_AllDiagonals()
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 5;
-            int startY = 13;
-            int maxDistance = 14;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.ALL_DIAGONALS);
-            TestTile returnedTile = dirMap.GetNextTileFromTile(_grid, start);
-            TestTile expectedTile = new(6, 14);
-            Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
-        }
-        [Test]
-        public void DirectionField_GetNextTileFromTile_Diagonals1Free()
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 1;
-            int startY = 15;
-            int maxDistance = 14;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_1FREE);
-            TestTile returnedTile = dirMap.GetNextTileFromTile(_grid, start);
-            TestTile expectedTile = new(2, 16);
-            Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
-        }
-        [Test]
-        public void DirectionField_GetNextTileFromTile_Diagonals2Free()
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 1;
-            int startY = 15;
-            int maxDistance = 14;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_2FREE);
-            TestTile returnedTile = dirMap.GetNextTileFromTile(_grid, start);
-            TestTile expectedTile = new(1, 16);
-            Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
-        }
-        [Test]
-        public void DirectionField_GetNextTileDirectionFromTile_NoDiagonals()
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 1;
-            int startY = 15;
-            int maxDistance = 14;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.NONE);
-            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
-            TileDirection expectedDir = TileDirection.UP;
-            Assert.AreEqual(expectedDir, returnedDir);
-        }
-        [Test]
-        public void DirectionField_GetNextTileDirectionFromTile_AllDiagonals()
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 1;
-            int startY = 15;
-            int maxDistance = 9;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.ALL_DIAGONALS);
-            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
-            TileDirection expectedDir = TileDirection.DOWN_RIGHT;
-            Assert.AreEqual(expectedDir, returnedDir);
-        }
-        [Test]
-        public void DirectionField_GetNextTileDirectionFromTile_Diagonals1Free()
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 1;
-            int startY = 15;
-            int maxDistance = 13;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_1FREE);
-            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
-            TileDirection expectedDir = TileDirection.UP_RIGHT;
-            Assert.AreEqual(expectedDir, returnedDir);
-        }
-        [Test]
-        public void DirectionField_GetNextTileDirectionFromTile_Diagonals2Free()
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 1;
-            int startY = 15;
-            int maxDistance = 14;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            DirectionField dirMap = Pathfinding.GenerateDirectionField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_2FREE);
-            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
-            TileDirection expectedDir = TileDirection.UP;
-            Assert.AreEqual(expectedDir, returnedDir);
         }
 
         #endregion
@@ -1778,610 +3270,6 @@ namespace GridToolkitTests
             Assert.IsTrue(Mathf.Approximately(20f, dirMap.GetDistanceToTarget(_grid, start)));
         }
 
-        #endregion
-
-        #region DijkstraField
-
-        [Test]
-        public void GenerateDijkstraField_NoDiagonals()
-        {
-            int targetX = 6;
-            int targetY = 10;
-            float maxDistance = 5f;
-            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, GridUtils.GetTile(_grid, targetX, targetY), maxDistance, DiagonalsPolicy.NONE);
-            ((TileDirection, float), Vector2Int)[] expectedDirMap = new ((TileDirection, float), Vector2Int)[] { new((_dirs['.'], 0.00000f), new(6, 10)), new((_dirs['→'], 1.00000f), new(5, 10)), new((_dirs['←'], 1.00000f), new(7, 10)), new((_dirs['↓'], 1.00000f), new(6, 9)), new((_dirs['↑'], 1.00000f), new(6, 11)), new((_dirs['↓'], 2.00000f), new(5, 9)), new((_dirs['↑'], 2.00000f), new(5, 11)), new((_dirs['←'], 2.00000f), new(7, 11)), new((_dirs['←'], 2.00000f), new(8, 10)), new((_dirs['↓'], 2.00000f), new(7, 9)), new((_dirs['←'], 3.00000f), new(8, 9)), new((_dirs['←'], 3.00000f), new(9, 10)), new((_dirs['↑'], 3.00000f), new(8, 11)), new((_dirs['↑'], 3.00000f), new(7, 12)), new((_dirs['↑'], 4.00000f), new(7, 13)), new((_dirs['←'], 4.00000f), new(10, 10)), new((_dirs['↓'], 4.00000f), new(9, 9)), new((_dirs['↑'], 4.00000f), new(9, 11)), new((_dirs['←'], 5.00000f), new(10, 9)), new((_dirs['↓'], 5.00000f), new(9, 8)), new((_dirs['←'], 5.00000f), new(11, 10)), new((_dirs['↑'], 5.00000f), new(10, 11)), new((_dirs['←'], 5.00000f), new(8, 13)), new((_dirs['↑'], 5.00000f), new(7, 14)), };
-            Assert.AreEqual(expectedDirMap.Length, dirMap.AccessibleTilesCount);
-            for (int i = 0; i < dirMap._accessibleTiles.Count; i++)
-            {
-                var pair = dirMap._accessibleTiles.ElementAt(i);
-                TileDirection actualDir = pair.Value.Item1;
-                float actualDist = pair.Value.Item2;
-                Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key);
-                Assert.IsTrue(expectedDirMap.Any(x => x.Item2.x == coords.x && x.Item2.y == coords.y && x.Item1.Item1 == actualDir && Mathf.Approximately(x.Item1.Item2 , actualDist)), $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key)} should be {expectedDirMap[i]} but got {actualDir}");
-            }
-        }
-        [Test]
-        public void GenerateDijkstraField_AllDiagonals()
-        {
-            int targetX = 6;
-            int targetY = 10;
-            float maxDistance = 5f;
-            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, GridUtils.GetTile(_grid, targetX, targetY), maxDistance, DiagonalsPolicy.ALL_DIAGONALS);
-            ((TileDirection, float), Vector2Int)[] expectedDirMap = new ((TileDirection, float), Vector2Int)[] { new((_dirs['.'], 0.000f), new(6, 10)), new((_dirs['→'], 1.000f), new(5, 10)), new((_dirs['←'], 1.000f), new(7, 10)), new((_dirs['↓'], 1.000f), new(6, 9)), new((_dirs['↑'], 1.000f), new(6, 11)), new((_dirs['↘'], 1.414f), new(5, 9)), new((_dirs['↙'], 1.414f), new(7, 9)), new((_dirs['↗'], 1.414f), new(5, 11)), new((_dirs['↖'], 1.414f), new(7, 11)), new((_dirs['←'], 2.000f), new(8, 10)), new((_dirs['↙'], 2.414f), new(8, 9)), new((_dirs['↖'], 2.414f), new(8, 11)), new((_dirs['↖'], 2.414f), new(7, 12)), new((_dirs['←'], 3.000f), new(9, 10)), new((_dirs['↙'], 3.414f), new(9, 9)), new((_dirs['↖'], 3.414f), new(9, 11)), new((_dirs['↙'], 3.828f), new(9, 8)), new((_dirs['↑'], 3.414f), new(7, 13)), new((_dirs['↖'], 3.828f), new(8, 13)), new((_dirs['←'], 4.000f), new(10, 10)), new((_dirs['↙'], 4.414f), new(10, 9)), new((_dirs['↖'], 4.414f), new(10, 11)), new((_dirs['↑'], 4.414f), new(7, 14)), new((_dirs['↗'], 4.828f), new(6, 14)), new((_dirs['↖'], 4.828f), new(8, 14)), new((_dirs['←'], 4.828f), new(9, 13)), new((_dirs['↓'], 4.828f), new(9, 7)), new((_dirs['←'], 5.000f), new(11, 10)), };
-            Assert.AreEqual(expectedDirMap.Length, dirMap.AccessibleTilesCount);
-            for (int i = 0; i < dirMap._accessibleTiles.Count; i++)
-            {
-                var pair = dirMap._accessibleTiles.ElementAt(i);
-                TileDirection actualDir = pair.Value.Item1;
-                float actualDist = pair.Value.Item2;
-                Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key);
-                Assert.IsTrue(expectedDirMap.Any(x => x.Item2.x == coords.x && x.Item2.y == coords.y && x.Item1.Item1 == actualDir && Mathf.Approximately(x.Item1.Item2, actualDist)), $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key)} should be {expectedDirMap[i].Item1.Item1} and got {actualDir}, distance should be {expectedDirMap[i].Item1.Item2} and got {actualDist} ");
-            }
-        }
-        [Test]
-        public void GenerateDijkstraField_OneFreeDiagonals()
-        {
-            int targetX = 6;
-            int targetY = 10;
-            float maxDistance = 5f;
-            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, GridUtils.GetTile(_grid, targetX, targetY), maxDistance, DiagonalsPolicy.DIAGONAL_1FREE);
-            ((TileDirection, float), Vector2Int)[] expectedDirMap = new ((TileDirection, float), Vector2Int)[] { new((_dirs['.'], 0.000f), new(6, 10)), new((_dirs['→'], 1.000f), new(5, 10)), new((_dirs['←'], 1.000f), new(7, 10)), new((_dirs['↓'], 1.000f), new(6, 9)), new((_dirs['↑'], 1.000f), new(6, 11)), new((_dirs['↘'], 1.414f), new(5, 9)), new((_dirs['↙'], 1.414f), new(7, 9)), new((_dirs['↗'], 1.414f), new(5, 11)), new((_dirs['↖'], 1.414f), new(7, 11)), new((_dirs['←'], 2.000f), new(8, 10)), new((_dirs['↙'], 2.414f), new(8, 9)), new((_dirs['↖'], 2.414f), new(8, 11)), new((_dirs['↖'], 2.414f), new(7, 12)), new((_dirs['←'], 3.000f), new(9, 10)), new((_dirs['↙'], 3.414f), new(9, 9)), new((_dirs['↖'], 3.414f), new(9, 11)), new((_dirs['↙'], 3.828f), new(9, 8)), new((_dirs['↑'], 3.414f), new(7, 13)), new((_dirs['↖'], 3.828f), new(8, 13)), new((_dirs['←'], 4.000f), new(10, 10)), new((_dirs['↙'], 4.414f), new(10, 9)), new((_dirs['↖'], 4.414f), new(10, 11)), new((_dirs['↑'], 4.414f), new(7, 14)), new((_dirs['↗'], 4.828f), new(6, 14)), new((_dirs['↖'], 4.828f), new(8, 14)), new((_dirs['←'], 4.828f), new(9, 13)), new((_dirs['↓'], 4.828f), new(9, 7)), new((_dirs['←'], 5.000f), new(11, 10)), };
-            Assert.AreEqual(expectedDirMap.Length, dirMap.AccessibleTilesCount);
-            for (int i = 0; i < dirMap._accessibleTiles.Count; i++)
-            {
-                var pair = dirMap._accessibleTiles.ElementAt(i);
-                TileDirection actualDir = pair.Value.Item1;
-                float actualDist = pair.Value.Item2;
-                Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key);
-                Assert.IsTrue(expectedDirMap.Any(x => x.Item2.x == coords.x && x.Item2.y == coords.y && x.Item1.Item1 == actualDir && Mathf.Approximately(x.Item1.Item2, actualDist)), $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key)} should be {expectedDirMap[i]} but got {actualDir}");
-            }
-        }
-        [Test]
-        public void GenerateDijkstraField_TwoFreeDiagonals()
-        {
-            int targetX = 6;
-            int targetY = 10;
-            float maxDistance = 5f;
-            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, GridUtils.GetTile(_grid, targetX, targetY), maxDistance, DiagonalsPolicy.DIAGONAL_2FREE);
-            ((TileDirection, float), Vector2Int)[] expectedDirMap = new ((TileDirection, float), Vector2Int)[] { new((_dirs['.'], 0.000f), new(6, 10)), new((_dirs['→'], 1.000f), new(5, 10)), new((_dirs['←'], 1.000f), new(7, 10)), new((_dirs['↓'], 1.000f), new(6, 9)), new((_dirs['↑'], 1.000f), new(6, 11)), new((_dirs['↘'], 1.414f), new(5, 9)), new((_dirs['↙'], 1.414f), new(7, 9)), new((_dirs['↗'], 1.414f), new(5, 11)), new((_dirs['↖'], 1.414f), new(7, 11)), new((_dirs['←'], 2.000f), new(8, 10)), new((_dirs['↙'], 2.414f), new(8, 9)), new((_dirs['↖'], 2.414f), new(8, 11)), new((_dirs['↑'], 2.414f), new(7, 12)), new((_dirs['←'], 3.000f), new(9, 10)), new((_dirs['↙'], 3.414f), new(9, 9)), new((_dirs['↖'], 3.414f), new(9, 11)), new((_dirs['↑'], 3.414f), new(7, 13)), new((_dirs['←'], 4.000f), new(10, 10)), new((_dirs['↙'], 4.414f), new(10, 9)), new((_dirs['↖'], 4.414f), new(10, 11)), new((_dirs['←'], 4.414f), new(8, 13)), new((_dirs['↑'], 4.414f), new(7, 14)), new((_dirs['↖'], 4.828f), new(8, 14)), new((_dirs['↓'], 4.414f), new(9, 8)), new((_dirs['←'], 5.000f), new(11, 10)), };
-            Assert.AreEqual(expectedDirMap.Length, dirMap.AccessibleTilesCount);
-            for (int i = 0; i < dirMap._accessibleTiles.Count; i++)
-            {
-                var pair = dirMap._accessibleTiles.ElementAt(i);
-                TileDirection actualDir = pair.Value.Item1;
-                float actualDist = pair.Value.Item2;
-                Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key);
-                Assert.IsTrue(expectedDirMap.Any(x => x.Item2.x == coords.x && x.Item2.y == coords.y && x.Item1.Item1 == actualDir && Mathf.Approximately(x.Item1.Item2, actualDist)), $"Direction for tile {GridUtils.GetCoordinatesFromFlatIndex(new(_grid.GetLength(0), _grid.GetLength(1)), pair.Key)} should be {expectedDirMap[i]} but got {actualDir}");
-            }
-        }
-        [Test]
-        public void DijkstraField_GetTargetTile()
-        {
-            int targetX = 6;
-            int targetY = 10;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            float maxDistance = 20f;
-            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance);
-            TestTile returnedTarget = dirMap.GetTargetTile(_grid);
-            Assert.IsTrue(GridUtils.TileEquals(target, returnedTarget), $"Target is [{target.X}, {target.Y}] but returned tile is {returnedTarget.X}, {returnedTarget.Y}");
-        }
-        [Test]
-        public void DijkstraField_IsTileAccessible()
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int accessibleTileX = 2;
-            int accessibleTileY = 1;
-            int inaccessibleTileX = 1;
-            int inaccessibleTileY = 3;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            float maxDistance = 20f;
-            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance);
-            Assert.IsTrue(dirMap.IsTileAccessible(_grid, GridUtils.GetTile(_grid, accessibleTileX, accessibleTileY)));
-            Assert.IsFalse(dirMap.IsTileAccessible(_grid, GridUtils.GetTile(_grid, inaccessibleTileX, inaccessibleTileY)));
-        }
-        [TestCase(false, false)]
-        [TestCase(true, false)]
-        [TestCase(false, true)]
-        [TestCase(true, true)]
-        public void DijkstraField_GetPathToTarget_NoDiagonals(bool includeStart, bool includeTarget)
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 2;
-            int startY = 10;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            float maxDistance = 20f;
-            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.NONE);
-            TestTile targetTile = includeTarget ? target : null;
-            TestTile startTile = includeStart ? start : null;
-            TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, start, includeStart, includeTarget);
-            List<TestTile> expectedPathList = new(){
-                startTile, new(2,11), new(2,12), new(2,13), new(2,14), new(1,14), new(1,15), new(1,16), new(2,16), new(3,16), new(4,16), new(5,16), new(6,16), new(7,16), new(7,15), new(7,14), new(7,13), new(7,12), new(7,11), new(6,11), targetTile
-            };
-            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
-            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
-            for (int i = 0; i < expectedPath.Length; i++)
-            {
-                TestTile actualTile = returnedPath[i];
-                TestTile expectedTile = expectedPath[i];
-                if (expectedTile == null)
-                {
-                    continue;
-                }
-                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
-            }
-        }
-        [TestCase(false, false)]
-        [TestCase(true, false)]
-        [TestCase(false, true)]
-        [TestCase(true, true)]
-        public void DijkstraField_GetPathToTarget_AllDiagonals(bool includeStart, bool includeTarget)
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 2;
-            int startY = 10;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            float maxDistance = 20f;
-            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.ALL_DIAGONALS);
-            TestTile targetTile = includeTarget ? target : null;
-            TestTile startTile = includeStart ? start : null;
-            TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, start, includeStart, includeTarget);
-            List<TestTile> expectedPathList = new(){
-                startTile, new(3,11), new(3,12), new(4,13), new(5,13), new(6,14), new(7,13), new(7,12), new(6,11), targetTile
-            };
-            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
-            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
-            for (int i = 0; i < expectedPath.Length; i++)
-            {
-                TestTile actualTile = returnedPath[i];
-                TestTile expectedTile = expectedPath[i];
-                if (expectedTile == null)
-                {
-                    continue;
-                }
-                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
-            }
-        }
-        [TestCase(false, false)]
-        [TestCase(true, false)]
-        [TestCase(false, true)]
-        [TestCase(true, true)]
-        public void DijkstraField_GetPathToTarget_Diagonals1Free(bool includeStart, bool includeTarget)
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 2;
-            int startY = 10;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            float maxDistance = 20f;
-            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_1FREE);
-            TestTile targetTile = includeTarget ? target : null;
-            TestTile startTile = includeStart ? start : null;
-            TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, start, includeStart, includeTarget);
-            List<TestTile> expectedPathList = new(){
-                startTile, new(2,11), new(2,12), new(1,13), new(1,14), new(1,15), new(2,16), new(3,16), new(4,16), new(5,16), new(6,16), new(7,15), new(7,14), new(7,13), new(7,12), new(6,11), targetTile
-            };
-            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
-            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
-            for (int i = 0; i < expectedPath.Length; i++)
-            {
-                TestTile actualTile = returnedPath[i];
-                TestTile expectedTile = expectedPath[i];
-                if (expectedTile == null)
-                {
-                    continue;
-                }
-                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
-            }
-        }
-        [TestCase(false, false)]
-        [TestCase(true, false)]
-        [TestCase(false, true)]
-        [TestCase(true, true)]
-        public void DijkstraField_GetPathToTarget_Diagonals2Free(bool includeStart, bool includeTarget)
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 2;
-            int startY = 10;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            float maxDistance = 20f;
-            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_2FREE);
-            TestTile targetTile = includeTarget ? target : null;
-            TestTile startTile = includeStart ? start : null;
-            TestTile[] returnedPath = dirMap.GetPathToTarget(_grid, start, includeStart, includeTarget);
-            List<TestTile> expectedPathList = new(){
-                startTile, new(2,11), new(2,12), new(2,13), new(1,14), new(1,15), new(1,16), new(2,16), new(3,16), new(4,16), new(5,16), new(6,16), new(7,16), new(7,15), new(7,14), new(7,13), new(7,12), new(7,11), targetTile
-            };
-            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
-            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
-            for (int i = 0; i < expectedPath.Length; i++)
-            {
-                TestTile actualTile = returnedPath[i];
-                TestTile expectedTile = expectedPath[i];
-                if (expectedTile == null)
-                {
-                    continue;
-                }
-                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
-            }
-        }
-        [TestCase(false, false)]
-        [TestCase(true, false)]
-        [TestCase(false, true)]
-        [TestCase(true, true)]
-        public void DijkstraField_GetPathFromTarget_NoDiagonals(bool includeStart, bool includeTarget)
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 2;
-            int startY = 10;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            float maxDistance = 20f;
-            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.NONE);
-            TestTile targetTile = includeTarget ? target : null;
-            TestTile startTile = includeStart ? start : null;
-            TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, start, includeStart, includeTarget);
-            List<TestTile> expectedPathList = new(){
-                targetTile, new(6,11), new(7,11), new(7,12), new(7,13), new(7,14), new(7,15), new(7,16), new(6,16), new(5,16), new(4,16), new(3,16), new(2,16), new(1,16), new(1,15), new(1,14), new(2,14), new(2,13), new(2,12), new(2,11), startTile
-            };
-            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
-            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
-            for (int i = 0; i < expectedPath.Length; i++)
-            {
-                TestTile actualTile = returnedPath[i];
-                TestTile expectedTile = expectedPath[i];
-                if (expectedTile == null)
-                {
-                    continue;
-                }
-                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
-            }
-        }
-        [TestCase(false, false)]
-        [TestCase(true, false)]
-        [TestCase(false, true)]
-        [TestCase(true, true)]
-        public void DijkstraField_GetPathFromTarget_AllDiagonals(bool includeStart, bool includeTarget)
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 2;
-            int startY = 10;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            float maxDistance = 20f;
-            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.ALL_DIAGONALS);
-            TestTile targetTile = includeTarget ? target : null;
-            TestTile startTile = includeStart ? start : null;
-            TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, start, includeStart, includeTarget);
-            List<TestTile> expectedPathList = new(){
-                targetTile, new(6,11), new(7,12), new(7,13), new(6,14), new(5,13), new(4,13), new(3,12), new(3,11), startTile
-            };
-            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
-            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
-            for (int i = 0; i < expectedPath.Length; i++)
-            {
-                TestTile actualTile = returnedPath[i];
-                TestTile expectedTile = expectedPath[i];
-                if (expectedTile == null)
-                {
-                    continue;
-                }
-                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
-            }
-        }
-        [TestCase(false, false)]
-        [TestCase(true, false)]
-        [TestCase(false, true)]
-        [TestCase(true, true)]
-        public void DijkstraField_GetPathFromTarget_Diagonals1Free(bool includeStart, bool includeTarget)
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 2;
-            int startY = 10;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            float maxDistance = 20f;
-            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_1FREE);
-            TestTile targetTile = includeTarget ? target : null;
-            TestTile startTile = includeStart ? start : null;
-            TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, start, includeStart, includeTarget);
-            List<TestTile> expectedPathList = new(){
-                targetTile, new(6,11), new(7,12), new(7,13), new(7,14), new(7,15), new(6,16), new(5,16), new(4,16), new(3,16), new(2,16), new(1,15), new(1,14), new(1,13), new(2,12), new(2,11), startTile
-            };
-            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
-            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
-            for (int i = 0; i < expectedPath.Length; i++)
-            {
-                TestTile actualTile = returnedPath[i];
-                TestTile expectedTile = expectedPath[i];
-                if (expectedTile == null)
-                {
-                    continue;
-                }
-                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
-            }
-        }
-        [TestCase(false, false)]
-        [TestCase(true, false)]
-        [TestCase(false, true)]
-        [TestCase(true, true)]
-        public void DijkstraField_GetPathFromTarget_Diagonals2Free(bool includeStart, bool includeTarget)
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 2;
-            int startY = 10;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            float maxDistance = 20f;
-            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_2FREE);
-            TestTile targetTile = includeTarget ? target : null;
-            TestTile startTile = includeStart ? start : null;
-            TestTile[] returnedPath = dirMap.GetPathFromTarget(_grid, start, includeStart, includeTarget);
-            List<TestTile> expectedPathList = new(){
-                targetTile, new(7,11), new(7,12), new(7,13), new(7,14), new(7,15), new(7,16), new(6,16), new(5,16), new(4,16), new(3,16), new(2,16), new(1,16), new(1,15), new(1,14), new(2,13), new(2,12), new(2,11), startTile
-            };
-            TestTile[] expectedPath = expectedPathList.Where(x => x != null).ToArray();
-            Assert.AreEqual(expectedPath.Length, returnedPath.Length);
-            for (int i = 0; i < expectedPath.Length; i++)
-            {
-                TestTile actualTile = returnedPath[i];
-                TestTile expectedTile = expectedPath[i];
-                if (expectedTile == null)
-                {
-                    continue;
-                }
-                Assert.IsTrue(GridUtils.TileEquals(expectedTile, actualTile), $"Step {i} should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{actualTile.X}, {actualTile.Y}]");
-            }
-        }
-        [Test]
-        public void DijkstraField_GetNextTileFromTile_NoDiagonals()
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 5;
-            int startY = 13;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            float maxDistance = 20f;
-            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.NONE);
-            TestTile returnedTile = dirMap.GetNextTileFromTile(_grid, start);
-            TestTile expectedTile = new(4, 13);
-            Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
-        }
-        [Test]
-        public void DijkstraField_GetNextTileFromTile_AllDiagonals()
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 5;
-            int startY = 13;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            float maxDistance = 20f;
-            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.ALL_DIAGONALS);
-            TestTile returnedTile = dirMap.GetNextTileFromTile(_grid, start);
-            TestTile expectedTile = new(6, 14);
-            Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
-        }
-        [Test]
-        public void DijkstraField_GetNextTileFromTile_Diagonals1Free()
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 1;
-            int startY = 15;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            float maxDistance = 20f;
-            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_1FREE);
-            TestTile returnedTile = dirMap.GetNextTileFromTile(_grid, start);
-            TestTile expectedTile = new(2, 16);
-            Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
-        }
-        [Test]
-        public void DijkstraField_GetNextTileFromTile_Diagonals2Free()
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 1;
-            int startY = 15;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            float maxDistance = 20f;
-            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_2FREE);
-            TestTile returnedTile = dirMap.GetNextTileFromTile(_grid, start);
-            TestTile expectedTile = new(1, 16);
-            Assert.IsTrue(GridUtils.TileEquals(expectedTile, returnedTile), $"Next tile should be tile [{expectedTile.X}, {expectedTile.Y}] but got [{returnedTile.X}, {returnedTile.Y}]");
-        }
-        [Test]
-        public void DijkstraField_GetNextTileDirectionFromTile_NoDiagonals()
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 5;
-            int startY = 13;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            float maxDistance = 20f;
-            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.NONE);
-            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
-            TileDirection expectedDir = TileDirection.LEFT;
-            Assert.AreEqual(expectedDir, returnedDir);
-        }
-        [Test]
-        public void DijkstraField_GetNextTileDirectionFromTile_AllDiagonals()
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 5;
-            int startY = 13;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            float maxDistance = 20f;
-            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.ALL_DIAGONALS);
-            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
-            TileDirection expectedDir = TileDirection.UP_RIGHT;
-            Assert.AreEqual(expectedDir, returnedDir);
-        }
-        [Test]
-        public void DijkstraField_GetNextTileDirectionFromTile_Diagonals1Free()
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 1;
-            int startY = 15;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            float maxDistance = 20f;
-            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_1FREE);
-            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
-            TileDirection expectedDir = TileDirection.UP_RIGHT;
-            Assert.AreEqual(expectedDir, returnedDir);
-        }
-        [Test]
-        public void DijkstraField_GetNextTileDirectionFromTile_Diagonals2Free()
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 1;
-            int startY = 15;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            float maxDistance = 20f;
-            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance, DiagonalsPolicy.DIAGONAL_2FREE);
-            TileDirection returnedDir = dirMap.GetNextTileDirectionFromTile(_grid, start);
-            TileDirection expectedDir = TileDirection.UP;
-            Assert.AreEqual(expectedDir, returnedDir);
-        }
-        [Test]
-        public void DijkstraField_GetDistanceToTarget()
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 2;
-            int startY = 10;
-            TestTile target = GridUtils.GetTile(_grid, targetX, targetY);
-            TestTile start = GridUtils.GetTile(_grid, startX, startY);
-            float maxDistance = 20f;
-            DijkstraField dirMap = Pathfinding.GenerateDijkstraField(_grid, target, maxDistance);
-            Assert.IsTrue(Mathf.Approximately(20f, dirMap.GetDistanceToTarget(_grid, start)));
-        }
-
-        #endregion
-
-        #region UniquePath
-
-        [TestCase(true, true)]
-        [TestCase(false, true)]
-        [TestCase(true, false)]
-        [TestCase(false, false)]
-        public void GenerateUniquePath_NoDiagonals(bool includeStart, bool includeTarget)
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 2;
-            int startY = 10;
-            TestTile target = includeTarget ? new(6, 10) : null;
-            TestTile start = includeStart ? new(2, 10) : null;
-            TestTile[] path = Pathfinding.GenerateUniquePath(_grid, GridUtils.GetTile(_grid, targetX, targetY), GridUtils.GetTile(_grid, startX, startY), DiagonalsPolicy.NONE, 1.414f, includeStart, includeTarget);
-            for (int i = 0; i < path.Length; i++)
-            {
-                Debug.Log(path[i]);
-            }
-            List<TestTile> expectedPath = new() { start, new(2, 11), new(2, 12), new(2, 13), new(2, 14), new(1, 14), new(1, 15), new(1, 16), new(2, 16), new(3, 16), new(4, 16), new(5, 16), new(6, 16), new(7, 16), new(7, 15), new(7, 14), new(7, 13), new(7, 12), new(7, 11), new(6, 11), target };
-            expectedPath.RemoveAll(x => x == null);
-            Assert.AreEqual(expectedPath.Count, path.Length, $"Path length should be {expectedPath.Count} but got {path.Length}");
-            for (int i = 0; i < path.Length; i++)
-            {
-                Assert.IsTrue(expectedPath[i].X == path[i].X && expectedPath[i].Y == path[i].Y, $"Tile {i} on the path should be {expectedPath[i]} but got {path[i]}");
-            }
-        }
-        [TestCase(true, true)]
-        [TestCase(false, true)]
-        [TestCase(true, false)]
-        [TestCase(false, false)]
-        public void GenerateUniquePath_AllDiagonals(bool includeStart, bool includeTarget)
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 2;
-            int startY = 10;
-            TestTile target = includeTarget ? new(6, 10) : null;
-            TestTile start = includeStart ? new(2, 10) : null;
-            TestTile[] path = Pathfinding.GenerateUniquePath(_grid, GridUtils.GetTile(_grid, targetX, targetY), GridUtils.GetTile(_grid, startX, startY), DiagonalsPolicy.ALL_DIAGONALS, 1.414f, includeStart, includeTarget);
-            for (int i = 0; i < path.Length; i++)
-            {
-                Debug.Log(path[i]);
-            }
-            List<TestTile> expectedPath = new() { start, new(2, 11), new(3, 12), new(4, 13), new(5, 13), new(6, 14), new(7, 13), new(7, 12), new(6, 11), target };
-            expectedPath.RemoveAll(x => x == null);
-            Assert.AreEqual(expectedPath.Count, path.Length, $"Path length should be {expectedPath.Count} but got {path.Length}");
-            for (int i = 0; i < path.Length; i++)
-            {
-                Assert.IsTrue(expectedPath[i].X == path[i].X && expectedPath[i].Y == path[i].Y, $"Tile {i} on the path should be {expectedPath[i]} but got {path[i]}");
-            }
-        }
-        [TestCase(true, true)]
-        [TestCase(false, true)]
-        [TestCase(true, false)]
-        [TestCase(false, false)]
-        public void GenerateUniquePath_DiagonalsOneFree(bool includeStart, bool includeTarget)
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 2;
-            int startY = 10;
-            TestTile target = includeTarget ? new(6, 10) : null;
-            TestTile start = includeStart ? new(2, 10) : null;
-            TestTile[] path = Pathfinding.GenerateUniquePath(_grid, GridUtils.GetTile(_grid, targetX, targetY), GridUtils.GetTile(_grid, startX, startY), DiagonalsPolicy.DIAGONAL_1FREE, 1.414f, includeStart, includeTarget);
-            for (int i = 0; i < path.Length; i++)
-            {
-                Debug.Log(path[i]);
-            }
-            List<TestTile> expectedPath = new() { start, new(2, 11), new(2, 12), new(2, 13), new(2, 14), new(1, 15), new(2, 16), new(3, 16), new(4, 16), new(5, 16), new(6, 16), new(7, 15), new(7, 14), new(7, 13), new(7, 12), new(6, 11), target };
-            expectedPath.RemoveAll(x => x == null);
-            Assert.AreEqual(expectedPath.Count, path.Length, $"Path length should be {expectedPath.Count} but got {path.Length}");
-            for (int i = 0; i < path.Length; i++)
-            {
-                Assert.IsTrue(expectedPath[i].X == path[i].X && expectedPath[i].Y == path[i].Y, $"Tile {i} on the path should be {expectedPath[i]} but got {path[i]}");
-            }
-        }
-        [TestCase(true, true)]
-        [TestCase(false, true)]
-        [TestCase(true, false)]
-        [TestCase(false, false)]
-        public void GenerateUniquePath_DiagonalsTwoFree(bool includeStart, bool includeTarget)
-        {
-            int targetX = 6;
-            int targetY = 10;
-            int startX = 2;
-            int startY = 10;
-            TestTile target = includeTarget ? new(6, 10) : null;
-            TestTile start = includeStart ? new(2, 10) : null;
-            TestTile[] path = Pathfinding.GenerateUniquePath(_grid, GridUtils.GetTile(_grid, targetX, targetY), GridUtils.GetTile(_grid, startX, startY), DiagonalsPolicy.DIAGONAL_2FREE, 1.414f, includeStart, includeTarget);
-            for (int i = 0; i < path.Length; i++)
-            {
-                Debug.Log(path[i]);
-            }
-            List<TestTile> expectedPath = new() { start, new(2, 11), new(2, 12), new(2, 13), new(1, 14), new(1, 15), new(1, 16), new(2, 16), new(3, 16), new(4, 16), new(5, 16), new(6, 16), new(7, 16), new(7, 15), new(7, 14), new(7, 13), new(7, 12), new(7, 11), target };
-            expectedPath.RemoveAll(x => x == null);
-            Assert.AreEqual(expectedPath.Count, path.Length, $"Path length should be {expectedPath.Count} but got {path.Length}");
-            for (int i = 0; i < path.Length; i++)
-            {
-                Assert.IsTrue(expectedPath[i].X == path[i].X && expectedPath[i].Y == path[i].Y, $"Tile {i} on the path should be {expectedPath[i]} but got {path[i]}");
-            }
-        }
         #endregion
 
         #region DirectionAtlas

@@ -22124,10 +22124,10 @@ MonoBehaviour:
   m_MultiSelect: 0
   m_Options:
     m_Options:
-    - m_Text: DIRECTION MAP
+    - m_Text: DIRECTION PATH
       m_Image: {fileID: 0}
       m_Color: {r: 1, g: 1, b: 1, a: 1}
-    - m_Text: DIJKSTRA MAP
+    - m_Text: DIJKSTRA PATH
       m_Image: {fileID: 0}
       m_Color: {r: 1, g: 1, b: 1, a: 1}
     - m_Text: DIRECTION FIELD
@@ -22136,7 +22136,10 @@ MonoBehaviour:
     - m_Text: DIJKSTRA FIELD
       m_Image: {fileID: 0}
       m_Color: {r: 1, g: 1, b: 1, a: 1}
-    - m_Text: UNIQUE PATH
+    - m_Text: DIRECTION MAP
+      m_Image: {fileID: 0}
+      m_Color: {r: 1, g: 1, b: 1, a: 1}
+    - m_Text: DIJKSTRA MAP
       m_Image: {fileID: 0}
       m_Color: {r: 1, g: 1, b: 1, a: 1}
     - m_Text: DIRECTION ATLAS

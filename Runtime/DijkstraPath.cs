@@ -10,17 +10,17 @@ using UnityEngine;
 namespace Caskev.GridToolkit
 {
     /// <summary>
-    /// A DirectionPath holds the direction data of all tiles on the path between a target start and a start tile.
+    /// A DijkstraPath holds the direction data of all tiles on the path between a target start and a start tile.
     /// </summary>
-    public class DirectionPath
+    public class DijkstraPath
     {
-        internal int[] _path;
+        internal (int, float)[] _path;
         /// <summary>
         /// Gets the total number of tiles on the path.
         /// </summary>
         public int Length => _path.Length;
 
-        internal DirectionPath(int[] path)
+        internal DijkstraPath((int, float)[] path)
         {
             _path = path;
         }
@@ -36,7 +36,7 @@ namespace Caskev.GridToolkit
             {
                 return false;
             }
-            return _path.Any(x => x == GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y));
+            return _path.Any(x => x.Item1 == GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y));
         }
         /// <summary>
         /// Returns the start start.
@@ -45,7 +45,7 @@ namespace Caskev.GridToolkit
         /// <returns>The start start.</returns>
         public T GetStartTile<T>(T[,] grid) where T : ITile
         {
-            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[0]);
+            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[0].Item1);
             return GridUtils.GetTile(grid, targetCoords.x, targetCoords.y);
         }
         /// <summary>
@@ -55,7 +55,7 @@ namespace Caskev.GridToolkit
         /// <returns>The target start.</returns>
         public T GetTargetTile<T>(T[,] grid) where T : ITile
         {
-            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[^1]);
+            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[^1].Item1);
             return GridUtils.GetTile(grid, targetCoords.x, targetCoords.y);
         }
         /// <summary>
@@ -71,12 +71,12 @@ namespace Caskev.GridToolkit
                 throw new Exception("Do not call this method with a tile that is not on the path.");
             }
             int flatIndex = GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y);
-            int arrayIndex = Array.FindIndex(_path, x => x == flatIndex);
+            int arrayIndex = Array.FindIndex(_path, x => x.Item1 == flatIndex);
             if (arrayIndex < _path.Length - 1)
             {
                 arrayIndex++;
             }
-            Vector2Int nextTileCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[arrayIndex]);
+            Vector2Int nextTileCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[arrayIndex].Item1);
             return GridUtils.GetTile(grid, nextTileCoords.x, nextTileCoords.y);
         }
         /// <summary>
@@ -92,12 +92,12 @@ namespace Caskev.GridToolkit
                 throw new Exception("Do not call this method with a tile that is not on the path.");
             }
             int flatIndex = GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y);
-            int arrayIndex = Array.FindIndex(_path, x => x == flatIndex);
+            int arrayIndex = Array.FindIndex(_path, x => x.Item1 == flatIndex);
             if (arrayIndex < _path.Length - 1)
             {
                 arrayIndex++;
             }
-            Vector2Int nextTileCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[arrayIndex]);
+            Vector2Int nextTileCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[arrayIndex].Item1);
             TileDirection direction = GridUtils.GetDirectionBetweenAdjacentTiles(tile, GridUtils.GetTile(grid, nextTileCoords.x, nextTileCoords.y));
             return direction;
         }
@@ -110,8 +110,8 @@ namespace Caskev.GridToolkit
         /// <returns>An array of tiles</returns>
         public T[] GetPathToTarget<T>(T[,] grid, bool includeStart = true, bool includeTarget = true) where T : ITile
         {
-            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[0]);
-            Vector2Int startCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[^1]);
+            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[0].Item1);
+            Vector2Int startCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[^1].Item1);
             T target = GridUtils.GetTile(grid, targetCoords.x, targetCoords.y);
             T start = GridUtils.GetTile(grid, startCoords.x, startCoords.y);
             int length = _path.Length;
@@ -144,8 +144,8 @@ namespace Caskev.GridToolkit
         /// <returns>An array of tiles</returns>
         public void GetPathToTargetNoAlloc<T>(T[,] grid, T[] path, bool includeStart = true, bool includeTarget = true) where T : ITile
         {
-            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[0]);
-            Vector2Int startCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[^1]);
+            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[0].Item1);
+            Vector2Int startCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[^1].Item1);
             T target = GridUtils.GetTile(grid, targetCoords.x, targetCoords.y);
             T start = GridUtils.GetTile(grid, startCoords.x, startCoords.y);
             int length = _path.Length;
@@ -179,8 +179,8 @@ namespace Caskev.GridToolkit
         /// <returns>An array of tiles</returns>
         public T[] GetPathFromTarget<T>(T[,] grid, bool includeStart = true, bool includeTarget = true) where T : ITile
         {
-            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[0]);
-            Vector2Int startCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[^1]);
+            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[0].Item1);
+            Vector2Int startCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[^1].Item1);
             T target = GridUtils.GetTile(grid, targetCoords.x, targetCoords.y);
             T start = GridUtils.GetTile(grid, startCoords.x, startCoords.y);
             int length = _path.Length;
@@ -213,8 +213,8 @@ namespace Caskev.GridToolkit
         /// <returns>An array of tiles</returns>
         public void GetPathFromTargetNoAlloc<T>(T[,] grid, T[] path, bool includeStart = true, bool includeTarget = true) where T : ITile
         {
-            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[0]);
-            Vector2Int startCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[^1]);
+            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[0].Item1);
+            Vector2Int startCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[^1].Item1);
             T target = GridUtils.GetTile(grid, targetCoords.x, targetCoords.y);
             T start = GridUtils.GetTile(grid, startCoords.x, startCoords.y);
             int length = _path.Length;
@@ -248,8 +248,23 @@ namespace Caskev.GridToolkit
         /// <returns>The start of type <typeparamref name="T"/> located at the specified index on the path.</returns>
         public T GetTileOnThePath<T>(T[,] grid, int index) where T : ITile
         {
-            Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[index]);
+            Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[index].Item1);
             return grid[coords.y, coords.x];
+        }
+        /// <summary>
+        /// Get the distance from the specified tile to the target.
+        /// </summary>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="tile">The tile from which to get the distance to the target tile</param>
+        /// <returns>The float distance from the specified tile to the target tile</returns>
+        public float GetDistanceToTarget<T>(T[,] grid, T tile) where T : IWeightedTile
+        {
+            if (!IsOnPath(grid, tile))
+            {
+                throw new Exception("Do not call this method with tile that is not on the path.");
+            }
+            int tileFlatIndex = GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y);
+            return _path.First(x => x.Item1 == tileFlatIndex).Item2;
         }
     }
 }
