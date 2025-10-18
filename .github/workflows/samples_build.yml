@@ -10,6 +10,8 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Create temp Unity project
+        env:
+          UNITY_VER: 6000.2.8f1
         run: |
           mkdir -p TempProject/Assets TempProject/Packages TempProject/ProjectSettings
           cat > TempProject/Packages/manifest.json << 'JSON'
@@ -21,6 +23,7 @@ jobs:
             }
           }
           JSON
+          echo "m_EditorVersion: ${UNITY_VER}" > TempProject/ProjectSettings/ProjectVersion.txt
 
       - name: Add editor build script
         run: |
@@ -35,10 +38,8 @@ jobs:
 
           public static class BuildSamples
           {
-              [System.Serializable]
-              class PackageJson { public SampleEntry[] samples; }
-              [System.Serializable]
-              class SampleEntry { public string displayName; public string description; public string path; }
+              [System.Serializable] class PackageJson { public SampleEntry[] samples; }
+              [System.Serializable] class SampleEntry { public string displayName; public string description; public string path; }
 
               static string FindPackagePath(string packageName)
               {
@@ -71,7 +72,7 @@ jobs:
                       if (s == null || string.IsNullOrEmpty(s.path)) continue;
 
                       string src = Path.Combine(pkgPath, s.path);
-                      if (!Directory.Exists(src)) continue;
+                      if (!Directory.Exists(src)) { Debug.LogWarning("Sample path not found: " + src); continue; }
 
                       string pathName = Path.GetFileName(src.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
                       string display = string.IsNullOrEmpty(s.displayName) ? pathName : s.displayName;
@@ -80,28 +81,17 @@ jobs:
                       string dst = Path.Combine("Assets", "Samples", pkgName, safeName);
                       CopyRecursive(src, dst);
 
-                      var sceneCandidates = new List<string>();
-                      string want1 = pathName;
-                      string want2 = display;
-
-                      var allScenes = Directory.GetFiles(dst, "*.unity", SearchOption.AllDirectories);
-                      foreach (var scene in allScenes)
-                      {
-                          string n = Path.GetFileNameWithoutExtension(scene);
-                          if (string.Equals(n, want1, System.StringComparison.OrdinalIgnoreCase)) sceneCandidates.Add(Norm(scene));
-                          else if (string.Equals(n, want2, System.StringComparison.OrdinalIgnoreCase)) sceneCandidates.Add(Norm(scene));
-                      }
-
-                      if (sceneCandidates.Count == 0)
-                      {
-                          Debug.LogWarning("No matching scene for sample " + safeName);
-                          continue;
-                      }
+                      var want = new HashSet<string>(new[]{ pathName, display }, System.StringComparer.OrdinalIgnoreCase);
+                      var scenes = Directory.GetFiles(dst, "*.unity", SearchOption.AllDirectories)
+                                            .Where(p => want.Contains(Path.GetFileNameWithoutExtension(p)))
+                                            .Select(Norm)
+                                            .ToArray();
+                      if (scenes.Length == 0) { Debug.LogWarning("No matching scene for sample " + safeName); continue; }
 
                       string buildDir = Path.Combine(outRoot, safeName);
                       Directory.CreateDirectory(buildDir);
 
-                      var report = BuildPipeline.BuildPlayer(sceneCandidates.ToArray(), buildDir, BuildTarget.WebGL, BuildOptions.None);
+                      var report = BuildPipeline.BuildPlayer(scenes, buildDir, BuildTarget.WebGL, BuildOptions.None);
                       if (report.summary.result != UnityEditor.Build.Reporting.BuildResult.Succeeded)
                           throw new System.Exception("Build failed for " + safeName);
                   }
@@ -109,14 +99,8 @@ jobs:
                   AssetDatabase.Refresh();
               }
 
-              static string Norm(string p) { return p.Replace('\\','/'); }
-
-              static string MakeSafe(string name)
-              {
-                  foreach (char c in Path.GetInvalidFileNameChars()) name = name.Replace(c, '_');
-                  return name;
-              }
-
+              static string Norm(string p) => p.Replace('\\','/');
+              static string MakeSafe(string name) { foreach (char c in Path.GetInvalidFileNameChars()) name = name.Replace(c, '_'); return name; }
               static void CopyRecursive(string src, string dst)
               {
                   foreach (var dir in Directory.GetDirectories(src, "*", SearchOption.AllDirectories))
@@ -135,26 +119,22 @@ jobs:
         uses: actions/cache@v3
         with:
           path: TempProject/Library
-          key: Library-GridToolkit-WebGL
+          key: Library-GridToolkit-WebGL-6000.2.8f1
           restore-keys: |
-            Library-GridToolkit-
+            Library-GridToolkit-WebGL-
 
       - name: Build WebGL
         uses: game-ci/unity-builder@v4
         with:
           projectPath: TempProject
           targetPlatform: WebGL
+          unityVersion: 6000.2.8f1
           buildMethod: BuildSamples.Run
 
       - name: Pack samples artifact
         run: |
           mkdir -p public-samples/samples
           cp -r TempProject/build-webgl/* public-samples/samples/
-          cat > public-samples/samples/index.html << 'HTML'
-          <!doctype html><meta charset="utf-8"><title>Samples</title><h1>Samples</h1><ul id="list"></ul><script>
-          fetch('./').then(r=>r.text()).then(t=>{const rx=/href="([^"]+)\\//g;let m,items=[];while((m=rx.exec(t))!==null){const n=m[1];if(!n.startsWith('.')&&n!=='')items.push(n);}const ul=document.getElementById('list');if(items.length===0){ul.innerHTML='<li>No samples</li>';return;}items.forEach(n=>{if(n==='index.html')return;const li=document.createElement('li');const a=document.createElement('a');a.href=n+'/index.html';a.textContent=n;li.appendChild(a);ul.appendChild(li);});});
-          </script>
-          HTML
 
       - name: Upload samples artifact
         uses: actions/upload-artifact@v4
