@@ -17,9 +17,11 @@ concurrency:
 jobs:
   build-docs:
     uses: ./.github/workflows/docs_build.yml
+    secrets: inherit
 
   build-samples:
     uses: ./.github/workflows/samples_build.yml
+    secrets: inherit
 
   deploy:
     runs-on: ubuntu-latest
