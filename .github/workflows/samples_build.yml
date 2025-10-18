@@ -135,6 +135,7 @@ jobs:
           unityVersion: 6000.2.8f1
           buildMethod: BuildSamples.Run
           versioning: None
+          customParameters: -stackTraceLogType Full
       - name: Upload Editor log
         if: always()
         uses: actions/upload-artifact@v4
