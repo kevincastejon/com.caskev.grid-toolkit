@@ -123,28 +123,48 @@ jobs:
           key: Library-GridToolkit-WebGL-6000.2.8f1
           restore-keys: |
             Library-GridToolkit-WebGL-
+
       - name: Build WebGL
         uses: game-ci/unity-builder@v4
         env:
-            UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-            UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-            UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           projectPath: TempProject
           targetPlatform: WebGL
           unityVersion: 6000.2.8f1
           buildMethod: BuildSamples.Run
           versioning: None
-          customParameters: -stackTraceLogType Full -logFile ./TempProject/Editor.log
+          customParameters: -stackTraceLogType Full -logFile ${{ github.workspace }}/TempProject/Editor.log
+
+      - name: Collect editor logs
+        if: always()
+        run: |
+          set -e
+          mkdir -p logs
+          if [ -f "${GITHUB_WORKSPACE}/TempProject/Editor.log" ]; then cp "${GITHUB_WORKSPACE}/TempProject/Editor.log" logs/; fi
+          for p in \
+            "$HOME/.config/unity3d/Editor/Editor.log" \
+            "$HOME/.local/share/unity3d/Editor/Editor.log" \
+            "$HOME/.local/share/unity3d/Unity/Editor/Editor.log" \
+            "/github/home/.config/unity3d/Editor/Editor.log" \
+            "/github/home/.local/share/unity3d/Editor/Editor.log" \
+            "/github/home/.local/share/unity3d/Unity/Editor/Editor.log" \
+            "TempProject/Library/Editor.log" \
+          ; do
+            [ -f "$p" ] && cp "$p" logs/ || true
+          done
+          find TempProject -type f -name "Editor.log" -exec cp {} logs/ \; || true
+          find TempProject -maxdepth 3 -type f -name "*.log" -exec cp {} logs/ \; || true
+          ls -al logs || true
+
       - name: Upload Editor log
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: editor-log
-          path: |
-            TempProject/Editor.log
-            TempProject/Library/Editor.log
-            **/Editor.log
+          path: logs
 
       - name: Upload build output
         if: always()
@@ -152,6 +172,12 @@ jobs:
         with:
           name: webgl-build-output
           path: |
-              TempProject/build-webgl/**
-              TempProject/Logs/**
-              **/*.log
+            TempProject/build-webgl/**
+            TempProject/Logs/**
+            **/*.log
+
+      - name: Upload samples artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: samples-site
+          path: public-samples
