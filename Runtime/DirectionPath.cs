@@ -10,7 +10,7 @@ using UnityEngine;
 namespace Caskev.GridToolkit
 {
     /// <summary>
-    /// A DirectionPath holds the direction data of all tiles on the path between a target start and a start tile.
+    /// A DirectionPath object holds direction data for all tiles on the path between two tiles.  
     /// </summary>
     public class DirectionPath
     {

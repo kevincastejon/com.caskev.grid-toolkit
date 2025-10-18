@@ -9,9 +9,7 @@ using UnityEngine;
 namespace Caskev.GridToolkit
 {
     /// <summary>
-    /// A DijkstraField holds the direction data between a target tile and all the tiles that are accessible to this target into the specified maximum distance range.
-    /// This allows you to run them more often because of the early exit due to the maximum distance parameter(note that more higher is the distance, more costly is the generation).  
-    /// Once generated, this object offers you a way to get the accessible tiles within a range, and paths to them, with almost no performance cost(ie: a strategy game where you want to check the tiles in range of your character)
+    /// A DijkstraField object holds both direction and distance data between a target tile and all the tiles that are accessible to this target into a specified maximum distance range.
     /// </summary>
     public class DijkstraField
     {

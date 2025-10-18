@@ -10,7 +10,7 @@ using UnityEngine;
 namespace Caskev.GridToolkit
 {
     /// <summary>
-    /// A DijkstraPath holds the direction data of all tiles on the path between a target start and a start tile.
+    /// A DijkstraPath object holds both direction and distance data for all tiles on the path between two tiles.  
     /// </summary>
     public class DijkstraPath
     {

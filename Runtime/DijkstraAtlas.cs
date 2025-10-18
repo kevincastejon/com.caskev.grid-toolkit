@@ -6,10 +6,7 @@ using System.Threading.Tasks;
 namespace Caskev.GridToolkit
 {
     /// <summary>
-    /// Asynchronously generates a DijkstraAtlas that holds DijkstraGrid objects for each tile.  
-    /// Once generated, this object contains all the paths and distances between any tiles on the grid, with almost no performance cost.
-    /// There are also serialization methods to bake or save these objects to files and load them later with the deserialization methods.
-    /// Be carefull as the memory usage can be huge depending on the grid size.
+    /// A DijkstraAtlas object holds DijkstraGrid objects for each tile.  
     /// </summary>
     public class DijkstraAtlas
     {

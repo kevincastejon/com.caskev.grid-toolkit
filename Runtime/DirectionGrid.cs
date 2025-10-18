@@ -10,9 +10,7 @@ using UnityEngine;
 namespace Caskev.GridToolkit
 {
     /// <summary>
-    /// A DirectionGrid holds direction data between a target tile and all the tiles that are accessible to this target.  
-    /// Once generated, this object can contain all the paths you need (ie: a tower defense game with a village core where all enemies run to) and then use the paths with almost no performance cost.  
-    /// There are also serialization methods to bake or save these objects to files and load them later with the deserialization methods.
+    /// A DirectionGrid object holds direction data between a target tile and all the tiles that are accessible to this target, on the entire grid.  
     /// </summary>
     public class DirectionGrid
     {
