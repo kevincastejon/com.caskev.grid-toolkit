@@ -6,17 +6,24 @@ jobs:
   build-docs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Generate Doxygen docs
-        run: |
-          mkdir -p Doxygen/html
-          echo "<html><body><h1>Doc mock</h1></body></html>" > Doxygen/html/index.html
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Prepare public-docs folder
+      - name: Install Doxygen and Graphviz
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y doxygen graphviz
+
+      - name: Add mainpage title to README
+        run: sed -i '1s/^/# ReadMe \n\n/' README.md
+
+      - name: Build docs
+        run: doxygen .github/workflows/Doxyfile
+
+      - name: Prepare artifact
         run: |
           mkdir -p public-docs
-          cp -r Doxygen/html/* public-docs/ || true
+          cp -r docs/html/* public-docs/
 
       - name: Upload docs artifact
         uses: actions/upload-artifact@v4
