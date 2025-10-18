@@ -7,11 +7,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # Example doc generation (replace with real Doxygen step)
-      - name: Pack docs site
+
+      # Génére ta doc Doxygen ici
+      - name: Generate Doxygen docs
+        run: |
+          mkdir -p Doxygen/html
+          echo "<html><body><h1>Doc mock</h1></body></html>" > Doxygen/html/index.html
+
+      - name: Prepare public-docs folder
         run: |
           mkdir -p public-docs
           cp -r Doxygen/html/* public-docs/ || true
+
       - name: Upload docs artifact
         uses: actions/upload-artifact@v4
         with:
