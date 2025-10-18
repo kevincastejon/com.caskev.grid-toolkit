@@ -135,7 +135,16 @@ jobs:
           unityVersion: 6000.2.8f1
           buildMethod: BuildSamples.Run
           versioning: None
-
+      - name: Upload build logs and output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+            name: webgl-build-output
+            path: |
+                TempProject/build-webgl/**
+                TempProject/Logs/**
+                build/**
+                **/*.log
       - name: Pack samples artifact
         run: |
           mkdir -p public-samples/samples
