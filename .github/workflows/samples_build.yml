@@ -135,54 +135,23 @@ jobs:
           unityVersion: 6000.2.8f1
           buildMethod: BuildSamples.Run
           versioning: None
-          customParameters: -stackTraceLogType Full
-      - name: Collect editor logs
-        if: always()
-        run: |
-            set -e
-            mkdir -p logs
-            for p in \
-                "$HOME/.config/unity3d/Editor/Editor.log" \
-                "$HOME/.local/share/unity3d/Editor/Editor.log" \
-                "$HOME/.local/share/unity3d/Unity/Editor/Editor.log" \
-                "/github/home/.config/unity3d/Editor/Editor.log" \
-                "/github/home/.local/share/unity3d/Editor/Editor.log" \
-                "/github/home/.local/share/unity3d/Unity/Editor/Editor.log" \
-                "/root/.config/unity3d/Editor/Editor.log" \
-                "/root/.local/share/unity3d/Editor/Editor.log" \
-                "/root/.local/share/unity3d/Unity/Editor/Editor.log" \
-                "TempProject/Library/Editor.log" \
-            ; do
-                if [ -f "$p" ]; then cp "$p" "logs/$(basename $p)"; fi
-            done
-            find TempProject -type f -name "Editor.log" -exec cp {} logs/ \; || true
-            find TempProject -type f -name "*.log" -maxdepth 3 -exec cp {} logs/ \; || true
-            if [ ! "$(ls -A logs)" ]; then echo "no logs found"; fi
-
-      - name: Upload editor logs
+          customParameters: -stackTraceLogType Full -logFile ./TempProject/Editor.log
+      - name: Upload Editor log
         if: always()
         uses: actions/upload-artifact@v4
         with:
-            name: editor-log
-            path: logs
+          name: editor-log
+          path: |
+            TempProject/Editor.log
+            TempProject/Library/Editor.log
+            **/Editor.log
 
-      - name: Upload build logs and output
+      - name: Upload build output
         if: always()
         uses: actions/upload-artifact@v4
         with:
-            name: webgl-build-output
-            path: |
-                TempProject/build-webgl/**
-                TempProject/Logs/**
-                build/**
-                **/*.log
-      - name: Pack samples artifact
-        run: |
-          mkdir -p public-samples/samples
-          cp -r TempProject/build-webgl/* public-samples/samples/
-
-      - name: Upload samples artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: samples-site
-          path: public-samples
+          name: webgl-build-output
+          path: |
+              TempProject/build-webgl/**
+              TempProject/Logs/**
+              **/*.log
