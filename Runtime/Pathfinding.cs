@@ -805,7 +805,6 @@ namespace Caskev.GridToolkit
         /// <param name="maxDistance">The maximum distance used for the paths calculation</param>
         /// <param name="diagonalsPolicy">The diagonal movements policy for the paths calculation</param>
         /// <param name="diagonalsWeight">The diagonal movements cost for the paths calculation</param>
-        /// <param name="progress">An optional IProgress object to get the generation progression</param>
         /// <param name="cancelToken">An optional CancellationToken object to cancel the generation</param>
         /// <returns>A DirectionGrid object</returns>
         public static Task<DijkstraField> GenerateDijkstraFieldAsync<T>(T[,] grid, T targetTile, float maxDistance, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE, float diagonalsWeight = 1.414f, CancellationToken cancelToken = default) where T : IWeightedTile
