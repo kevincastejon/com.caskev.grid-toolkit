@@ -130,6 +130,7 @@ jobs:
           targetPlatform: WebGL
           unityVersion: 6000.2.8f1
           buildMethod: BuildSamples.Run
+          versioning: None
 
       - name: Pack samples artifact
         run: |
