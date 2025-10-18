@@ -63,13 +63,13 @@ namespace Caskev.GridToolkit
         /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="tile">A tile</param>
         /// <returns>A tile object</returns>
-        public T GetNextTileFromTile<T>(T[,] grid, T tile) where T : ITile
+        public T GetNextTile<T>(T[,] grid, T tile) where T : ITile
         {
             if (!IsTileAccessible(grid, tile))
             {
                 throw new Exception("Do not call this method with an inaccessible tile");
             }
-            return GetNextTile(grid, tile);
+            return GetNextTileUnsafe(grid, tile);
         }
         /// <summary>
         /// Get the next tile on the path between the target and a tile.
@@ -77,7 +77,7 @@ namespace Caskev.GridToolkit
         /// <param name="grid">A two-dimensional array of tiles</param>
         /// <param name="tile">The tile</param>
         /// <returns>A Vector2Int direction</returns>
-        public TileDirection GetNextTileDirectionFromTile<T>(T[,] grid, T tile) where T : ITile
+        public TileDirection GetNextDirection<T>(T[,] grid, T tile) where T : ITile
         {
             if (!IsTileAccessible(grid, tile))
             {
@@ -103,7 +103,7 @@ namespace Caskev.GridToolkit
             Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _target);
             T target = GridUtils.GetTile(grid, targetCoords.x, targetCoords.y);
 
-            T tile = includeStart ? startTile : GetNextTile(grid, startTile);
+            T tile = includeStart ? startTile : GetNextTileUnsafe(grid, startTile);
             bool targetReached = GridUtils.TileEquals(tile, target);
             if (!includeTarget && targetReached)
             {
@@ -112,7 +112,7 @@ namespace Caskev.GridToolkit
             List<T> tiles = new List<T>() { tile };
             while (!targetReached)
             {
-                tile = GetNextTile(grid, tile);
+                tile = GetNextTileUnsafe(grid, tile);
                 targetReached = GridUtils.TileEquals(tile, target);
                 if (includeTarget || !targetReached)
                 {
@@ -138,22 +138,6 @@ namespace Caskev.GridToolkit
                 reversedPath[i] = path[path.Length - 1 - i];
             }
             return reversedPath;
-        }
-        /// <summary>
-        /// Gets the next tile from the specified tile along the path to the target tile.
-        /// </summary>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="tile">Any tile that is accessible to the target tile</param>
-        /// <returns></returns>
-        protected T GetNextTile<T>(T[,] grid, T tile) where T : ITile
-        {
-            if (!IsTileAccessible(grid, tile))
-            {
-                throw new Exception("Do not call this method with an inaccessible tile");
-            }
-            Vector2Int nextTileDirection = GridUtils.NextNodeDirectionToVector2Int(_accessibleTiles[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)]);
-            Vector2Int nextTileCoords = new(tile.X + nextTileDirection.x, tile.Y + nextTileDirection.y);
-            return GridUtils.GetTile(grid, nextTileCoords.x, nextTileCoords.y);
         }
         /// <summary>
         /// Use this method to iterate though the accessible tiles. <see cref="AccessibleTilesCount"/>.
@@ -196,6 +180,22 @@ namespace Caskev.GridToolkit
                 }
                 accessibleTiles[i] = GetAccessibleTile(grid, i);
             }
+        }
+        /// <summary>
+        /// Gets the next tile from the specified tile along the path to the target tile.
+        /// </summary>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="tile">Any tile that is accessible to the target tile</param>
+        /// <returns></returns>
+        private T GetNextTileUnsafe<T>(T[,] grid, T tile) where T : ITile
+        {
+            if (!IsTileAccessible(grid, tile))
+            {
+                throw new Exception("Do not call this method with an inaccessible tile");
+            }
+            Vector2Int nextTileDirection = GridUtils.NextNodeDirectionToVector2Int(_accessibleTiles[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)]);
+            Vector2Int nextTileCoords = new(tile.X + nextTileDirection.x, tile.Y + nextTileDirection.y);
+            return GridUtils.GetTile(grid, nextTileCoords.x, nextTileCoords.y);
         }
     }
 }

@@ -42,7 +42,7 @@ namespace Caskev.GridToolkit
         /// <param name="startTile">The start tile</param>
         /// <param name="destinationTile">The destination tile</param>
         /// <returns>A tile object</returns>
-        public T GetNextTileFromTile<T>(T[,] grid, T startTile, T destinationTile) where T : ITile
+        public T GetNextTile<T>(T[,] grid, T startTile, T destinationTile) where T : ITile
         {
             if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
             {
@@ -53,7 +53,7 @@ namespace Caskev.GridToolkit
             {
                 return default;
             }
-            return directionGrid.GetNextTileFromTile(grid, startTile);
+            return directionGrid.GetNextTile(grid, startTile);
         }
         /// <summary>
         /// Get the next tile on the path between a start tile and a destination tile.
@@ -62,14 +62,14 @@ namespace Caskev.GridToolkit
         /// <param name="startTile">The start tile</param>
         /// <param name="destinationTile">The destination tile</param>
         /// <returns>A Vector2Int direction</returns>
-        public TileDirection GetNextTileDirectionFromTile<T>(T[,] grid, T startTile, T destinationTile) where T : ITile
+        public TileDirection GetNextDirection<T>(T[,] grid, T startTile, T destinationTile) where T : ITile
         {
             if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
             {
                 throw new Exception("Do not call this method with non-walkable (or null) tiles");
             }
             DirectionGrid directionGrid = _directionAtlas[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), destinationTile.X, destinationTile.Y)];
-            return directionGrid.GetNextTileDirectionFromTile(grid, startTile);
+            return directionGrid.GetNextDirection(grid, startTile);
         }
         /// <summary>
         /// Get all the tiles on the path from a start tile to a destination tile. If there is no path between the two tiles then an empty array will be returned.

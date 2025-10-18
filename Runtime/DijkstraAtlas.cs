@@ -43,7 +43,7 @@ namespace Caskev.GridToolkit
         /// <param name="startTile">The start tile</param>
         /// <param name="destinationTile">The destination tile</param>
         /// <returns>A tile object</returns>
-        public T GetNextTileFromTile<T>(T[,] grid, T startTile, T destinationTile) where T : IWeightedTile
+        public T GetNextTile<T>(T[,] grid, T startTile, T destinationTile) where T : IWeightedTile
         {
             if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
             {
@@ -54,7 +54,7 @@ namespace Caskev.GridToolkit
             {
                 return default;
             }
-            return dijkstraGrid.GetNextTileFromTile(grid, startTile);
+            return dijkstraGrid.GetNextTile(grid, startTile);
         }
         /// <summary>
         /// Get the next tile on the path between a start tile and a destination tile.
@@ -63,14 +63,14 @@ namespace Caskev.GridToolkit
         /// <param name="startTile">The start tile</param>
         /// <param name="destinationTile">The destination tile</param>
         /// <returns>A Vector2Int direction</returns>
-        public TileDirection GetNextTileDirectionFromTile<T>(T[,] grid, T startTile, T destinationTile) where T : IWeightedTile
+        public TileDirection GetNextDirection<T>(T[,] grid, T startTile, T destinationTile) where T : IWeightedTile
         {
             if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
             {
                 throw new Exception("Do not call this method with non-walkable (or null) tiles");
             }
             DijkstraGrid dijkstraGrid = _dijkstraAtlas[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), destinationTile.X, destinationTile.Y)];
-            return dijkstraGrid.GetNextTileDirectionFromTile(grid, startTile);
+            return dijkstraGrid.GetNextDirection(grid, startTile);
         }
         /// <summary>
         /// Get the distance between two tiles.
