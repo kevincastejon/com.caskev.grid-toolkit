@@ -19,6 +19,7 @@ jobs:
             "dependencies": {
               "com.unity.modules.ui": "1.0.0",
               "com.unity.modules.uielements": "1.0.0",
+              "com.unity.test-framework": "1.4.5",
               "com.caskev.grid-toolkit": "https://github.com/kevincastejon/com.caskev.grid-toolkit.git#${{ github.sha }}"
             }
           }
