@@ -122,16 +122,6 @@ jobs:
           key: Library-GridToolkit-WebGL-6000.2.8f1
           restore-keys: |
             Library-GridToolkit-WebGL-
-
-      - name: Ensure UNITY_LICENSE is present
-        run: |
-            if [ -z "${UNITY_LICENSE}" ]; then
-              echo "UNITY_LICENSE is empty"; exit 1;
-            else
-              echo "UNITY_LICENSE is set";
-            fi
-          env:
-            UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
       - name: Build WebGL
         uses: game-ci/unity-builder@v4
         env:
