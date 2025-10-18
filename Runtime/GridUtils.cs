@@ -113,7 +113,7 @@ namespace Caskev.GridToolkit
         /// <param name="grid">A two-dimensional array</param>
         /// <param name="x">Horizontal coordinate of the tile</param>
         /// <param name="y">Vertical coordinate of the tile</param>
-        /// <returns>A tile</returns>
+        /// <returns>A tile</returns> 
         public static T GetTile<T>(T[,] grid, int x, int y)
         {
             return grid[y, x];
