@@ -136,17 +136,36 @@ jobs:
           buildMethod: BuildSamples.Run
           versioning: None
           customParameters: -stackTraceLogType Full
-      - name: Upload Editor log
+      - name: Collect editor logs
+        if: always()
+        run: |
+            set -e
+            mkdir -p logs
+            for p in \
+                "$HOME/.config/unity3d/Editor/Editor.log" \
+                "$HOME/.local/share/unity3d/Editor/Editor.log" \
+                "$HOME/.local/share/unity3d/Unity/Editor/Editor.log" \
+                "/github/home/.config/unity3d/Editor/Editor.log" \
+                "/github/home/.local/share/unity3d/Editor/Editor.log" \
+                "/github/home/.local/share/unity3d/Unity/Editor/Editor.log" \
+                "/root/.config/unity3d/Editor/Editor.log" \
+                "/root/.local/share/unity3d/Editor/Editor.log" \
+                "/root/.local/share/unity3d/Unity/Editor/Editor.log" \
+                "TempProject/Library/Editor.log" \
+            ; do
+                if [ -f "$p" ]; then cp "$p" "logs/$(basename $p)"; fi
+            done
+            find TempProject -type f -name "Editor.log" -exec cp {} logs/ \; || true
+            find TempProject -type f -name "*.log" -maxdepth 3 -exec cp {} logs/ \; || true
+            if [ ! "$(ls -A logs)" ]; then echo "no logs found"; fi
+
+      - name: Upload editor logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
             name: editor-log
-            path: |
-                /home/runner/work/_temp/_github_home/.config/unity3d/Editor/Editor.log
-                /home/runner/work/_temp/_github_home/.local/share/unity3d/Editor/Editor.log
-                /home/runner/work/_temp/_github_home/.local/share/unity3d/Unity/Editor/Editor.log
-                TempProject/Library/Editor.log
-                **/Editor.log
+            path: logs
+
       - name: Upload build logs and output
         if: always()
         uses: actions/upload-artifact@v4
