@@ -1,0 +1,19 @@
+name: Build Docs (reusable)
+on:
+  workflow_call:
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Example doc generation (replace with real Doxygen step)
+      - name: Pack docs site
+        run: |
+          mkdir -p public-docs
+          cp -r Doxygen/html/* public-docs/ || true
+      - name: Upload docs artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-site
+          path: public-docs

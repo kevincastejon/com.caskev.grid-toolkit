@@ -1,0 +1,43 @@
+name: Publish Docs + Samples
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-docs:
+    uses: ./.github/workflows/docs_build.yml
+
+  build-samples:
+    uses: ./.github/workflows/samples_build.yml
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [build-docs, build-samples]
+    steps:
+      - name: Download docs artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docs-site
+          path: merge/public
+      - name: Download samples artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: samples-site
+          path: merge/public
+      - name: Upload merged to Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: merge/public
+      - name: Deploy
+        uses: actions/deploy-pages@v4

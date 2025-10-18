@@ -1,0 +1,46 @@
+name: Build Samples (reusable)
+on:
+  workflow_call:
+
+jobs:
+  build-samples:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Example sample build (replace with your GameCI build)
+      - name: Pack samples site
+        run: |
+          mkdir -p public-samples/samples
+          cp -r TempProject/build-webgl/* public-samples/samples/ || true
+          cat > public-samples/samples/index.html << 'HTML'
+          <!doctype html>
+          <meta charset="utf-8">
+          <title>Grid Toolkit – WebGL Samples</title>
+          <h1>Grid Toolkit – WebGL Samples</h1>
+          <ul id="list"></ul>
+          <script>
+            fetch('./').then(r=>r.text()).then(t=>{
+              const rx = /href="([^"]+)\//g; let m, items=[];
+              while ((m = rx.exec(t)) !== null) {
+                const name = m[1];
+                if (!name.startsWith('.') && name !== '') items.push(name);
+              }
+              const ul = document.getElementById('list');
+              if (items.length===0) { ul.innerHTML='<li>No samples found.</li>'; return; }
+              items.forEach(name=>{
+                if (name === 'index.html') return;
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.href = name + '/index.html';
+                a.textContent = name;
+                li.appendChild(a);
+                ul.appendChild(li);
+              });
+            });
+          </script>
+          HTML
+      - name: Upload samples artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: samples-site
+          path: public-samples
