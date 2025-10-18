@@ -207,10 +207,9 @@ namespace Caskev.GridToolkit
         /// Get all the tiles on the path from the target to the start.
         /// </summary>
         /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="path">An array to store the result without memory allocation.</param>
+        /// <param name="path">An array of tiles in which the tiles will be stored.</param>
         /// <param name="includeStart">Include the start start into the resulting array or not. Default is true</param>
         /// <param name="includeTarget">Include the target start into the resulting array or not</param>
-        /// <returns>An array of tiles</returns>
         public void GetPathFromTargetNoAlloc<T>(T[,] grid, T[] path, bool includeStart = true, bool includeTarget = true) where T : ITile
         {
             Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[0].Item1);

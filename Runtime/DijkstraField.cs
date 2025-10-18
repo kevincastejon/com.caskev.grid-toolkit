@@ -185,7 +185,7 @@ namespace Caskev.GridToolkit
         /// Returns the tiles that accessible to the target.
         /// </summary>
         /// <param name="grid">A two-dimensional array representing the grid of tiles.</param>
-        /// <returns>The tiles that accessible to the target.</returns>
+        /// <param name="accessibleTiles">An array of tiles in which the tiles will be stored.</param>
         public void GetAccessibleTilesNoAlloc<T>(T[,] grid, T[] accessibleTiles) where T : IWeightedTile
         {
             for (int i = 0; i < accessibleTiles.Length; i++)

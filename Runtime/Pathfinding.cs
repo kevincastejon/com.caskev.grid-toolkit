@@ -1145,7 +1145,6 @@ namespace Caskev.GridToolkit
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
         /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="targetTile">The target tile for the paths calculation</param>
         /// <param name="diagonalsPolicy">The diagonal movements policy for the paths calculation</param>
         /// <returns>A DirectionGrid object</returns>
         public static DirectionAtlas GenerateDirectionAtlas<T>(T[,] grid, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE) where T : ITile
@@ -1174,7 +1173,6 @@ namespace Caskev.GridToolkit
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
         /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="targetTile">The target tile for the paths calculation</param>
         /// <param name="diagonalsPolicy">The diagonal movements policy for the paths calculation</param>
         /// <param name="progress">An optional IProgress object to get the generation progression</param>
         /// <param name="cancelToken">An optional CancellationToken object to cancel the generation</param>
@@ -1214,11 +1212,8 @@ namespace Caskev.GridToolkit
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
         /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="targetTile">The target tile for the paths calculation</param>
         /// <param name="diagonalsPolicy">The diagonal movements policy for the paths calculation</param>
         /// <param name="diagonalsWeight">The diagonal movements cost for the paths calculation</param>
-        /// <param name="progress">An optional IProgress object to get the generation progression</param>
-        /// <param name="cancelToken">An optional CancellationToken object to cancel the generation</param>
         /// <returns>A DirectionGrid object</returns>
         public static DijkstraAtlas GenerateDijkstraAtlas<T>(T[,] grid, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.NONE, float diagonalsWeight = 1.414f) where T : IWeightedTile
         {
@@ -1244,7 +1239,6 @@ namespace Caskev.GridToolkit
         /// Be carefull as the memory usage can be huge depending on the grid size.
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
         /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="targetTile">The target tile for the paths calculation</param>
         /// <param name="diagonalsPolicy">The diagonal movements policy for the paths calculation</param>
         /// <param name="diagonalsWeight">The diagonal movements cost for the paths calculation</param>
         /// <param name="progress">An optional IProgress object to get the generation progression</param>
