@@ -17,7 +17,7 @@ What is a *tile* ? Any object (custom class, struct, component, ...) that implem
 - *int* **Y** . Must return the vertical position of the tile into the grid
 - *float* **Weight** . Only for *IWeightedTile* Must return the cost movement to enter this tile (minimum 1f).
 
-This API is using a namespace so you have to add a using instruction to the scripts that will need this library:
+This API is using a namespace so you have to add a using instruction to the scripts that will use this library:
 ```cs
 using Caskev.GridToolkit;
 ```
@@ -162,17 +162,19 @@ bool isConeClear = Raycasting.IsConeOfVisionClear(grid, startTile, destinationTi
 Allows you to calculate paths between tiles.  
 This API offers several ways to do pathfinding, depending on your needs.
 
-You can generate objects that can be seen as layers of data on top of your grid.  
-A [DirectionGrid](#directiongrid) will hold all the pre-calculated direction data between a target tile and all the tiles that are accessible to this target.  
-A [DijkstraMap](#dijkstramap) will hold both direction and distance data.  
-Once generated, these objects can contain all the paths you need (ie: a tower defense game with a village core where all enemies have to run to) and then use the paths with almost no performance cost.  
-There are also serialization methods to bake or save these objects to files and load them later with the deserialization methods.
+You can generate objects that can be seen as layers of data on top of your grid. Once generated, these objects allows you to get paths with almost no performance cost.  
 
-These two objects covers the entire grid, but you can also generate a [DirectionField](#directionfield) or a [DijkstraField](#dijkstrafield) that will hold the same kind of data but only for tiles that are within a specified distance from the target tile.  
-This allows you to run them more often because of the early exit due to the maximum distance parameter (note that more higher is the distance, more costly is the generation).  
-Once generated, these objects offers you a way to get the accessible tiles within a range, and paths to them, with almost no performance cost (ie: a strategy game where you want to check the tiles in range of your character)
+A **DirectionPath** object holds direction data for all tiles on the path between two tiles.  
+A **DijkstraPath** object holds both direction and distance data for all tiles on the path between two tiles.  
 
-If you only need a single path between two specific tiles, you can also generate that [unique path](#unique-path). But you should keep the other options in mind as it can be way more effective to generate all paths at once rather than generating a unique path again and again.
+A **DirectionField** object holds direction data between a target tile and all the tiles that are accessible to this target into a specified maximum distance range.  
+A **DijkstraField** object holds both direction and distance data between a target tile and all the tiles that are accessible to this target into a specified maximum distance range.
+
+A **DirectionGrid** object holds direction data between a target tile and all the tiles that are accessible to this target, on the entire grid.  
+A **DijkstraGrid** object holds both direction and distance data between a target tile and all the tiles that are accessible to this target, on the entire grid.
+
+A **DirectionAtlas** object holds DirectionGrid objects for each tile.  
+A **DijkstraAtlas** object holds DijkstraGrid objects for each tile.  
 
 *Note that, obviously, any path calculation is valid as long as the user grid, walkable states (and weights for dijkstra objects) of the tiles, remains unchanged*
 
@@ -190,7 +192,7 @@ Take a look at this schematic to understand how it works:
 
 ![](DiagonalsPolicySchematic.png)
 
-##### DiagonalsWeight (Only available with *DijkstraGrid*)
+##### DiagonalsWeight (Only available with *Dijkstra* objects)
 
 When moving diagonally from one tile to another, there is actually more distance covered than when moving with orthogonal movement. 
 Mathematically, when the orthogonal distance between two adjacent tiles is 1, then the diagonal distance between two diagonally adjacent tiles is roughly 1.414. The detailed calculation is **Sqrt(x_distance²+y_distance²)**. 
@@ -204,11 +206,78 @@ Every pathfinding calculation method has an asynchronous variant, that returns a
 
 ---
 
+#### Direction path
+
+A **DirectionPath** object holds direction data for all tiles on the path between two tiles.  
+
+To generate a DirectionPath, use the **GenerateDirectionPath** method that needs the *grid*, the *target* tile and the *start** tile from which to calculate the path, as parameters.
+
+```cs
+YourCustomTileType[] directionPath = Pathfinding.GenerateDirectionPath(grid, targetTile, startTile);
+```
+
+---
+
+#### Disjktra path
+
+A **DijkstraPath** object holds both direction and distance data for all tiles on the path between two tiles.  
+
+To generate a DijkstraPath, use the **GenerateDisjktraPath** method that needs the *grid*, the *target* tile and the *start** tile from which to calculate the path, as parameters.
+
+```cs
+YourCustomTileType[] dijkstraPath = Pathfinding.GenerateDisjktraPath(grid, targetTile, startTile);
+```
+
+---
+
+#### DirectionField
+
+A **DirectionField** object holds direction data between a target tile and all the tiles that are accessible to this target into a specified maximum distance range.  
+
+To generate a **DirectionField** object, use the **GenerateDirectionField** method that needs the *grid* and the *target* tile from which to calculate the paths, as parameters.
+
+```cs
+DirectionField directionField = Pathfinding.GenerateDirectionField(grid, targetTile);
+```
+
+You can access and iterate over all the accessible tiles.
+
+- **GetAccessibleTile**
+```cs
+for (int i = 0; i < directionField.AccessibleTilesCount; i++)
+{
+	YourCustomTileType tile = directionField.GetAccessibleTile(grid, i);
+}
+```
+
+---
+
+#### DijkstraField
+
+A **DijkstraField** object holds both direction and distance data between a target tile and all the tiles that are accessible to this target into a specified maximum distance range.
+
+To generate a **DijkstraField** object, use the **GenerateDijkstraField** method that needs the *grid* and the *target* tile from which to calculate the paths, as parameters.
+
+```cs
+DijkstraField dijkstraField = Pathfinding.GenerateDijkstraField(grid, targetTile);
+```
+
+You can access and iterate over all the accessible tiles and also get their distance to the target.
+
+- **GetAccessibleTile**
+```cs
+for (int i = 0; i < dijkstraField.AccessibleTilesCount; i++)
+{
+	YourCustomTileType tile = dijkstraField.GetAccessibleTile(grid, i);
+	float distance = dijkstraField.GetDistanceToTarget(grid, tile);
+}
+```
+
+---
+
 #### DirectionGrid
 
-A DirectionGrid holds direction data between a target tile and all the tiles that are accessible to this target.  
-Once generated, this object can contain all the paths you need (ie: a tower defense game with a village core where all enemies run to) and then use the paths with almost no performance cost.  
-There are also serialization methods to bake or save these objects to files and load them later with the deserialization methods.
+A **DirectionGrid** object holds direction data between a target tile and all the tiles that are accessible to this target, on the entire grid.  
 
 To generate a **DirectionGrid** object, use the **GenerateDirectionGrid** method that needs the *grid* and the *target* tile from which to calculate the paths, as parameters.
 
@@ -276,11 +345,7 @@ DirectionGrid directionGrid = DirectionGrid.FromByteArray(grid, serializedDirect
 
 #### DijkstraGrid
 
-*Note that a DijkstraGrid object inherits from all the methods and properties of a DirectionGrid object.*
-
-A DijkstraGrid holds both direction and distance data between a target tile and all the tiles that are accessible to this target.  
-Once generated, this object can contain all the paths and distance data that you need (ie: a tower defense game with a village core where all enemies run to, or a strategy game in which you would display the distance cost of the movement by hovering tiles with the cursor) and then use the paths with almost no performance cost.  
-There are also serialization methods to bake or save these objects to files and load them later with the deserialization methods.
+A **DijkstraGrid** object holds both direction and distance data between a target tile and all the tiles that are accessible to this target, on the entire grid.
 
 To generate a **DijkstraGrid** object, use the **GenerateDijkstraGrid** method that needs the *grid* and the *target* tile from which to calculate the paths, as parameters.
 
@@ -295,68 +360,4 @@ You can get the distance between the target and a tile.
 float distance = dijsktraMap.GetDistanceToTarget(grid, tile);
 ```
 
----
 
-#### DirectionField
-
-*Note that a DirectionField object inherits from all the methods and properties of a DirectionGrid object.*
-
-A DirectionField holds the direction data between a target tile and all the tiles that are accessible to this target into the specified maximum distance range.
-This allows you to run them more often because of the early exit due to the maximum distance parameter (note that more higher is the distance, more costly is the generation).  
-Once generated, this object offers you a way to get the accessible tiles within a range, and paths to them, with almost no performance cost (ie: a strategy game where you want to check the tiles in range of your character)
-
-To generate a **DirectionField** object, use the **GenerateDirectionField** method that needs the *grid* and the *target* tile from which to calculate the paths, as parameters.
-
-```cs
-DirectionField directionField = Pathfinding.GenerateDirectionField(grid, targetTile);
-```
-
-You can access and iterate over all the accessible tiles.
-
-- **GetAccessibleTile**
-```cs
-for (int i = 0; i < directionField.AccessibleTilesCount; i++)
-{
-	YourCustomTileType tile = directionField.GetAccessibleTile(grid, i);
-}
-```
-
----
-
-#### DijkstraField
-
-*Note that a DijkstraField object inherits from all the methods and properties of a DijkstraGrid object.*
-
-A DijkstraField holds the direction data between a target tile and all the tiles that are accessible to this target into the specified maximum distance range.
-This allows you to run them more often because of the early exit due to the maximum distance parameter (note that more higher is the distance, more costly is the generation).  
-Once generated, this object offers you a way to get the accessible tiles within a range, and paths to them, with almost no performance cost (ie: a strategy game where you want to check the tiles in range of your character)
-
-To generate a **DijkstraField** object, use the **GenerateDijkstraField** method that needs the *grid* and the *target* tile from which to calculate the paths, as parameters.
-
-```cs
-DijkstraField dijkstraField = Pathfinding.GenerateDijkstraField(grid, targetTile);
-```
-
-You can access and iterate over all the accessible tiles and also get their distance to the target.
-
-- **GetAccessibleTile**
-```cs
-for (int i = 0; i < dijkstraField.AccessibleTilesCount; i++)
-{
-	YourCustomTileType tile = dijkstraField.GetAccessibleTile(grid, i);
-	float distance = dijkstraField.GetDistanceToTarget(grid, tile);
-}
-```
-
----
-
-#### Unique path
-
-If you only need a single path between two specific tiles, you can also generate that unique path.  
-But you should keep the other options in mind as it can be way more efficient to generate all paths at once rather than generating a unique path again and again.
-
-To generate a unique path, use the **GenerateUniquePath** method that needs the *grid*, the *target* tile and the *start** tile from which to calculate the path, as parameters.
-
-```cs
-YourCustomTileType[] uniquePath = Pathfinding.GenerateUniquePath(grid, targetTile, startTile);
-```
