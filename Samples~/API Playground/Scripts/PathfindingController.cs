@@ -581,7 +581,7 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
                     bool hasDirection = _dijkstraAtlas.HasPath(_grid.Map, _grid.Map[i, j], _targetTile);
                     if (hasDirection)
                     {
-                        TileDirection nextDirection = _dijkstraAtlas.GetNextTileDirectionFromTile(_grid.Map, _grid.Map[i, j], _targetTile);
+                        TileDirection nextDirection = _dijkstraAtlas.GetNextDirection(_grid.Map, _grid.Map[i, j], _targetTile);
                         switch (nextDirection)
                         {
                             case TileDirection.RIGHT: angle = 0f; break;
@@ -624,7 +624,7 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
                     bool hasDirection = _dijkstraGrid.IsTileAccessible(_grid.Map, _grid.Map[i, j]);
                     if (hasDirection)
                     {
-                        TileDirection nextDirection = _dijkstraGrid.GetNextTileDirectionFromTile(_grid.Map, _grid.Map[i, j]);
+                        TileDirection nextDirection = _dijkstraGrid.GetNextDirection(_grid.Map, _grid.Map[i, j]);
                         switch (nextDirection)
                         {
                             case TileDirection.RIGHT: angle = 0f; break;
@@ -667,7 +667,7 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
                     bool hasDirection = _dijkstraField.IsTileAccessible(_grid.Map, _grid.Map[i, j]);
                     if (hasDirection)
                     {
-                        TileDirection nextDirection = _dijkstraField.GetNextTileDirectionFromTile(_grid.Map, _grid.Map[i, j]);
+                        TileDirection nextDirection = _dijkstraField.GetNextDirection(_grid.Map, _grid.Map[i, j]);
                         switch (nextDirection)
                         {
                             case TileDirection.RIGHT: angle = 0f; break;
@@ -787,7 +787,7 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
                     bool hasDirection = _directionAtlas.HasPath(_grid.Map, _grid.Map[i, j], _targetTile);
                     if (hasDirection)
                     {
-                        TileDirection nextDirection = _directionAtlas.GetNextTileDirectionFromTile(_grid.Map, _grid.Map[i, j], _targetTile);
+                        TileDirection nextDirection = _directionAtlas.GetNextDirection(_grid.Map, _grid.Map[i, j], _targetTile);
                         switch (nextDirection)
                         {
                             case TileDirection.RIGHT: angle = 0f; break;
@@ -830,7 +830,7 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
                     bool hasDirection = _directionGrid.IsTileAccessible(_grid.Map, _grid.Map[i, j]);
                     if (hasDirection)
                     {
-                        TileDirection nextDirection = _directionGrid.GetNextTileDirectionFromTile(_grid.Map, _grid.Map[i, j]);
+                        TileDirection nextDirection = _directionGrid.GetNextDirection(_grid.Map, _grid.Map[i, j]);
                         switch (nextDirection)
                         {
                             case TileDirection.RIGHT: angle = 0f; break;
@@ -873,7 +873,7 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
                     bool hasDirection = _directionField.IsTileAccessible(_grid.Map, _grid.Map[i, j]);
                     if (hasDirection)
                     {
-                        TileDirection nextDirection = _directionField.GetNextTileDirectionFromTile(_grid.Map, _grid.Map[i, j]);
+                        TileDirection nextDirection = _directionField.GetNextDirection(_grid.Map, _grid.Map[i, j]);
                         switch (nextDirection)
                         {
                             case TileDirection.RIGHT: angle = 0f; break;

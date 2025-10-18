@@ -198,7 +198,7 @@ namespace GridToolkitWorkingProject.Samples.WeightedTiles
             {
                 for (int j = 0; j < _map.GetLength(1); j++)
                 {
-                    _map[i, j].ShowDirection(GridUtils.NextNodeDirectionToVector2Int(_globalDijkstraGrid.GetNextTileDirectionFromTile(_map, _map[i, j])));
+                    _map[i, j].ShowDirection(GridUtils.NextNodeDirectionToVector2Int(_globalDijkstraGrid.GetNextDirection(_map, _map[i, j])));
                 }
             }
         }

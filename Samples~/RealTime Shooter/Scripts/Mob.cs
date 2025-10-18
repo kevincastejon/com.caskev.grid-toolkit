@@ -12,7 +12,7 @@ namespace GridToolkitWorkingProject.Samples.RealTimeShooter
         private Rigidbody _rigidbody;
         private void Awake()
         {
-            _map = FindObjectOfType<GridMap>();
+            _map = FindFirstObjectByType<GridMap>();
             _rigidbody = GetComponent<Rigidbody>();
         }
         private void Start()

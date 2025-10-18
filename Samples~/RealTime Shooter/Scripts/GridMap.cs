@@ -229,7 +229,7 @@ namespace GridToolkitWorkingProject.Samples.RealTimeShooter
         }
         public Vector2Int GetNextPositionToPlayer(Vector2Int currentPosition)
         {
-            Tile nextTile = _directionAtlas.GetNextTileFromTile(_map, _map[currentPosition.y, currentPosition.x], GetPlayerTile());
+            Tile nextTile = _directionAtlas.GetNextTile(_map, _map[currentPosition.y, currentPosition.x], GetPlayerTile());
             return new Vector2Int(nextTile.X, nextTile.Y);
         }
         public void CancelAtlasGeneration()

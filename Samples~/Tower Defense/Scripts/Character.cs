@@ -14,7 +14,7 @@ namespace GridToolkitWorkingProject.Samples.TowerDefense
         {
             _map = map;
             _directionGrid = directionGrid;
-            _target = _directionGrid.GetNextTileFromTile(_map, startFloor);
+            _target = _directionGrid.GetNextTile(_map, startFloor);
         }
 
         private void Update()
@@ -22,7 +22,7 @@ namespace GridToolkitWorkingProject.Samples.TowerDefense
             transform.position = Vector3.MoveTowards(transform.position, new Vector3(_target.transform.position.x, 1.5f, _target.transform.position.z), 2.5f * Time.deltaTime);
             if (Vector3.Distance(transform.position, new Vector3(_target.transform.position.x, 1.5f, _target.transform.position.z)) < 0.1f)
             {
-                Floor nextTile = _directionGrid.GetNextTileFromTile(_map, _target);
+                Floor nextTile = _directionGrid.GetNextTile(_map, _target);
                 if (_target == nextTile)
                 {
                     Destroy(gameObject);
