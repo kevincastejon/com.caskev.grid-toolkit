@@ -129,7 +129,7 @@ namespace Caskev.GridToolkit
         /// <param name="progress">An optional IProgress object to get the deserialization progression</param>
         /// <param name="cancelToken">An optional CancellationToken object to cancel the serialization</param>
         /// <returns>The serialized DirectionAtlas.</returns>
-        public Task<byte[]> ToByteArrayAsync<T>(IProgress<float> progress = null, CancellationToken cancelToken = default) where T : ITile
+        public Task<byte[]> ToByteArrayAsync(IProgress<float> progress = null, CancellationToken cancelToken = default)
         {
             Task<byte[]> task = Task.Run(() =>
             {
