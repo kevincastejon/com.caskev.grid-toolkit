@@ -19,6 +19,10 @@ jobs:
             "dependencies": {
               "com.unity.modules.ui": "1.0.0",
               "com.unity.modules.uielements": "1.0.0",
+              "com.unity.ugui": "1.0.0",
+              "com.unity.textmeshpro": "3.0.9",
+              "com.unity.2d.tilemap": "1.1.0",
+              "com.unity.2d.sprite": "1.0.0",
               "com.unity.test-framework": "1.4.5",
               "com.caskev.grid-toolkit": "https://github.com/kevincastejon/com.caskev.grid-toolkit.git#${{ github.sha }}"
             }
@@ -158,24 +162,6 @@ jobs:
           find TempProject -type f -name "Editor.log" -exec cp {} logs/ \; || true
           find TempProject -maxdepth 3 -type f -name "*.log" -exec cp {} logs/ \; || true
           ls -al logs || true
-
-      - name: Upload Editor log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: editor-log
-          path: logs
-
-      - name: Upload build output
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: webgl-build-output
-          path: |
-            TempProject/build-webgl/**
-            TempProject/Logs/**
-            **/*.log
-
       - name: Upload samples artifact
         uses: actions/upload-artifact@v4
         with:
