@@ -34,36 +34,21 @@ jobs:
         run: |
           mkdir -p TempProject/Assets/Editor
           cat > TempProject/Assets/Editor/BuildSamples.cs << 'CS'
+          using System;
           using System.IO;
           using System.Linq;
+          using System.Collections;
           using System.Collections.Generic;
+          using System.Reflection;
           using UnityEditor;
           using UnityEditor.PackageManager;
+          using UnityEditor.PackageManager.Requests;
           using UnityEngine;
 
           public static class BuildSamples
           {
-              [System.Serializable] class PackageJson { public SampleEntry[] samples; }
-              [System.Serializable] class SampleEntry { public string displayName; public string description; public string path; }
-
-              static string FindPackagePath(string packageName)
-              {
-                  var list = UnityEditor.PackageManager.Client.List(true);
-                  while (!list.IsCompleted) { System.Threading.Thread.Sleep(50); }
-                  var pkg = list.Result.FirstOrDefault(p => p.name == packageName);
-                  if (pkg == null) throw new System.Exception("Package not found: " + packageName);
-                  return pkg.resolvedPath;
-              }
-
-              static void EnsureTmpEssentials()
-              {
-                  var settings = AssetDatabase.LoadAssetAtPath<ScriptableObject>("Assets/TextMesh Pro/Resources/TMP Settings.asset");
-                  if (settings != null) return;
-                  // Importer via menu officiel TMP
-                  if (!EditorApplication.ExecuteMenuItem("Window/TextMeshPro/Import TMP Essential Resources"))
-                      Debug.LogWarning("Could not execute TMP import menu. Will continue.");
-                  AssetDatabase.Refresh();
-              }
+              [Serializable] class PackageJson { public SampleEntry[] samples; }
+              [Serializable] class SampleEntry { public string displayName; public string description; public string path; }
 
               [MenuItem("CI/Build WebGL Samples")]
               public static void Run()
@@ -71,95 +56,147 @@ jobs:
                   PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Brotli;
                   PlayerSettings.WebGL.decompressionFallback = true;
 
-                  // Assure les ressources TMP avant tout
+                  // Ensure TMP Essentials once (for visible TMPro at runtime)
                   EnsureTmpEssentials();
 
-                  const string pkgName = "com.caskev.grid-toolkit";
-                  string pkgPath = FindPackagePath(pkgName);
-                  string pkgJson = Path.Combine(pkgPath, "package.json");
-                  if (!File.Exists(pkgJson)) throw new System.Exception("package.json not found: " + pkgJson);
+                  // Locate package
+                  string packageName = "com.caskev.grid-toolkit";
+                  var list = Client.List(true);
+                  while (!list.IsCompleted) System.Threading.Thread.Sleep(50);
+                  var pkgInfo = list.Result.FirstOrDefault(p => p.name == packageName);
+                  if (pkgInfo == null) throw new Exception("Package not found: " + packageName);
+                  string pkgPath = pkgInfo.resolvedPath;
+                  string pkgJsonPath = Path.Combine(pkgPath, "package.json");
+                  if (!File.Exists(pkgJsonPath)) throw new Exception("package.json not found: " + pkgJsonPath);
 
-                  var config = JsonUtility.FromJson<PackageJson>(File.ReadAllText(pkgJson));
-                  if (config == null || config.samples == null || config.samples.Length == 0) return;
+                  var cfg = JsonUtility.FromJson<PackageJson>(File.ReadAllText(pkgJsonPath));
+                  if (cfg == null || cfg.samples == null || cfg.samples.Length == 0) {
+                      Debug.LogWarning("No samples declared in package.json");
+                      return;
+                  }
+
+                  // Import samples using Unity's Sample API (preserves GUID/meta)
+                  var imported = ImportSamplesWithApi(pkgInfo);
 
                   string outRoot = "build-webgl";
                   Directory.CreateDirectory(outRoot);
 
-                  foreach (var s in config.samples)
+                  foreach (var s in cfg.samples)
                   {
                       if (s == null || string.IsNullOrEmpty(s.path)) continue;
 
-                      string src = Path.Combine(pkgPath, s.path);
-                      if (!Directory.Exists(src)) { Debug.LogWarning("Sample path not found: " + src); continue; }
+                      // Try to find the import folder that corresponds to this sample
+                      // Match by displayName or last folder name of 'path'
+                      string folderName = Path.GetFileName(s.path.TrimEnd('/', '\\'));
+                      string wantedA = s.displayName ?? folderName;
+                      string wantedB = folderName;
 
-                      string pathName = Path.GetFileName(src.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
-                      string display = string.IsNullOrEmpty(s.displayName) ? pathName : s.displayName;
+                      string importedDir = imported
+                          .FirstOrDefault(d =>
+                              string.Equals(Path.GetFileName(d), MakeSafe(wantedA), StringComparison.OrdinalIgnoreCase) ||
+                              string.Equals(Path.GetFileName(d), MakeSafe(wantedB), StringComparison.OrdinalIgnoreCase));
 
-                      string safeName = MakeSafe(display);
-                      string dst = Path.Combine("Assets", "Samples", pkgName, safeName);
-                      CopyRecursive(src, dst);
+                      if (string.IsNullOrEmpty(importedDir) || !Directory.Exists(importedDir))
+                      {
+                          Debug.LogWarning("Imported sample folder not found for: " + (s.displayName ?? s.path));
+                          continue;
+                      }
 
-                      AssetDatabase.Refresh();
-
-                      // Chercher une scene qui matche le nom du dossier ou le displayName
-                      var want = new HashSet<string>(new[]{ pathName, display }, System.StringComparer.OrdinalIgnoreCase);
-                      var scenes = Directory.GetFiles(dst, "*.unity", SearchOption.AllDirectories)
+                      // Find scene matching displayName or folder name
+                      var want = new HashSet<string>(new[]{ wantedA, wantedB }, StringComparer.OrdinalIgnoreCase);
+                      var scenes = Directory.GetFiles(importedDir, "*.unity", SearchOption.AllDirectories)
                                             .Where(p => want.Contains(Path.GetFileNameWithoutExtension(p)))
                                             .Select(Norm)
                                             .ToArray();
-                      if (scenes.Length == 0) { Debug.LogWarning("No matching scene for sample " + safeName); continue; }
+                      if (scenes.Length == 0)
+                      {
+                          Debug.LogWarning("No matching scene for sample: " + importedDir);
+                          continue;
+                      }
 
-                      // Optionnel: detecter les "missing scripts" dans le dossier sample avant build
-                      if (HasMissingScriptsUnder(dst))
-                          Debug.LogWarning("Missing scripts detected in " + safeName + " (will still try to build).");
-
+                      string safeName = Path.GetFileName(importedDir);
                       string buildDir = Path.Combine(outRoot, safeName);
                       Directory.CreateDirectory(buildDir);
 
                       var report = BuildPipeline.BuildPlayer(scenes, buildDir, BuildTarget.WebGL, BuildOptions.None);
                       if (report.summary.result != UnityEditor.Build.Reporting.BuildResult.Succeeded)
-                          throw new System.Exception("Build failed for " + safeName);
+                          throw new Exception("Build failed for sample: " + safeName);
                   }
 
                   AssetDatabase.Refresh();
               }
 
-              // Inspecte les prefabs et scenes du dossier pour trouver des composants manquants
-              static bool HasMissingScriptsUnder(string root)
+              static List<string> ImportSamplesWithApi(UnityEditor.PackageManager.PackageInfo pkgInfo)
               {
-                  bool missing = false;
-                  string[] assets = Directory.GetFiles(root, "*.*", SearchOption.AllDirectories)
-                                             .Where(p => p.EndsWith(".prefab") || p.EndsWith(".unity"))
-                                             .Select(Norm).ToArray();
-                  foreach (var a in assets)
+                  var results = new List<string>();
+                  // Try both APIs depending on Unity version
+                  var t = Type.GetType("UnityEditor.PackageManager.UI.Sample, UnityEditor.PackageManagerUI.Editor", false)
+                          ?? Type.GetType("UnityEditor.PackageManager.Sample, UnityEditor.Editor", false);
+                  if (t == null) throw new Exception("Unity Sample API type not found");
+
+                  // samples = Sample.FindByPackage(pkgInfo)
+                  var find = t.GetMethod("FindByPackage", BindingFlags.Public | BindingFlags.Static);
+                  if (find == null) throw new Exception("FindByPackage method not found on Sample type");
+
+                  var samplesObj = find.Invoke(null, new object[]{ pkgInfo });
+                  var enumerable = samplesObj as IEnumerable;
+                  if (enumerable == null) throw new Exception("FindByPackage did not return IEnumerable");
+
+                  foreach (var s in enumerable)
                   {
-                      var obj = AssetDatabase.LoadMainAssetAtPath(a);
-                      if (!obj) continue;
-                      var go = obj as GameObject;
-                      if (!go) continue;
-                      foreach (var comp in go.GetComponentsInChildren<Component>(true))
+                      // Properties we need: displayName, importPath, resolvedPath
+                      string displayName = SafeGetProp<string>(s, "displayName");
+                      string importPath  = SafeGetProp<string>(s, "importPath");  // e.g. Assets/Samples/<pkg>/<Sample>
+                      if (string.IsNullOrEmpty(importPath)) {
+                          // Some Unity versions expose 'path' which is source; default import path if needed
+                          importPath = Path.Combine("Assets", "Samples", pkgInfo.name, MakeSafe(displayName));
+                      }
+
+                      // Import the sample using its API
+                      var import = t.GetMethod("Import", BindingFlags.Public | BindingFlags.Instance, null, Type.EmptyTypes, null)
+                                 ?? t.GetMethod("Import", BindingFlags.Public | BindingFlags.Instance, null, new[]{ typeof(bool) }, null)
+                                 ?? t.GetMethod("Import", BindingFlags.Public | BindingFlags.Instance, null, new[]{ typeof(string) }, null);
+                      if (import == null) throw new Exception("No supported Import() method on Sample type");
+
+                      try
                       {
-                          if (comp == null) { missing = true; break; }
+                          if (import.GetParameters().Length == 0) import.Invoke(s, null);
+                          else if (import.GetParameters().Length == 1 && import.GetParameters()[0].ParameterType == typeof(bool)) import.Invoke(s, new object[]{ true });
+                          else import.Invoke(s, new object[]{ importPath });
+                          AssetDatabase.Refresh();
+                          results.Add(importPath.Replace('\\','/'));
+                      }
+                      catch (TargetInvocationException tie)
+                      {
+                          Debug.LogWarning("Sample import failed for " + displayName + ": " + tie.InnerException?.Message);
                       }
                   }
-                  return missing;
+                  return results;
               }
 
-              static string Norm(string p) { return p.Replace('\\','/'); }
-              static string MakeSafe(string name) { foreach (char c in System.IO.Path.GetInvalidFileNameChars()) name = name.Replace(c, '_'); return name; }
-              static void CopyRecursive(string src, string dst)
+              static T SafeGetProp<T>(object obj, string name)
               {
-                  foreach (var dir in Directory.GetDirectories(src, "*", SearchOption.AllDirectories))
-                      Directory.CreateDirectory(dir.Replace(src, dst));
-                  foreach (var file in Directory.GetFiles(src, "*", SearchOption.AllDirectories))
-                  {
-                      string to = file.Replace(src, dst);
-                      Directory.CreateDirectory(Path.GetDirectoryName(to));
-                      File.Copy(file, to, true);
-                  }
+                  var p = obj.GetType().GetProperty(name, BindingFlags.Public | BindingFlags.Instance);
+                  if (p == null) return default;
+                  var v = p.GetValue(obj, null);
+                  if (v == null) return default;
+                  return (T)v;
               }
+
+              static void EnsureTmpEssentials()
+              {
+                  var existing = AssetDatabase.LoadAssetAtPath<ScriptableObject>("Assets/TextMesh Pro/Resources/TMP Settings.asset");
+                  if (existing) return;
+                  if (!EditorApplication.ExecuteMenuItem("Window/TextMeshPro/Import TMP Essential Resources"))
+                      Debug.LogWarning("TMP Essentials import menu did not execute");
+                  AssetDatabase.Refresh();
+              }
+
+              static string Norm(string p) => p.Replace('\\','/');
+              static string MakeSafe(string name) { foreach (char c in Path.GetInvalidFileNameChars()) name = name.Replace(c, '_'); return name; }
           }
           CS
+
 
 
       # - name: Cache Library
