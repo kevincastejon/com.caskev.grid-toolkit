@@ -143,25 +143,27 @@ jobs:
           customParameters: -stackTraceLogType Full
       - name: Prepare samples artifact
         run: |
+          set -e
           mkdir -p public-samples/samples
           cp -r TempProject/build-webgl/* public-samples/samples/ || true
+
           if [ ! -f public-samples/samples/index.html ]; then
-            cat > public-samples/samples/index.html << 'HTML'
-            <!doctype html>
-            <meta charset="utf-8">
-            <title>Samples</title>
-            <h1>Samples</h1>
-            <ul id="list"></ul>
-            <script>
-              fetch('./').then(r=>r.text()).then(t=>{
-                const rx=/href="([^"]+)\\//g;let m,items=[];
-                while((m=rx.exec(t))!==null){const n=m[1];if(!n.startsWith('.')&&n!=='')items.push(n);}
-                const ul=document.getElementById('list');
-                if(items.length===0){ul.innerHTML='<li>No samples</li>';return;}
-                items.forEach(n=>{if(n==='index.html')return;const li=document.createElement('li');const a=document.createElement('a');a.href=n+'/index.html';a.textContent=n;li.appendChild(a);ul.appendChild(li);});
-              });
-            </script>
-            HTML
+            printf '%s\n' \
+              '<!doctype html>' \
+              '<meta charset="utf-8">' \
+              '<title>Samples</title>' \
+              '<h1>Samples</h1>' \
+              '<ul id="list"></ul>' \
+              '<script>' \
+              "fetch('./').then(r=>r.text()).then(t=>{" \
+              "  const rx=/href=\"([^\"]+)\\//g;let m,items=[];" \
+              "  while((m=rx.exec(t))!==null){const n=m[1];if(!n.startsWith('.')&&n!=='')items.push(n);}" \
+              "  const ul=document.getElementById('list');" \
+              "  if(items.length===0){ul.innerHTML='<li>No samples</li>';return;}" \
+              "  items.forEach(n=>{if(n==='index.html')return;const li=document.createElement('li');const a=document.createElement('a');a.href=n+'/index.html';a.textContent=n;li.appendChild(a);ul.appendChild(li);});" \
+              '});' \
+              '</script>' \
+            > public-samples/samples/index.html
           fi
       - name: Upload samples artifact
         uses: actions/upload-artifact@v4
