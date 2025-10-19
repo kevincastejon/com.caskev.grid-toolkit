@@ -30,7 +30,7 @@ jobs:
           JSON
           echo "m_EditorVersion: ${UNITY_VER}" > TempProject/ProjectSettings/ProjectVersion.txt
 
-      - name: Add editor build script
+            - name: Add editor build script
         run: |
           mkdir -p TempProject/Assets/Editor
           cat > TempProject/Assets/Editor/BuildSamples.cs << 'CS'
@@ -63,8 +63,9 @@ jobs:
                   if (pkg == null) throw new Exception("Package not found: " + pkgName);
                   string pkgVersion = pkg.version;
 
-                  var samples = Sample.FindByPackage(pkgName, pkgVersion) ?? Array.Empty<Sample>();
-                  if (samples.Length == 0) { Debug.LogWarning("No samples found via API"); return; }
+                  var samplesEnum = Sample.FindByPackage(pkgName, pkgVersion) ?? Enumerable.Empty<Sample>();
+                  var samples = samplesEnum.ToList();
+                  if (!samples.Any()) { Debug.LogWarning("No samples found via API"); return; }
 
                   string outRoot = "build-webgl";
                   Directory.CreateDirectory(outRoot);
@@ -77,10 +78,15 @@ jobs:
                           AssetDatabase.Refresh();
                           WaitForCompilation();
 
-                          string importedDir = s.importPath.Replace('\\','/');
+                          string importedDir = (s.importPath ?? "").Replace('\\','/');
                           if (string.IsNullOrEmpty(importedDir) || !Directory.Exists(importedDir))
                           {
-                              Debug.LogWarning("Imported dir missing for sample: " + s.displayName);
+                              string guess = Path.Combine("Assets", "Samples", pkgName, MakeSafe(s.displayName ?? "Sample")).Replace('\\','/');
+                              if (Directory.Exists(guess)) importedDir = guess;
+                          }
+                          if (string.IsNullOrEmpty(importedDir) || !Directory.Exists(importedDir))
+                          {
+                              Debug.LogWarning("Imported dir missing for sample: " + (s.displayName ?? "(no name)"));
                               continue;
                           }
 
@@ -107,7 +113,7 @@ jobs:
                       }
                       catch (Exception ex)
                       {
-                          Debug.LogWarning("Sample build skipped: " + s.displayName + " -> " + ex.Message);
+                          Debug.LogWarning("Sample build skipped: " + (s.displayName ?? "(no name)") + " -> " + ex.Message);
                       }
                   }
 
@@ -135,6 +141,7 @@ jobs:
               }
           }
           CS
+
 
 
 
