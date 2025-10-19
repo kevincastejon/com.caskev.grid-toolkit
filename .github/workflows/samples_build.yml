@@ -36,10 +36,10 @@ jobs:
           cat > TempProject/Assets/Editor/BuildSamples.cs << 'CS'
           using System.IO;
           using System.Linq;
+          using System.Collections.Generic;
           using UnityEditor;
           using UnityEditor.PackageManager;
           using UnityEngine;
-          using System.Collections.Generic;
 
           public static class BuildSamples
           {
@@ -48,11 +48,21 @@ jobs:
 
               static string FindPackagePath(string packageName)
               {
-                  var list = Client.List(true);
+                  var list = UnityEditor.PackageManager.Client.List(true);
                   while (!list.IsCompleted) { System.Threading.Thread.Sleep(50); }
                   var pkg = list.Result.FirstOrDefault(p => p.name == packageName);
                   if (pkg == null) throw new System.Exception("Package not found: " + packageName);
                   return pkg.resolvedPath;
+              }
+
+              static void EnsureTmpEssentials()
+              {
+                  var settings = AssetDatabase.LoadAssetAtPath<ScriptableObject>("Assets/TextMesh Pro/Resources/TMP Settings.asset");
+                  if (settings != null) return;
+                  // Importer via menu officiel TMP
+                  if (!EditorApplication.ExecuteMenuItem("Window/TextMeshPro/Import TMP Essential Resources"))
+                      Debug.LogWarning("Could not execute TMP import menu. Will continue.");
+                  AssetDatabase.Refresh();
               }
 
               [MenuItem("CI/Build WebGL Samples")]
@@ -60,6 +70,9 @@ jobs:
               {
                   PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Brotli;
                   PlayerSettings.WebGL.decompressionFallback = true;
+
+                  // Assure les ressources TMP avant tout
+                  EnsureTmpEssentials();
 
                   const string pkgName = "com.caskev.grid-toolkit";
                   string pkgPath = FindPackagePath(pkgName);
@@ -86,12 +99,19 @@ jobs:
                       string dst = Path.Combine("Assets", "Samples", pkgName, safeName);
                       CopyRecursive(src, dst);
 
+                      AssetDatabase.Refresh();
+
+                      // Chercher une scene qui matche le nom du dossier ou le displayName
                       var want = new HashSet<string>(new[]{ pathName, display }, System.StringComparer.OrdinalIgnoreCase);
                       var scenes = Directory.GetFiles(dst, "*.unity", SearchOption.AllDirectories)
                                             .Where(p => want.Contains(Path.GetFileNameWithoutExtension(p)))
                                             .Select(Norm)
                                             .ToArray();
                       if (scenes.Length == 0) { Debug.LogWarning("No matching scene for sample " + safeName); continue; }
+
+                      // Optionnel: detecter les "missing scripts" dans le dossier sample avant build
+                      if (HasMissingScriptsUnder(dst))
+                          Debug.LogWarning("Missing scripts detected in " + safeName + " (will still try to build).");
 
                       string buildDir = Path.Combine(outRoot, safeName);
                       Directory.CreateDirectory(buildDir);
@@ -104,8 +124,29 @@ jobs:
                   AssetDatabase.Refresh();
               }
 
-              static string Norm(string p) => p.Replace('\\','/');
-              static string MakeSafe(string name) { foreach (char c in Path.GetInvalidFileNameChars()) name = name.Replace(c, '_'); return name; }
+              // Inspecte les prefabs et scenes du dossier pour trouver des composants manquants
+              static bool HasMissingScriptsUnder(string root)
+              {
+                  bool missing = false;
+                  string[] assets = Directory.GetFiles(root, "*.*", SearchOption.AllDirectories)
+                                             .Where(p => p.EndsWith(".prefab") || p.EndsWith(".unity"))
+                                             .Select(Norm).ToArray();
+                  foreach (var a in assets)
+                  {
+                      var obj = AssetDatabase.LoadMainAssetAtPath(a);
+                      if (!obj) continue;
+                      var go = obj as GameObject;
+                      if (!go) continue;
+                      foreach (var comp in go.GetComponentsInChildren<Component>(true))
+                      {
+                          if (comp == null) { missing = true; break; }
+                      }
+                  }
+                  return missing;
+              }
+
+              static string Norm(string p) { return p.Replace('\\','/'); }
+              static string MakeSafe(string name) { foreach (char c in System.IO.Path.GetInvalidFileNameChars()) name = name.Replace(c, '_'); return name; }
               static void CopyRecursive(string src, string dst)
               {
                   foreach (var dir in Directory.GetDirectories(src, "*", SearchOption.AllDirectories))
@@ -119,6 +160,7 @@ jobs:
               }
           }
           CS
+
 
       - name: Cache Library
         uses: actions/cache@v3
