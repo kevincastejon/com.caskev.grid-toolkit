@@ -38,6 +38,7 @@ jobs:
           using System.IO;
           using System.Linq;
           using System.Collections.Generic;
+          using System.Reflection;
           using UnityEditor;
           using UnityEditor.PackageManager;
           using UnityEditor.PackageManager.UI;
@@ -45,9 +46,6 @@ jobs:
 
           public static class BuildSamples
           {
-              [Serializable] class PackageJson { public SampleEntry[] samples; }
-              [Serializable] class SampleEntry { public string displayName; public string description; public string path; }
-
               [MenuItem("CI/Build WebGL Samples")]
               public static void Run()
               {
@@ -61,60 +59,71 @@ jobs:
                   while (!list.IsCompleted) System.Threading.Thread.Sleep(50);
                   var pkg = list.Result.FirstOrDefault(p => p.name == pkgName);
                   if (pkg == null) throw new Exception("Package not found: " + pkgName);
-                  string pkgVersion = pkg.version;
 
-                  var samplesEnum = Sample.FindByPackage(pkgName, pkgVersion) ?? Enumerable.Empty<Sample>();
-                  var samples = samplesEnum.ToList();
+                  var samples = (Sample.FindByPackage(pkgName, pkg.version) ?? Enumerable.Empty<Sample>()).ToList();
                   if (!samples.Any()) { Debug.LogWarning("No samples found via API"); return; }
 
-                  string outRoot = "build-webgl";
-                  Directory.CreateDirectory(outRoot);
+                  var importedDirs = new List<string>();
 
                   foreach (var s in samples)
                   {
                       try
                       {
-                          s.Import();
-                          AssetDatabase.Refresh();
-                          WaitForCompilation();
-
-                          string importedDir = (s.importPath ?? "").Replace('\\','/');
-                          if (string.IsNullOrEmpty(importedDir) || !Directory.Exists(importedDir))
+                          if (!(bool)(typeof(Sample).GetProperty("isImported")?.GetValue(s) ?? false))
                           {
-                              string guess = Path.Combine("Assets", "Samples", pkgName, MakeSafe(s.displayName ?? "Sample")).Replace('\\','/');
-                              if (Directory.Exists(guess)) importedDir = guess;
+                              var mi = typeof(Sample).GetMethod("Import", new Type[]{ typeof(bool) }) ??
+                                       typeof(Sample).GetMethod("Import", Type.EmptyTypes);
+                              if (mi == null) throw new Exception("Sample.Import method not found");
+                              if (mi.GetParameters().Length == 1) mi.Invoke(s, new object[]{ false }); else mi.Invoke(s, null);
                           }
-                          if (string.IsNullOrEmpty(importedDir) || !Directory.Exists(importedDir))
+                          string path = (string)(typeof(Sample).GetProperty("importPath")?.GetValue(s) ?? string.Empty);
+                          if (string.IsNullOrEmpty(path))
                           {
-                              Debug.LogWarning("Imported dir missing for sample: " + (s.displayName ?? "(no name)"));
-                              continue;
+                              var guess = Path.Combine("Assets","Samples",pkgName, MakeSafe(s.displayName ?? "Sample"));
+                              if (Directory.Exists(guess)) path = guess;
                           }
-
-                          string folderName = Path.GetFileName(importedDir.TrimEnd('/', '\\'));
-                          string safeName = MakeSafe(string.IsNullOrEmpty(s.displayName) ? folderName : s.displayName);
-
-                          var wanted = new HashSet<string>(new[]{ folderName, s.displayName ?? folderName }, StringComparer.OrdinalIgnoreCase);
-                          var scenes = Directory.GetFiles(importedDir, "*.unity", SearchOption.AllDirectories)
-                                                .Where(p => wanted.Contains(Path.GetFileNameWithoutExtension(p)) || true)
-                                                .Select(p => p.Replace('\\','/'))
-                                                .ToArray();
-                          if (scenes.Length == 0)
-                          {
-                              Debug.LogWarning("No scene found for sample: " + s.displayName);
-                              continue;
-                          }
-
-                          string buildDir = Path.Combine(outRoot, safeName);
-                          Directory.CreateDirectory(buildDir);
-
-                          var report = BuildPipeline.BuildPlayer(scenes, buildDir, BuildTarget.WebGL, BuildOptions.None);
-                          if (report.summary.result != UnityEditor.Build.Reporting.BuildResult.Succeeded)
-                              throw new Exception("Build failed for sample: " + safeName);
+                          if (!string.IsNullOrEmpty(path) && Directory.Exists(path)) importedDirs.Add(Norm(path));
                       }
                       catch (Exception ex)
                       {
-                          Debug.LogWarning("Sample build skipped: " + (s.displayName ?? "(no name)") + " -> " + ex.Message);
+                          Debug.LogWarning("Sample import skipped: " + (s.displayName ?? "(no name)") + " -> " + ex.Message);
                       }
+                  }
+
+                  AssetDatabase.Refresh();
+                  if (!WaitForCompilation(TimeSpan.FromMinutes(10)))
+                      throw new Exception("Timeout waiting for script compilation");
+
+                  string outRoot = "build-webgl";
+                  Directory.CreateDirectory(outRoot);
+
+                  foreach (var dir in importedDirs.Distinct())
+                  {
+                      string folderName = Path.GetFileName(dir.TrimEnd('/','\\'));
+                      var wanted = new HashSet<string>(new[]{ folderName }, StringComparer.OrdinalIgnoreCase);
+
+                      var scenes = Directory.GetFiles(dir, "*.unity", SearchOption.AllDirectories)
+                                            .Where(p => wanted.Contains(Path.GetFileNameWithoutExtension(p)))
+                                            .Select(Norm)
+                                            .ToArray();
+                      if (scenes.Length == 0)
+                      {
+                          scenes = Directory.GetFiles(dir, "*.unity", SearchOption.AllDirectories)
+                                            .Select(Norm).ToArray();
+                      }
+                      if (scenes.Length == 0)
+                      {
+                          Debug.LogWarning("No scene found under: " + dir);
+                          continue;
+                      }
+
+                      string safeName = MakeSafe(folderName);
+                      string buildDir = Path.Combine(outRoot, safeName);
+                      Directory.CreateDirectory(buildDir);
+
+                      var report = BuildPipeline.BuildPlayer(scenes, buildDir, BuildTarget.WebGL, BuildOptions.None);
+                      if (report.summary.result != UnityEditor.Build.Reporting.BuildResult.Succeeded)
+                          throw new Exception("Build failed for sample: " + safeName);
                   }
 
                   AssetDatabase.Refresh();
@@ -126,14 +135,21 @@ jobs:
                   if (settings) return;
                   EditorApplication.ExecuteMenuItem("Window/TextMeshPro/Import TMP Essential Resources");
                   AssetDatabase.Refresh();
-                  WaitForCompilation();
+                  WaitForCompilation(TimeSpan.FromMinutes(5));
               }
 
-              static void WaitForCompilation()
+              static bool WaitForCompilation(TimeSpan timeout)
               {
-                  while (EditorApplication.isCompiling) System.Threading.Thread.Sleep(100);
+                  var start = DateTime.UtcNow;
+                  while (EditorApplication.isCompiling)
+                  {
+                      if (DateTime.UtcNow - start > timeout) return false;
+                      System.Threading.Thread.Sleep(200);
+                  }
+                  return true;
               }
 
+              static string Norm(string p) => p.Replace('\\','/');
               static string MakeSafe(string name)
               {
                   foreach (char c in Path.GetInvalidFileNameChars()) name = name.Replace(c, '_');
@@ -141,6 +157,7 @@ jobs:
               }
           }
           CS
+
 
 
 
