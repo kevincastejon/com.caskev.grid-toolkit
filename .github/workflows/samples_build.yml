@@ -20,7 +20,6 @@ jobs:
               "com.unity.modules.ui": "1.0.0",
               "com.unity.modules.uielements": "1.0.0",
               "com.unity.ugui": "1.0.0",
-              "com.unity.textmeshpro": "3.0.9",
               "com.unity.2d.tilemap": "1.1.0",
               "com.unity.2d.sprite": "1.0.0",
               "com.unity.test-framework": "1.4.5",
@@ -38,7 +37,6 @@ jobs:
           using System.IO;
           using System.Linq;
           using System.Collections.Generic;
-          using System.Reflection;
           using UnityEditor;
           using UnityEditor.PackageManager;
           using UnityEditor.PackageManager.UI;
@@ -61,7 +59,11 @@ jobs:
                   if (pkg == null) throw new Exception("Package not found: " + pkgName);
 
                   var samples = (Sample.FindByPackage(pkgName, pkg.version) ?? Enumerable.Empty<Sample>()).ToList();
-                  if (!samples.Any()) { Debug.LogWarning("No samples found via API"); return; }
+                  if (!samples.Any())
+                  {
+                      Debug.LogWarning("No samples found via API");
+                      return;
+                  }
 
                   var importedDirs = new List<string>();
 
@@ -69,20 +71,22 @@ jobs:
                   {
                       try
                       {
-                          if (!(bool)(typeof(Sample).GetProperty("isImported")?.GetValue(s) ?? false))
+                          if (!s.isImported)
                           {
-                              var mi = typeof(Sample).GetMethod("Import", new Type[]{ typeof(bool) }) ??
-                                       typeof(Sample).GetMethod("Import", Type.EmptyTypes);
-                              if (mi == null) throw new Exception("Sample.Import method not found");
-                              if (mi.GetParameters().Length == 1) mi.Invoke(s, new object[]{ false }); else mi.Invoke(s, null);
+                              try { s.Import(false); }
+                              catch { s.Import(); }
                           }
-                          string path = (string)(typeof(Sample).GetProperty("importPath")?.GetValue(s) ?? string.Empty);
-                          if (string.IsNullOrEmpty(path))
+
+                          var path = (s.importPath ?? string.Empty).Replace('\\','/');
+                          if (string.IsNullOrEmpty(path) || !Directory.Exists(path))
                           {
-                              var guess = Path.Combine("Assets","Samples",pkgName, MakeSafe(s.displayName ?? "Sample"));
+                              var guess = Path.Combine("Assets","Samples",pkgName, MakeSafe(s.displayName ?? "Sample")).Replace('\\','/');
                               if (Directory.Exists(guess)) path = guess;
                           }
-                          if (!string.IsNullOrEmpty(path) && Directory.Exists(path)) importedDirs.Add(Norm(path));
+                          if (!string.IsNullOrEmpty(path) && Directory.Exists(path))
+                              importedDirs.Add(path);
+                          else
+                              Debug.LogWarning("Imported dir missing for sample: " + (s.displayName ?? "(no name)"));
                       }
                       catch (Exception ex)
                       {
@@ -99,25 +103,16 @@ jobs:
 
                   foreach (var dir in importedDirs.Distinct())
                   {
-                      string folderName = Path.GetFileName(dir.TrimEnd('/','\\'));
-                      var wanted = new HashSet<string>(new[]{ folderName }, StringComparer.OrdinalIgnoreCase);
-
                       var scenes = Directory.GetFiles(dir, "*.unity", SearchOption.AllDirectories)
-                                            .Where(p => wanted.Contains(Path.GetFileNameWithoutExtension(p)))
-                                            .Select(Norm)
+                                            .Select(p => p.Replace('\\','/'))
                                             .ToArray();
-                      if (scenes.Length == 0)
-                      {
-                          scenes = Directory.GetFiles(dir, "*.unity", SearchOption.AllDirectories)
-                                            .Select(Norm).ToArray();
-                      }
                       if (scenes.Length == 0)
                       {
                           Debug.LogWarning("No scene found under: " + dir);
                           continue;
                       }
 
-                      string safeName = MakeSafe(folderName);
+                      string safeName = MakeSafe(Path.GetFileName(dir.TrimEnd('/','\\')));
                       string buildDir = Path.Combine(outRoot, safeName);
                       Directory.CreateDirectory(buildDir);
 
@@ -149,7 +144,6 @@ jobs:
                   return true;
               }
 
-              static string Norm(string p) => p.Replace('\\','/');
               static string MakeSafe(string name)
               {
                   foreach (char c in Path.GetInvalidFileNameChars()) name = name.Replace(c, '_');
@@ -157,6 +151,7 @@ jobs:
               }
           }
           CS
+
 
 
 
