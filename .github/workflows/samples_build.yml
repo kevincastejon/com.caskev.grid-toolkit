@@ -140,28 +140,29 @@ jobs:
           unityVersion: 6000.2.8f1
           buildMethod: BuildSamples.Run
           versioning: None
-          customParameters: -stackTraceLogType Full -logFile ${{ github.workspace }}/TempProject/Editor.log
-
-      - name: Collect editor logs
-        if: always()
+          customParameters: -stackTraceLogType Full
+      - name: Prepare samples artifact
         run: |
-          set -e
-          mkdir -p logs
-          if [ -f "${GITHUB_WORKSPACE}/TempProject/Editor.log" ]; then cp "${GITHUB_WORKSPACE}/TempProject/Editor.log" logs/; fi
-          for p in \
-            "$HOME/.config/unity3d/Editor/Editor.log" \
-            "$HOME/.local/share/unity3d/Editor/Editor.log" \
-            "$HOME/.local/share/unity3d/Unity/Editor/Editor.log" \
-            "/github/home/.config/unity3d/Editor/Editor.log" \
-            "/github/home/.local/share/unity3d/Editor/Editor.log" \
-            "/github/home/.local/share/unity3d/Unity/Editor/Editor.log" \
-            "TempProject/Library/Editor.log" \
-          ; do
-            [ -f "$p" ] && cp "$p" logs/ || true
-          done
-          find TempProject -type f -name "Editor.log" -exec cp {} logs/ \; || true
-          find TempProject -maxdepth 3 -type f -name "*.log" -exec cp {} logs/ \; || true
-          ls -al logs || true
+          mkdir -p public-samples/samples
+          cp -r TempProject/build-webgl/* public-samples/samples/ || true
+          if [ ! -f public-samples/samples/index.html ]; then
+            cat > public-samples/samples/index.html << 'HTML'
+            <!doctype html>
+            <meta charset="utf-8">
+            <title>Samples</title>
+            <h1>Samples</h1>
+            <ul id="list"></ul>
+            <script>
+              fetch('./').then(r=>r.text()).then(t=>{
+                const rx=/href="([^"]+)\\//g;let m,items=[];
+                while((m=rx.exec(t))!==null){const n=m[1];if(!n.startsWith('.')&&n!=='')items.push(n);}
+                const ul=document.getElementById('list');
+                if(items.length===0){ul.innerHTML='<li>No samples</li>';return;}
+                items.forEach(n=>{if(n==='index.html')return;const li=document.createElement('li');const a=document.createElement('a');a.href=n+'/index.html';a.textContent=n;li.appendChild(a);ul.appendChild(li);});
+              });
+            </script>
+            HTML
+          fi
       - name: Upload samples artifact
         uses: actions/upload-artifact@v4
         with:
