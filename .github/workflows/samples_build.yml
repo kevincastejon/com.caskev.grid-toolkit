@@ -30,7 +30,7 @@ jobs:
           JSON
           echo "m_EditorVersion: ${UNITY_VER}" > TempProject/ProjectSettings/ProjectVersion.txt
 
-            - name: Add editor build script
+      - name: Add editor build script
         run: |
           mkdir -p TempProject/Assets/Editor
           cat > TempProject/Assets/Editor/BuildSamples.cs << 'CS'
