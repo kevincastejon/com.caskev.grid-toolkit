@@ -38,6 +38,11 @@
       "displayName": "Tactical Strategy",
       "description": "Install the 'Shared Assets' sample prior to this one. Minimalistic demo of a tactical strategy game using DijkstraField.",
       "path": "Samples~/Tactical Strategy"
+    },
+    {
+      "displayName": "RealTime Shooter",
+      "description": "Install the 'Shared Assets' sample prior to this one. Minimalistic demo of a realtime shooter game using DirectionAtlas.",
+      "path": "Samples~/RealTime Shooter"
     }
   ],
   "author": {

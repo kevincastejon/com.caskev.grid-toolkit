@@ -73,7 +73,7 @@ jobs:
                       {
                           if (!s.isImported)
                           {
-                              try { s.Import(false); }
+                              try { s.Import(Sample.ImportOptions.None); }
                               catch { s.Import(); }
                           }
 
