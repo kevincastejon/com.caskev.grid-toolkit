@@ -200,6 +200,42 @@ namespace Caskev.GridToolkit
             return task;
         }
         /// <summary>
+        /// Returns the DijkstraGrid serialized as a byte array.
+        /// </summary>
+        /// <param name="progress">An optional IProgress object to get the serialization progression</param>
+        /// <param name="cancelToken">An optional CancellationToken object to cancel the serialization</param>
+        /// <returns>A byte array representing the serialized DijkstraGrid</returns>
+        public async Awaitable<byte[]> ToByteArrayAwaitable(IProgress<float> progress = null, CancellationToken cancelToken = default)
+        {
+            int bytesCount = sizeof(int) + sizeof(int) + ((sizeof(byte) + sizeof(float)) * _directionGrid.Length);
+            byte[] bytes = new byte[bytesCount];
+            int byteIndex = 0;
+            BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _target);
+            byteIndex += sizeof(int);
+            BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _directionGrid.Length);
+            byteIndex += sizeof(int);
+            float frameBudgetMS = 6f;
+            float frameStart = Time.realtimeSinceStartup;
+            float elapsedMs = 0f;
+            for (int i = 0; i < _directionGrid.Length; i++)
+            {
+                if (cancelToken.IsCancellationRequested)
+                {
+                    return null;
+                }
+                progress.Report((float)i / _directionGrid.Length);
+                bytes[byteIndex] = (byte)_directionGrid[i];
+                byteIndex++;
+                BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), BitConverter.SingleToInt32Bits(_distanceGrid[i]));
+                byteIndex += sizeof(float);
+                if (((elapsedMs = (Time.realtimeSinceStartup - frameStart) * 1000f) < frameBudgetMS) == false)
+                {
+                    await Awaitable.NextFrameAsync();
+                }
+            }
+            return bytes;
+        }
+        /// <summary>
         /// Returns a DijkstraGrid from a byte array that has been serialized with the ToByteArray method.
         /// </summary>
         /// <param name="grid">The user grid</param>
@@ -265,6 +301,48 @@ namespace Caskev.GridToolkit
                 return new DijkstraGrid(directionGrid, distanceGrid, target);
             });
             return task;
+        }
+        /// <summary>
+        /// Returns a DijkstraGrid from a byte array that has been serialized with the ToByteArray method.
+        /// </summary>
+        /// <param name="grid">The user grid</param>
+        /// <param name="bytes">The serialized byte array</param>
+        /// <param name="progress">An optional IProgress object to get the deserialization progression</param>
+        /// <param name="cancelToken">An optional CancellationToken object to cancel the deserialization</param>
+        /// <returns>The deserialized DijkstraGrid</returns>
+        public static async Awaitable<DijkstraGrid> FromByteArrayAwaitable<T>(T[,] grid, byte[] bytes, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : IWeightedTile
+        {
+            if (grid == null)
+            {
+                throw new ArgumentException("The grid cannot be null");
+            }
+            int byteIndex = 0;
+            int target = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
+            byteIndex += sizeof(int);
+            int count = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
+            byteIndex += sizeof(int);
+            TileDirection[] directionGrid = new TileDirection[count];
+            float[] distanceGrid = new float[count];
+            float frameBudgetMS = 6f;
+            float frameStart = Time.realtimeSinceStartup;
+            float elapsedMs = 0f;
+            for (int i = 0; i < count; i++)
+            {
+                if (cancelToken.IsCancellationRequested)
+                {
+                    return null;
+                }
+                progress.Report((float)i / count);
+                directionGrid[i] = (TileDirection)bytes[byteIndex];
+                byteIndex++;
+                distanceGrid[i] = BitConverter.Int32BitsToSingle(BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex)));
+                byteIndex += sizeof(float);
+                if (((elapsedMs = (Time.realtimeSinceStartup - frameStart) * 1000f) < frameBudgetMS) == false)
+                {
+                    await Awaitable.NextFrameAsync();
+                }
+            }
+            return new DijkstraGrid(directionGrid, distanceGrid, target);
         }
         /// <summary>
         /// Gets the next tile from the specified tile along the path to the target tile.

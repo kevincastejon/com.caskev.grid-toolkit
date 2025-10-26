@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEngine;
 namespace Caskev.GridToolkit
 {
     /// <summary>
@@ -162,6 +163,50 @@ namespace Caskev.GridToolkit
             return task;
         }
         /// <summary>
+        /// Asynchronously serializes a DirectionAtlas to a byte array. 
+        /// </summary>
+        /// <param name="progress">An optional IProgress object to get the deserialization progression</param>
+        /// <param name="cancelToken">An optional CancellationToken object to cancel the serialization</param>
+        /// <returns>The serialized DirectionAtlas.</returns>
+        public async Awaitable<byte[]> ToByteArrayAwaitable(IProgress<float> progress = null, CancellationToken cancelToken = default)
+        {
+            int bytesCount = _directionAtlas.Length * _directionAtlas.Count(x => x != null) + _directionAtlas.Length;
+            byte[] bytes = new byte[bytesCount];
+            int byteIndex = 0;
+            float frameBudgetMS = 6f;
+            float frameStart = Time.realtimeSinceStartup;
+            float elapsedMs = 0f;
+            for (int i = 0; i < _directionAtlas.Length; i++)
+            {
+                if (cancelToken.IsCancellationRequested)
+                {
+                    return null;
+                }
+                progress.Report((float)i / _directionAtlas.Length);
+                if (_directionAtlas[i] == null)
+                {
+                    bytes[byteIndex] = 0;
+                    byteIndex++;
+                    continue;
+                }
+                else
+                {
+                    bytes[byteIndex] = 1;
+                    byteIndex++;
+                    for (int j = 0; j < _directionAtlas.Length; j++)
+                    {
+                        bytes[byteIndex] = (byte)_directionAtlas[i]._directionGrid[j];
+                        byteIndex++;
+                    }
+                }
+                if (((elapsedMs = (Time.realtimeSinceStartup - frameStart) * 1000f) < frameBudgetMS) == false)
+                {
+                    await Awaitable.NextFrameAsync();
+                }
+            }
+            return bytes;
+        }
+        /// <summary>
         /// Deserializes a DirectionAtlas from a byte array. 
         /// </summary>
         /// <param name="grid">The user grid.</param>
@@ -243,6 +288,56 @@ namespace Caskev.GridToolkit
                 return new DirectionAtlas(directionAtlas);
             });
             return task;
+        }
+        /// <summary>
+        /// Asynchronously deserializes a DirectionAtlas from a byte array. 
+        /// </summary>
+        /// <param name="grid">The user grid.</param>
+        /// <param name="bytes">The serialized DirectionAtlas.</param>
+        /// <param name="progress">An optional IProgress object to get the deserialization progression</param>
+        /// <param name="cancelToken">An optional CancellationToken object to cancel the deserialization</param>
+        /// <returns>The deserialized DirectionAtlas.</returns>
+        public static async Awaitable<DirectionAtlas> FromByteArrayAwaitable<T>(T[,] grid, byte[] bytes, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : ITile
+        {
+            if (grid == null)
+            {
+                throw new ArgumentException("The grid cannot be null");
+            }
+            int byteIndex = 0;
+            DirectionGrid[] directionAtlas = new DirectionGrid[grid.Length];
+            float frameBudgetMS = 6f;
+            float frameStart = Time.realtimeSinceStartup;
+            float elapsedMs = 0f;
+            for (int i = 0; i < grid.Length; i++)
+            {
+                if (cancelToken.IsCancellationRequested)
+                {
+                    return null;
+                }
+                progress.Report((float)i / grid.Length);
+                bool isWalkable = bytes[byteIndex] == 1;
+                byteIndex++;
+                if (!isWalkable)
+                {
+                    directionAtlas[i] = null;
+                    continue;
+                }
+                else
+                {
+                    TileDirection[] directionGrid = new TileDirection[grid.Length];
+                    for (int j = 0; j < grid.Length; j++)
+                    {
+                        directionGrid[j] = (TileDirection)bytes[byteIndex];
+                        byteIndex++;
+                    }
+                    directionAtlas[i] = new DirectionGrid(directionGrid, i);
+                }
+                if (((elapsedMs = (Time.realtimeSinceStartup - frameStart) * 1000f) < frameBudgetMS) == false)
+                {
+                    await Awaitable.NextFrameAsync();
+                }
+            }
+            return new DirectionAtlas(directionAtlas);
         }
     }
 }

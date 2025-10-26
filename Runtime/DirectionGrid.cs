@@ -179,6 +179,40 @@ namespace Caskev.GridToolkit
             return task;
         }
         /// <summary>
+        /// Returns the DirectionGrid serialized as a byte array.
+        /// </summary>
+        /// <param name="progress">An optional IProgress object to get the serialization progression</param>
+        /// <param name="cancelToken">An optional CancellationToken object to cancel the serialization</param>
+        /// <returns>A byte array representing the serialized DirectionGrid</returns>
+        public async Awaitable<byte[]> ToByteArrayAwaitable(IProgress<float> progress = null, CancellationToken cancelToken = default)
+        {
+            int bytesCount = sizeof(int) + sizeof(int) + sizeof(byte) * _directionGrid.Length;
+            byte[] bytes = new byte[bytesCount];
+            int byteIndex = 0;
+            BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _target);
+            byteIndex += sizeof(int);
+            BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _directionGrid.Length);
+            byteIndex += sizeof(int);
+            float frameBudgetMS = 6f;
+            float frameStart = Time.realtimeSinceStartup;
+            float elapsedMs = 0f;
+            for (int i = 0; i < _directionGrid.Length; i++)
+            {
+                if (cancelToken.IsCancellationRequested)
+                {
+                    return null;
+                }
+                progress.Report((float)i / _directionGrid.Length);
+                bytes[byteIndex] = (byte)_directionGrid[i];
+                byteIndex++;
+                if (((elapsedMs = (Time.realtimeSinceStartup - frameStart) * 1000f) < frameBudgetMS) == false)
+                {
+                    await Awaitable.NextFrameAsync();
+                }
+            }
+            return bytes;
+        }
+        /// <summary>
         /// Returns a DirectionGrid from a byte array that has been serialized with the ToByteArray method.
         /// </summary>
         /// <param name="grid">The user grid</param>
@@ -238,6 +272,45 @@ namespace Caskev.GridToolkit
                 return new DirectionGrid(directionGrid, target);
             });
             return task;
+        }
+        /// <summary>
+        /// Returns a DirectionGrid from a byte array that has been serialized with the ToByteArray method.
+        /// </summary>
+        /// <param name="grid">The user grid</param>
+        /// <param name="bytes">The serialized byte array</param>
+        /// <param name="progress">An optional IProgress object to get the deserialization progression</param>
+        /// <param name="cancelToken">An optional CancellationToken object to cancel the deserialization</param>
+        /// <returns>The deserialized DirectionGrid</returns>
+        public async static Awaitable<DirectionGrid> FromByteArrayAwaitable<T>(T[,] grid, byte[] bytes, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : ITile
+        {
+            if (grid == null)
+            {
+                throw new ArgumentException("The grid cannot be null");
+            }
+            int byteIndex = 0;
+            int target = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
+            byteIndex += sizeof(int);
+            int count = BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex));
+            byteIndex += sizeof(int);
+            TileDirection[] directionGrid = new TileDirection[count];
+            float frameBudgetMS = 6f;
+            float frameStart = Time.realtimeSinceStartup;
+            float elapsedMs = 0f;
+            for (int i = 0; i < count; i++)
+            {
+                if (cancelToken.IsCancellationRequested)
+                {
+                    return null;
+                }
+                progress.Report((float)i / count);
+                directionGrid[i] = (TileDirection)bytes[byteIndex];
+                byteIndex++;
+                if (((elapsedMs = (Time.realtimeSinceStartup - frameStart) * 1000f) < frameBudgetMS) == false)
+                {
+                    await Awaitable.NextFrameAsync();
+                }
+            }
+            return new DirectionGrid(directionGrid, target);
         }
         /// <summary>
         /// Gets the next tile from the specified tile along the path to the target tile.

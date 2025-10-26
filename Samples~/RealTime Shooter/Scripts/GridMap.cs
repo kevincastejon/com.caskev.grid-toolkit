@@ -58,7 +58,11 @@ namespace GridToolkitWorkingProject.Samples.RealTimeShooter
             _progressLabel.transform.parent.parent.gameObject.SetActive(true);
             try
             {
+#if UNITY_WEBGL
+                _directionAtlas = await DirectionAtlas.FromByteArrayAwaitable(_map, savedAtlas, progressIndicator, _cts.Token);
+#else
                 _directionAtlas = await DirectionAtlas.FromByteArrayAsync(_map, savedAtlas, progressIndicator, _cts.Token);
+#endif
             }
             catch (Exception)
             {
@@ -124,7 +128,11 @@ namespace GridToolkitWorkingProject.Samples.RealTimeShooter
                 {
                     _progressLabel.text = "Saving atlas...\n" + (progress * 100).ToString("F0")+"%";
                 });
+#if UNITY_WEBGL
+                byte[] bytes = await directionAtlas.ToByteArrayAwaitable(progressIndicator2, _cts.Token);
+#else
                 byte[] bytes = await directionAtlas.ToByteArrayAsync(progressIndicator2, _cts.Token);
+#endif
                 File.WriteAllBytes(Application.persistentDataPath+"/Direction.atlas", bytes);
                 Debug.Log($"Serialized Atlas ({bytes.Length})");
             }

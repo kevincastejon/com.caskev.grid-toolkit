@@ -3,6 +3,7 @@ using System.Buffers.Binary;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEngine;
 namespace Caskev.GridToolkit
 {
     /// <summary>
@@ -183,6 +184,52 @@ namespace Caskev.GridToolkit
             return task;
         }
         /// <summary>
+        /// Asynchronously serializes a DijkstraAtlas to a byte array. 
+        /// </summary>
+        /// <param name="progress">An optional IProgress object to get the deserialization progression</param>
+        /// <param name="cancelToken">An optional CancellationToken object to cancel the serialization</param>
+        /// <returns>The serialized DijkstraAtlas.</returns>
+        public async Awaitable<byte[]> ToByteArrayAwaitable(IProgress<float> progress = null, CancellationToken cancelToken = default)
+        {
+            int bytesCount = _dijkstraAtlas.Length * (_dijkstraAtlas.Count(x => x != null) * (sizeof(float) + 1)) + _dijkstraAtlas.Length;
+            byte[] bytes = new byte[bytesCount];
+            int byteIndex = 0;
+            float frameBudgetMS = 6f;
+            float frameStart = Time.realtimeSinceStartup;
+            float elapsedMs = 0f;
+            for (int i = 0; i < _dijkstraAtlas.Length; i++)
+            {
+                if (cancelToken.IsCancellationRequested)
+                {
+                    return null;
+                }
+                progress.Report((float)i / _dijkstraAtlas.Length);
+                if (_dijkstraAtlas[i] == null)
+                {
+                    bytes[byteIndex] = 0;
+                    byteIndex++;
+                    continue;
+                }
+                else
+                {
+                    bytes[byteIndex] = 1;
+                    byteIndex++;
+                    for (int j = 0; j < _dijkstraAtlas.Length; j++)
+                    {
+                        bytes[byteIndex] = (byte)_dijkstraAtlas[i]._directionGrid[j];
+                        byteIndex++;
+                        BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), BitConverter.SingleToInt32Bits(_dijkstraAtlas[i]._distanceGrid[j]));
+                        byteIndex += sizeof(float);
+                    }
+                }
+                if (((elapsedMs = (Time.realtimeSinceStartup - frameStart) * 1000f) < frameBudgetMS) == false)
+                {
+                    await Awaitable.NextFrameAsync();
+                }
+            }
+            return bytes;
+        }
+        /// <summary>
         /// Deserializes a DijkstraAtlas from a byte array. 
         /// </summary>
         /// <param name="grid">The user grid.</param>
@@ -270,6 +317,59 @@ namespace Caskev.GridToolkit
                 return new DijkstraAtlas(dijkstraAtlas);
             });
             return task;
+        }
+        /// <summary>
+        /// Asynchronously deserializes a DijkstraAtlas from a byte array. 
+        /// </summary>
+        /// <param name="grid">The user grid.</param>
+        /// <param name="bytes">The serialized DijkstraAtlas.</param>
+        /// <param name="progress">An optional IProgress object to get the deserialization progression</param>
+        /// <param name="cancelToken">An optional CancellationToken object to cancel the deserialization</param>
+        /// <returns>The deserialized DijkstraAtlas.</returns>
+        public static async Awaitable<DijkstraAtlas> FromByteArrayAwaitable<T>(T[,] grid, byte[] bytes, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : ITile
+        {
+            if (grid == null)
+            {
+                throw new ArgumentException("The grid cannot be null");
+            }
+            int byteIndex = 0;
+            DijkstraGrid[] dijkstraAtlas = new DijkstraGrid[grid.Length];
+            float frameBudgetMS = 6f;
+            float frameStart = Time.realtimeSinceStartup;
+            float elapsedMs = 0f;
+            for (int i = 0; i < grid.Length; i++)
+            {
+                if (cancelToken.IsCancellationRequested)
+                {
+                    return null;
+                }
+                progress.Report((float)i / grid.Length);
+                bool isWalkable = bytes[byteIndex] == 1;
+                byteIndex++;
+                if (!isWalkable)
+                {
+                    dijkstraAtlas[i] = null;
+                    continue;
+                }
+                else
+                {
+                    TileDirection[] directionGrid = new TileDirection[grid.Length];
+                    float[] distanceGrid = new float[grid.Length];
+                    for (int j = 0; j < grid.Length; j++)
+                    {
+                        directionGrid[j] = (TileDirection)bytes[byteIndex];
+                        byteIndex++;
+                        distanceGrid[i] = BitConverter.Int32BitsToSingle(BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(byteIndex)));
+                        byteIndex += sizeof(float);
+                    }
+                    dijkstraAtlas[i] = new DijkstraGrid(directionGrid, distanceGrid, i);
+                }
+                if (((elapsedMs = (Time.realtimeSinceStartup - frameStart) * 1000f) < frameBudgetMS) == false)
+                {
+                    await Awaitable.NextFrameAsync();
+                }
+            }
+            return new DijkstraAtlas(dijkstraAtlas);
         }
     }
 }
