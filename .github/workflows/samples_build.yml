@@ -607,14 +607,11 @@ jobs:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: WebGL
           customParameters: >
-            -batchmode
-            -nographics
             -buildMethod: ''
             -projectPath "${{ env.PROJ }}"
             -buildTarget WebGL
-            -executeMethod GridToolkitCIHelper.Launch
-            -quit
-            -logFile "${{ env.PROJ }}/Editor1.log"
+            -executeMethod GridToolkitCIHelper.Launch,
+            -stackTraceLogType Full
 
       - name: Unity pass 2 (build via CLI)
         uses: game-ci/unity-builder@v4
@@ -626,14 +623,11 @@ jobs:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: WebGL
           customParameters: >
-            -batchmode
-            -nographics
             -projectPath "${{ env.PROJ }}"
             -buildTarget WebGL
             -build "${{ env.OUT }}"
-            -activeBuildProfile "Assets/Settings/Build Profiles/Web.asset"
-            -quit
-            -logFile "${{ env.PROJ }}/Editor2.log"
+            -activeBuildProfile "Assets/Settings/Build Profiles/Web.asset",
+            -stackTraceLogType Full
 
       - name: Prepare samples artifact
         shell: bash
