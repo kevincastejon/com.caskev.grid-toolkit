@@ -198,7 +198,11 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
             _cts = new System.Threading.CancellationTokenSource();
             try
             {
+#if UNITY_WEBGL
+                _directionGrid = await Pathfinding.GenerateDirectionGridAwaitable(_grid.Map, _targetTile, (DiagonalsPolicy)_diagonalsPolicy.value, new Progress<float>((x) => _progressWindow.text = (x * 100).ToString("F0") + "%"), _cts.Token);
+#else
                 _directionGrid = await Pathfinding.GenerateDirectionGridAsync(_grid.Map, _targetTile, (DiagonalsPolicy)_diagonalsPolicy.value, new Progress<float>((x) => _progressWindow.text = (x * 100).ToString("F0") + "%"), _cts.Token);
+#endif
             }
             catch (Exception e)
             {
@@ -231,7 +235,11 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
             DirectionField directionField;
             try
             {
+#if UNITY_WEBGL
+                directionField = await Pathfinding.GenerateDirectionFieldAwaitable(_grid.Map, _targetTile, Mathf.FloorToInt(_maxDistance.value), (DiagonalsPolicy)_diagonalsPolicy.value, _cts.Token);
+#else
                 directionField = await Pathfinding.GenerateDirectionFieldAsync(_grid.Map, _targetTile, Mathf.FloorToInt(_maxDistance.value), (DiagonalsPolicy)_diagonalsPolicy.value, _cts.Token);
+#endif
             }
             catch (Exception e)
             {
@@ -276,7 +284,11 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
             _cts = new System.Threading.CancellationTokenSource();
             try
             {
+#if UNITY_WEBGL
+                _directionAtlas = await Pathfinding.GenerateDirectionAtlasAwaitable(_grid.Map, (DiagonalsPolicy)_diagonalsPolicy.value, new Progress<float>((x) => _progressWindow.text = (x * 100).ToString("F0") + "%"), _cts.Token);
+#else
                 _directionAtlas = await Pathfinding.GenerateDirectionAtlasAsync(_grid.Map, (DiagonalsPolicy)_diagonalsPolicy.value, new Progress<float>((x) => _progressWindow.text = (x * 100).ToString("F0") + "%"), _cts.Token);
+#endif
             }
             catch (Exception e)
             {
@@ -309,7 +321,11 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
             _cts = new System.Threading.CancellationTokenSource();
             try
             {
+#if UNITY_WEBGL
+                _dijkstraAtlas = await Pathfinding.GenerateDijkstraAtlasAwaitable(_grid.Map, (DiagonalsPolicy)_diagonalsPolicy.value, _diagonalsWeight.value, new Progress<float>((x) => _progressWindow.text = (x * 100).ToString("F0") + "%"), _cts.Token);
+#else
                 _dijkstraAtlas = await Pathfinding.GenerateDijkstraAtlasAsync(_grid.Map, (DiagonalsPolicy)_diagonalsPolicy.value, _diagonalsWeight.value, new Progress<float>((x) => _progressWindow.text = (x * 100).ToString("F0") + "%"), _cts.Token);
+#endif
             }
             catch (Exception e)
             {
@@ -341,7 +357,11 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
             _cts = new System.Threading.CancellationTokenSource();
             try
             {
+#if UNITY_WEBGL
+                _dijkstraGrid = await Pathfinding.GenerateDijkstraGridAwaitable(_grid.Map, _targetTile, (DiagonalsPolicy)_diagonalsPolicy.value, _diagonalsWeight.value, new Progress<float>((x) => _progressWindow.text = (x * 100).ToString("F0") + "%"), _cts.Token);
+#else
                 _dijkstraGrid = await Pathfinding.GenerateDijkstraGridAsync(_grid.Map, _targetTile, (DiagonalsPolicy)_diagonalsPolicy.value, _diagonalsWeight.value, new Progress<float>((x) => _progressWindow.text = (x * 100).ToString("F0") + "%"), _cts.Token);
+#endif
             }
             catch (Exception e)
             {
@@ -373,7 +393,11 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
             _cts = new System.Threading.CancellationTokenSource();
             try
             {
+#if UNITY_WEBGL
+                _dijkstraField = await Pathfinding.GenerateDijkstraFieldAwaitable(_grid.Map, _targetTile, _maxDistance.value, (DiagonalsPolicy)_diagonalsPolicy.value, _diagonalsWeight.value, _cts.Token);
+#else
                 _dijkstraField = await Pathfinding.GenerateDijkstraFieldAsync(_grid.Map, _targetTile, _maxDistance.value, (DiagonalsPolicy)_diagonalsPolicy.value, _diagonalsWeight.value, _cts.Token);
+#endif
             }
             catch (Exception e)
             {
@@ -417,7 +441,11 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
             _cts = new System.Threading.CancellationTokenSource();
             try
             {
+#if UNITY_WEBGL
+                _dijkstraPath = await Pathfinding.GenerateDijkstraPathAwaitable(_grid.Map, _targetTile, _startTile, (DiagonalsPolicy)_diagonalsPolicy.value, _diagonalsWeight.value, true, true, _cts.Token);
+#else
                 _dijkstraPath = await Pathfinding.GenerateDijkstraPathAsync(_grid.Map, _targetTile, _startTile, (DiagonalsPolicy)_diagonalsPolicy.value, _diagonalsWeight.value, true, true, _cts.Token);
+#endif
             }
             catch (Exception e)
             {
@@ -451,7 +479,11 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
             _cts = new System.Threading.CancellationTokenSource();
             try
             {
+#if UNITY_WEBGL
+                _directionPath = await Pathfinding.GenerateDirectionPathAwaitable(_grid.Map, _targetTile, _startTile, (DiagonalsPolicy)_diagonalsPolicy.value, _diagonalsWeight.value, true, true, _cts.Token);
+#else
                 _directionPath = await Pathfinding.GenerateDirectionPathAsync(_grid.Map, _targetTile, _startTile, (DiagonalsPolicy)_diagonalsPolicy.value, _diagonalsWeight.value, true, true, _cts.Token);
+#endif
             }
             catch (Exception e)
             {

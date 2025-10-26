@@ -105,7 +105,11 @@ namespace GridToolkitWorkingProject.Samples.RealTimeShooter
             _progressLabel.transform.parent.parent.gameObject.SetActive(true);
             try
             {
+#if UNITY_WEBGL
+                directionAtlas = await Pathfinding.GenerateDirectionAtlasAwaitable(_map, DiagonalsPolicy.NONE, progressIndicator, _cts.Token);
+#else
                 directionAtlas = await Pathfinding.GenerateDirectionAtlasAsync(_map, DiagonalsPolicy.NONE, progressIndicator, _cts.Token);
+#endif
             }
             catch (Exception e)
             {
