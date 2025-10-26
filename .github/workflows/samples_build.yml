@@ -29,8 +29,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          PROJ="$RUNNER_TEMP/GridToolkitTempProj_$(uuidgen | tr '[:upper:]' '[:lower:]' | tr -d '-')"
+          PROJ="$RUNNER_TEMP/GridToolkitSamplesOverview"
           OUT="$RUNNER_TEMP/out"
+          rm -rf "$PROJ" "$OUT"
           mkdir -p "$PROJ/Assets/Editor" \
                    "$PROJ/Assets/Settings/Build Profiles" \
                    "$PROJ/Packages" \
@@ -598,6 +599,10 @@ jobs:
 
       - name: Unity pass 1 (import samples + scenes)
         uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: WebGL
@@ -613,6 +618,10 @@ jobs:
 
       - name: Unity pass 2 (build via CLI)
         uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: WebGL
