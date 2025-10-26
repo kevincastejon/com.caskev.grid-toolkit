@@ -139,6 +139,10 @@ namespace GridToolkitWorkingProject.Samples.APIPlayground
         }
         public void ClearWalkables()
         {
+            if (_tileMap == null)
+            {
+                return;
+            }
             ClearHighlightedTiles();
             ClearPathTiles();
             ClearCenter();

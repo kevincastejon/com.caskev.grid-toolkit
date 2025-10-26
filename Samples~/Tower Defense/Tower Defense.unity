@@ -9579,7 +9579,6 @@ GameObject:
   - component: {fileID: 7427740370138700557}
   - component: {fileID: 1853264012933242937}
   - component: {fileID: 8563826444428417459}
-  - component: {fileID: 8563826444428417460}
   m_Layer: 0
   m_Name: Tile
   m_TagString: Untagged
@@ -52776,18 +52775,6 @@ MonoBehaviour:
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
   _isWalkable: 1
   _isGoal: 0
---- !u!114 &8563826444428417460
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2717843186675170943}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4d5d2af327a762246bc3b5e5ceaf3544, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DebugToDelete
 --- !u!65 &8667660439067361180
 BoxCollider:
   m_ObjectHideFlags: 0
