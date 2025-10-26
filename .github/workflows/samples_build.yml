@@ -542,7 +542,7 @@ jobs:
                   }
                   catch (System.Exception ex)
                   {
-                      System.Console.WriteLine("[TMP] Échec d'import : " + ex);
+                      System.Console.WriteLine("[TMP] Echec d'import : " + ex);
                   }
               }
               private static void ImportPackageCompleted(string packageName)
