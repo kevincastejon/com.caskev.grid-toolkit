@@ -32,14 +32,17 @@ jobs:
         with:
           name: docs-site
           path: merge/public
+
       - name: Download samples artifact
         uses: actions/download-artifact@v4
         with:
           name: samples-site
-          path: merge/public
+          path: merge/public/samples
+
       - name: Upload merged to Pages
         uses: actions/upload-pages-artifact@v3
         with:
           path: merge/public
+
       - name: Deploy
         uses: actions/deploy-pages@v4

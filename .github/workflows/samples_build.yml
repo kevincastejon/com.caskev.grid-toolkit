@@ -1,20 +1,41 @@
-name: Build Samples (reusable)
+name: Build WebGL
+
 on:
   workflow_call:
 
-jobs:
-  build-samples:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+env:
+  UNITY_VERSION: 6000.2.8f1
+  UNITY_IMAGE: unityci/editor:ubuntu-6000.2.8f1-webgl-3
+  PKG_GIT: https://github.com/kevincastejon/com.caskev.grid-toolkit.git
 
-      - name: Create temp Unity project
-        env:
-          UNITY_VER: 6000.2.8f1
+jobs:
+  webgl:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          tool-cache: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+
+      - name: Prepare temp Unity project
+        shell: bash
         run: |
-          mkdir -p TempProject/Assets TempProject/Packages TempProject/ProjectSettings
-          cat > TempProject/Packages/manifest.json << 'JSON'
+          set -euo pipefail
+          PROJ="$RUNNER_TEMP/GridToolkitTempProj_${GITHUB_RUN_ID}"
+          echo "PROJ=$PROJ" >> $GITHUB_ENV
+          mkdir -p "$PROJ/Assets/Editor" \
+                   "$PROJ/Assets/Settings/Build Profiles" \
+                   "$PROJ/Packages" \
+                   "$PROJ/ProjectSettings"
+          printf "m_EditorVersion: %s\n" "$UNITY_VERSION" > "$PROJ/ProjectSettings/ProjectVersion.txt"
+
+          cat > "$PROJ/Packages/manifest.json" <<'JSON'
           {
             "dependencies": {
               "com.unity.modules.ui": "1.0.0",
@@ -23,188 +44,711 @@ jobs:
               "com.unity.2d.tilemap": "1.1.0",
               "com.unity.2d.sprite": "1.0.0",
               "com.unity.test-framework": "1.4.5",
-              "com.caskev.grid-toolkit": "https://github.com/kevincastejon/com.caskev.grid-toolkit.git#${{ github.sha }}"
+              "com.caskev.grid-toolkit": "GIT_URL_PLACEHOLDER"
             }
           }
           JSON
-          echo "m_EditorVersion: ${UNITY_VER}" > TempProject/ProjectSettings/ProjectVersion.txt
+          sed -i "s|GIT_URL_PLACEHOLDER|$PKG_GIT|g" "$PROJ/Packages/manifest.json"
 
-      - name: Add editor build script
-        run: |
-          mkdir -p TempProject/Assets/Editor
-          cat > TempProject/Assets/Editor/BuildSamples.cs << 'CS'
+          cat > "$PROJ/Assets/SamplesOverview.unity" <<'YAML'
+          %YAML 1.1
+          %TAG !u! tag:unity3d.com,2011:
+          --- !u!29 &1
+          OcclusionCullingSettings:
+            m_ObjectHideFlags: 0
+            serializedVersion: 2
+            m_OcclusionBakeSettings:
+              smallestOccluder: 5
+              smallestHole: 0.25
+              backfaceThreshold: 100
+            m_SceneGUID: 00000000000000000000000000000000
+            m_OcclusionCullingData: {fileID: 0}
+          --- !u!104 &2
+          RenderSettings:
+            m_ObjectHideFlags: 0
+            serializedVersion: 10
+            m_Fog: 0
+            m_FogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+            m_FogMode: 3
+            m_FogDensity: 0.01
+            m_LinearFogStart: 0
+            m_LinearFogEnd: 300
+            m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+            m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+            m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+            m_AmbientIntensity: 1
+            m_AmbientMode: 0
+            m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
+            m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+            m_HaloStrength: 0.5
+            m_FlareStrength: 1
+            m_FlareFadeSpeed: 3
+            m_HaloTexture: {fileID: 0}
+            m_SpotCookie: {fileID: 10001, guid: 0000000000000000e000000000000000, type: 0}
+            m_DefaultReflectionMode: 0
+            m_DefaultReflectionResolution: 128
+            m_ReflectionBounces: 1
+            m_ReflectionIntensity: 1
+            m_CustomReflection: {fileID: 0}
+            m_Sun: {fileID: 0}
+            m_UseRadianceAmbientProbe: 0
+          --- !u!157 &3
+          LightmapSettings:
+            m_ObjectHideFlags: 0
+            serializedVersion: 13
+            m_BakeOnSceneLoad: 0
+            m_GISettings:
+              serializedVersion: 2
+              m_BounceScale: 1
+              m_IndirectOutputScale: 1
+              m_AlbedoBoost: 1
+              m_EnvironmentLightingMode: 0
+              m_EnableBakedLightmaps: 1
+              m_EnableRealtimeLightmaps: 0
+            m_LightmapEditorSettings:
+              serializedVersion: 12
+              m_Resolution: 2
+              m_BakeResolution: 40
+              m_AtlasSize: 1024
+              m_AO: 0
+              m_AOMaxDistance: 1
+              m_CompAOExponent: 1
+              m_CompAOExponentDirect: 0
+              m_ExtractAmbientOcclusion: 0
+              m_Padding: 2
+              m_LightmapParameters: {fileID: 0}
+              m_LightmapsBakeMode: 1
+              m_TextureCompression: 1
+              m_ReflectionCompression: 2
+              m_MixedBakeMode: 2
+              m_BakeBackend: 1
+              m_PVRSampling: 1
+              m_PVRDirectSampleCount: 32
+              m_PVRSampleCount: 512
+              m_PVRBounces: 2
+              m_PVREnvironmentSampleCount: 256
+              m_PVREnvironmentReferencePointCount: 2048
+              m_PVRFilteringMode: 1
+              m_PVRDenoiserTypeDirect: 1
+              m_PVRDenoiserTypeIndirect: 1
+              m_PVRDenoiserTypeAO: 1
+              m_PVRFilterTypeDirect: 0
+              m_PVRFilterTypeIndirect: 0
+              m_PVRFilterTypeAO: 0
+              m_PVREnvironmentMIS: 1
+              m_PVRCulling: 1
+              m_PVRFilteringGaussRadiusDirect: 1
+              m_PVRFilteringGaussRadiusIndirect: 1
+              m_PVRFilteringGaussRadiusAO: 1
+              m_PVRFilteringAtrousPositionSigmaDirect: 0.5
+              m_PVRFilteringAtrousPositionSigmaIndirect: 2
+              m_PVRFilteringAtrousPositionSigmaAO: 1
+              m_ExportTrainingData: 0
+              m_TrainingDataDestination: TrainingData
+              m_LightProbeSampleCountMultiplier: 4
+            m_LightingDataAsset: {fileID: 20201, guid: 0000000000000000f000000000000000, type: 0}
+            m_LightingSettings: {fileID: 0}
+          --- !u!196 &4
+          NavMeshSettings:
+            serializedVersion: 2
+            m_ObjectHideFlags: 0
+            m_BuildSettings:
+              serializedVersion: 3
+              agentTypeID: 0
+              agentRadius: 0.5
+              agentHeight: 2
+              agentSlope: 45
+              agentClimb: 0.4
+              ledgeDropHeight: 0
+              maxJumpAcrossDistance: 0
+              minRegionArea: 2
+              manualCellSize: 0
+              cellSize: 0.16666667
+              manualTileSize: 0
+              tileSize: 256
+              buildHeightMesh: 0
+              maxJobWorkers: 0
+              preserveTilesOutsideBounds: 0
+              debug:
+                m_Flags: 0
+            m_NavMeshData: {fileID: 0}
+          --- !u!1 &90995517
+          GameObject:
+            m_ObjectHideFlags: 0
+            m_CorrespondingSourceObject: {fileID: 0}
+            m_PrefabInstance: {fileID: 0}
+            m_PrefabAsset: {fileID: 0}
+            serializedVersion: 6
+            m_Component:
+            - component: {fileID: 90995521}
+            - component: {fileID: 90995520}
+            - component: {fileID: 90995519}
+            - component: {fileID: 90995518}
+            m_Layer: 5
+            m_Name: Canvas
+            m_TagString: Untagged
+            m_Icon: {fileID: 0}
+            m_NavMeshLayer: 0
+            m_StaticEditorFlags: 0
+            m_IsActive: 1
+          --- !u!114 &90995518
+          MonoBehaviour:
+            m_ObjectHideFlags: 0
+            m_CorrespondingSourceObject: {fileID: 0}
+            m_PrefabInstance: {fileID: 0}
+            m_PrefabAsset: {fileID: 0}
+            m_GameObject: {fileID: 90995517}
+            m_Enabled: 1
+            m_EditorHideFlags: 0
+            m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
+            m_Name: 
+            m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.GraphicRaycaster
+            m_IgnoreReversedGraphics: 1
+            m_BlockingObjects: 0
+            m_BlockingMask:
+              serializedVersion: 2
+              m_Bits: 4294967295
+          --- !u!114 &90995519
+          MonoBehaviour:
+            m_ObjectHideFlags: 0
+            m_CorrespondingSourceObject: {fileID: 0}
+            m_PrefabInstance: {fileID: 0}
+            m_PrefabAsset: {fileID: 0}
+            m_GameObject: {fileID: 90995517}
+            m_Enabled: 1
+            m_EditorHideFlags: 0
+            m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
+            m_Name: 
+            m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.CanvasScaler
+            m_UiScaleMode: 0
+            m_ReferencePixelsPerUnit: 100
+            m_ScaleFactor: 1
+            m_ReferenceResolution: {x: 800, y: 600}
+            m_ScreenMatchMode: 0
+            m_MatchWidthOrHeight: 0
+            m_PhysicalUnit: 3
+            m_FallbackScreenDPI: 96
+            m_DefaultSpriteDPI: 96
+            m_DynamicPixelsPerUnit: 1
+            m_PresetInfoIsWorld: 0
+          --- !u!223 &90995520
+          Canvas:
+            m_ObjectHideFlags: 0
+            m_CorrespondingSourceObject: {fileID: 0}
+            m_PrefabInstance: {fileID: 0}
+            m_PrefabAsset: {fileID: 0}
+            m_GameObject: {fileID: 90995517}
+            m_Enabled: 1
+            serializedVersion: 3
+            m_RenderMode: 0
+            m_Camera: {fileID: 0}
+            m_PlaneDistance: 100
+            m_PixelPerfect: 0
+            m_ReceivesEvents: 1
+            m_OverrideSorting: 0
+            m_OverridePixelPerfect: 0
+            m_SortingBucketNormalizedSize: 0
+            m_VertexColorAlwaysGammaSpace: 0
+            m_AdditionalShaderChannelsFlag: 25
+            m_UpdateRectTransformForStandalone: 0
+            m_SortingLayerID: 0
+            m_SortingOrder: 1
+            m_TargetDisplay: 0
+          --- !u!224 &90995521
+          RectTransform:
+            m_ObjectHideFlags: 0
+            m_CorrespondingSourceObject: {fileID: 0}
+            m_PrefabInstance: {fileID: 0}
+            m_PrefabAsset: {fileID: 0}
+            m_GameObject: {fileID: 90995517}
+            m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+            m_LocalPosition: {x: 0, y: 0, z: 0}
+            m_LocalScale: {x: 0, y: 0, z: 0}
+            m_ConstrainProportionsScale: 0
+            m_Children:
+            - {fileID: 914879227}
+            m_Father: {fileID: 0}
+            m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+            m_AnchorMin: {x: 0, y: 0}
+            m_AnchorMax: {x: 0, y: 0}
+            m_AnchoredPosition: {x: 0, y: 0}
+            m_SizeDelta: {x: 0, y: 0}
+            m_Pivot: {x: 0, y: 0}
+          --- !u!1 &914879226
+          GameObject:
+            m_ObjectHideFlags: 0
+            m_CorrespondingSourceObject: {fileID: 0}
+            m_PrefabInstance: {fileID: 0}
+            m_PrefabAsset: {fileID: 0}
+            serializedVersion: 6
+            m_Component:
+            - component: {fileID: 914879227}
+            - component: {fileID: 914879228}
+            - component: {fileID: 914879229}
+            m_Layer: 5
+            m_Name: TopMenu
+            m_TagString: Untagged
+            m_Icon: {fileID: 0}
+            m_NavMeshLayer: 0
+            m_StaticEditorFlags: 0
+            m_IsActive: 1
+          --- !u!224 &914879227
+          RectTransform:
+            m_ObjectHideFlags: 0
+            m_CorrespondingSourceObject: {fileID: 0}
+            m_PrefabInstance: {fileID: 0}
+            m_PrefabAsset: {fileID: 0}
+            m_GameObject: {fileID: 914879226}
+            m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+            m_LocalPosition: {x: 0, y: 0, z: 0}
+            m_LocalScale: {x: 1, y: 1, z: 1}
+            m_ConstrainProportionsScale: 0
+            m_Children:
+            - {fileID: 1027547381}
+            m_Father: {fileID: 90995521}
+            m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+            m_AnchorMin: {x: 0, y: 1}
+            m_AnchorMax: {x: 1, y: 1}
+            m_AnchoredPosition: {x: 0, y: 0}
+            m_SizeDelta: {x: 0, y: 100}
+            m_Pivot: {x: 0.5, y: 1}
+          --- !u!114 &914879228
+          MonoBehaviour:
+            m_ObjectHideFlags: 0
+            m_CorrespondingSourceObject: {fileID: 0}
+            m_PrefabInstance: {fileID: 0}
+            m_PrefabAsset: {fileID: 0}
+            m_GameObject: {fileID: 914879226}
+            m_Enabled: 1
+            m_EditorHideFlags: 0
+            m_Script: {fileID: 11500000, guid: 30649d3a9faa99c48a7b1166b86bf2a0, type: 3}
+            m_Name: 
+            m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.HorizontalLayoutGroup
+            m_Padding:
+              m_Left: 0
+              m_Right: 0
+              m_Top: 0
+              m_Bottom: 0
+            m_ChildAlignment: 1
+            m_Spacing: 0
+            m_ChildForceExpandWidth: 1
+            m_ChildForceExpandHeight: 1
+            m_ChildControlWidth: 1
+            m_ChildControlHeight: 1
+            m_ChildScaleWidth: 0
+            m_ChildScaleHeight: 0
+            m_ReverseArrangement: 0
+          --- !u!114 &914879229
+          MonoBehaviour:
+            m_ObjectHideFlags: 0
+            m_CorrespondingSourceObject: {fileID: 0}
+            m_PrefabInstance: {fileID: 0}
+            m_PrefabAsset: {fileID: 0}
+            m_GameObject: {fileID: 914879226}
+            m_Enabled: 1
+            m_EditorHideFlags: 0
+            m_Script: {fileID: 11500000, guid: f038202b74dcb72419a38d72c9e0c74a, type: 3}
+            m_Name: 
+            m_EditorClassIdentifier: Assembly-CSharp::SampleOverviewNavigation
+            _modelButton: {fileID: 1027547382}
+          --- !u!1 &1027547380
+          GameObject:
+            m_ObjectHideFlags: 0
+            m_CorrespondingSourceObject: {fileID: 0}
+            m_PrefabInstance: {fileID: 0}
+            m_PrefabAsset: {fileID: 0}
+            serializedVersion: 6
+            m_Component:
+            - component: {fileID: 1027547381}
+            - component: {fileID: 1027547384}
+            - component: {fileID: 1027547383}
+            - component: {fileID: 1027547382}
+            m_Layer: 5
+            m_Name: Button
+            m_TagString: Untagged
+            m_Icon: {fileID: 0}
+            m_NavMeshLayer: 0
+            m_StaticEditorFlags: 0
+            m_IsActive: 1
+          --- !u!224 &1027547381
+          RectTransform:
+            m_ObjectHideFlags: 0
+            m_CorrespondingSourceObject: {fileID: 0}
+            m_PrefabInstance: {fileID: 0}
+            m_PrefabAsset: {fileID: 0}
+            m_GameObject: {fileID: 1027547380}
+            m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+            m_LocalPosition: {x: 0, y: 0, z: 0}
+            m_LocalScale: {x: 1, y: 1, z: 1}
+            m_ConstrainProportionsScale: 0
+            m_Children:
+            - {fileID: 2003531769}
+            m_Father: {fileID: 914879227}
+            m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+            m_AnchorMin: {x: 0, y: 0}
+            m_AnchorMax: {x: 0, y: 0}
+            m_AnchoredPosition: {x: 0, y: 0}
+            m_SizeDelta: {x: 0, y: 0}
+            m_Pivot: {x: 0.5, y: 1}
+          --- !u!114 &1027547382
+          MonoBehaviour:
+            m_ObjectHideFlags: 0
+            m_CorrespondingSourceObject: {fileID: 0}
+            m_PrefabInstance: {fileID: 0}
+            m_PrefabAsset: {fileID: 0}
+            m_GameObject: {fileID: 1027547380}
+            m_Enabled: 1
+            m_EditorHideFlags: 0
+            m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+            m_Name: 
+            m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
+            m_Navigation:
+              m_Mode: 3
+              m_WrapAround: 0
+              m_SelectOnUp: {fileID: 0}
+              m_SelectOnDown: {fileID: 0}
+              m_SelectOnLeft: {fileID: 0}
+              m_SelectOnRight: {fileID: 0}
+            m_Transition: 1
+            m_Colors:
+              m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+              m_HighlightedColor: {r: 1, g: 0.7833147, b: 0.56289303, a: 1}
+              m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+              m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+              m_DisabledColor: {r: 0.380503, g: 0.7063286, b: 1, a: 0.5019608}
+              m_ColorMultiplier: 1
+              m_FadeDuration: 0.1
+            m_SpriteState:
+              m_HighlightedSprite: {fileID: 0}
+              m_PressedSprite: {fileID: 0}
+              m_SelectedSprite: {fileID: 0}
+              m_DisabledSprite: {fileID: 0}
+            m_AnimationTriggers:
+              m_NormalTrigger: Normal
+              m_HighlightedTrigger: Highlighted
+              m_PressedTrigger: Pressed
+              m_SelectedTrigger: Selected
+              m_DisabledTrigger: Disabled
+            m_Interactable: 1
+            m_TargetGraphic: {fileID: 1027547383}
+            m_OnClick:
+              m_PersistentCalls:
+                m_Calls: []
+          --- !u!114 &1027547383
+          MonoBehaviour:
+            m_ObjectHideFlags: 0
+            m_CorrespondingSourceObject: {fileID: 0}
+            m_PrefabInstance: {fileID: 0}
+            m_PrefabAsset: {fileID: 0}
+            m_GameObject: {fileID: 1027547380}
+            m_Enabled: 1
+            m_EditorHideFlags: 0
+            m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+            m_Name: 
+            m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+            m_Material: {fileID: 0}
+            m_Color: {r: 1, g: 1, b: 1, a: 1}
+            m_RaycastTarget: 1
+            m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+            m_Maskable: 1
+            m_OnCullStateChanged:
+              m_PersistentCalls:
+                m_Calls: []
+            m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+            m_Type: 1
+            m_PreserveAspect: 0
+            m_FillCenter: 1
+            m_FillMethod: 4
+            m_FillAmount: 1
+            m_FillClockwise: 1
+            m_FillOrigin: 0
+            m_UseSpriteMesh: 0
+            m_PixelsPerUnitMultiplier: 1
+          --- !u!222 &1027547384
+          CanvasRenderer:
+            m_ObjectHideFlags: 0
+            m_CorrespondingSourceObject: {fileID: 0}
+            m_PrefabInstance: {fileID: 0}
+            m_PrefabAsset: {fileID: 0}
+            m_GameObject: {fileID: 1027547380}
+            m_CullTransparentMesh: 1
+          --- !u!1 &2003531768
+          GameObject:
+            m_ObjectHideFlags: 0
+            m_CorrespondingSourceObject: {fileID: 0}
+            m_PrefabInstance: {fileID: 0}
+            m_PrefabAsset: {fileID: 0}
+            serializedVersion: 6
+            m_Component:
+            - component: {fileID: 2003531769}
+            - component: {fileID: 2003531771}
+            - component: {fileID: 2003531770}
+            m_Layer: 5
+            m_Name: Text (TMP)
+            m_TagString: Untagged
+            m_Icon: {fileID: 0}
+            m_NavMeshLayer: 0
+            m_StaticEditorFlags: 0
+            m_IsActive: 1
+          --- !u!224 &2003531769
+          RectTransform:
+            m_ObjectHideFlags: 0
+            m_CorrespondingSourceObject: {fileID: 0}
+            m_PrefabInstance: {fileID: 0}
+            m_PrefabAsset: {fileID: 0}
+            m_GameObject: {fileID: 2003531768}
+            m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+            m_LocalPosition: {x: 0, y: 0, z: 0}
+            m_LocalScale: {x: 1, y: 1, z: 1}
+            m_ConstrainProportionsScale: 0
+            m_Children: []
+            m_Father: {fileID: 1027547381}
+            m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+            m_AnchorMin: {x: 0, y: 0}
+            m_AnchorMax: {x: 1, y: 1}
+            m_AnchoredPosition: {x: 0, y: 0}
+            m_SizeDelta: {x: 0, y: 0}
+            m_Pivot: {x: 0.5, y: 0.5}
+          --- !u!114 &2003531771
+          CanvasRenderer:
+            m_ObjectHideFlags: 0
+            m_CorrespondingSourceObject: {fileID: 0}
+            m_PrefabInstance: {fileID: 0}
+            m_PrefabAsset: {fileID: 0}
+            m_GameObject: {fileID: 2003531768}
+            m_CullTransparentMesh: 1
+          --- !u!1660057539 &9223372036854775807
+          SceneRoots:
+            m_ObjectHideFlags: 0
+            m_Roots:
+            - {fileID: 90995521}
+          YAML
+
+          cat > "$PROJ/Assets/SampleOverviewNavigation.cs" <<'CS'
           using System;
-          using System.IO;
-          using System.Linq;
           using System.Collections.Generic;
-          using UnityEditor;
-          using UnityEditor.PackageManager;
-          using UnityEditor.PackageManager.UI;
+          using TMPro;
           using UnityEngine;
-
-          public static class BuildSamples
+          using UnityEngine.SceneManagement;
+          using UnityEngine.UI;
+          namespace GridToolkit.CIHelper
           {
-              [MenuItem("CI/Build WebGL Samples")]
-              public static void Run()
+              public class SceneData
               {
-                  PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Brotli;
-                  PlayerSettings.WebGL.decompressionFallback = true;
-
-                  EnsureTmpEssentials();
-
-                  string pkgName = "com.caskev.grid-toolkit";
-                  var list = Client.List(true);
-                  while (!list.IsCompleted) System.Threading.Thread.Sleep(50);
-                  var pkg = list.Result.FirstOrDefault(p => p.name == pkgName);
-                  if (pkg == null) throw new Exception("Package not found: " + pkgName);
-
-                  var samples = (Sample.FindByPackage(pkgName, pkg.version) ?? Enumerable.Empty<Sample>()).ToList();
-                  if (!samples.Any())
+                  public string name;
+                  public int buildIndex = -1;
+                  public Button button;
+                  public SceneData(string name, int buildIndex)
                   {
-                      Debug.LogWarning("No samples found via API");
-                      return;
+                      this.name = name;
+                      this.buildIndex = buildIndex;
                   }
-
-                  var importedDirs = new List<string>();
-
-                  foreach (var s in samples)
-                  {
-                      try
-                      {
-                          if (!s.isImported)
-                          {
-                              try { s.Import(Sample.ImportOptions.None); }
-                              catch { s.Import(); }
-                          }
-
-                          var path = (s.importPath ?? string.Empty).Replace('\\','/');
-                          if (string.IsNullOrEmpty(path) || !Directory.Exists(path))
-                          {
-                              var guess = Path.Combine("Assets","Samples",pkgName, MakeSafe(s.displayName ?? "Sample")).Replace('\\','/');
-                              if (Directory.Exists(guess)) path = guess;
-                          }
-                          if (!string.IsNullOrEmpty(path) && Directory.Exists(path))
-                              importedDirs.Add(path);
-                          else
-                              Debug.LogWarning("Imported dir missing for sample: " + (s.displayName ?? "(no name)"));
-                      }
-                      catch (Exception ex)
-                      {
-                          Debug.LogWarning("Sample import skipped: " + (s.displayName ?? "(no name)") + " -> " + ex.Message);
-                      }
-                  }
-
-                  AssetDatabase.Refresh();
-                  if (!WaitForCompilation(TimeSpan.FromMinutes(10)))
-                      throw new Exception("Timeout waiting for script compilation");
-
-                  string outRoot = "build-webgl";
-                  Directory.CreateDirectory(outRoot);
-
-                  foreach (var dir in importedDirs.Distinct())
-                  {
-                      var scenes = Directory.GetFiles(dir, "*.unity", SearchOption.AllDirectories)
-                                            .Select(p => p.Replace('\\','/'))
-                                            .ToArray();
-                      if (scenes.Length == 0)
-                      {
-                          Debug.LogWarning("No scene found under: " + dir);
-                          continue;
-                      }
-
-                      string safeName = MakeSafe(Path.GetFileName(dir.TrimEnd('/','\\')));
-                      string buildDir = Path.Combine(outRoot, safeName);
-                      Directory.CreateDirectory(buildDir);
-
-                      var report = BuildPipeline.BuildPlayer(scenes, buildDir, BuildTarget.WebGL, BuildOptions.None);
-                      if (report.summary.result != UnityEditor.Build.Reporting.BuildResult.Succeeded)
-                          throw new Exception("Build failed for sample: " + safeName);
-                  }
-
-                  AssetDatabase.Refresh();
               }
-
-              static void EnsureTmpEssentials()
+              public class SampleOverviewNavigation : MonoBehaviour
               {
-                  var settings = AssetDatabase.LoadAssetAtPath<ScriptableObject>("Assets/TextMesh Pro/Resources/TMP Settings.asset");
-                  if (settings) return;
-                  EditorApplication.ExecuteMenuItem("Window/TextMeshPro/Import TMP Essential Resources");
-                  AssetDatabase.Refresh();
-                  WaitForCompilation(TimeSpan.FromMinutes(5));
-              }
-
-              static bool WaitForCompilation(TimeSpan timeout)
-              {
-                  var start = DateTime.UtcNow;
-                  while (EditorApplication.isCompiling)
+                  [SerializeField] private Button _modelButton;
+                  private Button[] _buttons;
+                  private List<SceneData> _scenes = new();
+                  private SceneData _currentSample;
+                  private void Start()
                   {
-                      if (DateTime.UtcNow - start > timeout) return false;
-                      System.Threading.Thread.Sleep(200);
+                      int sceneCount = SceneManager.sceneCountInBuildSettings;
+                      for (int i = 0; i < sceneCount; i++)
+                      {
+                          string scenePath = SceneUtility.GetScenePathByBuildIndex(i);
+                          if (gameObject.scene.path == scenePath) continue;
+                          string sceneName = System.IO.Path.GetFileNameWithoutExtension(scenePath);
+                          SceneData scene = new(sceneName, i);
+                          _scenes.Add(scene);
+                      }
+                      _buttons = new Button[sceneCount - 1];
+                      _buttons[0] = _modelButton;
+                      for (int i = 0; i < _scenes.Count; i++)
+                      {
+                          SceneData scene = _scenes[i];
+                          Button button = (i > 0) ? Instantiate(_modelButton, _modelButton.transform.parent) : _modelButton;
+                          scene.button = button;
+                          button.GetComponentInChildren<TextMeshProUGUI>().text = scene.name;
+                          int index = i;
+                          button.onClick.AddListener(() => { ChangeSample(index); });
+                      }
+                      ChangeSample(0);
                   }
-                  return true;
-              }
-
-              static string MakeSafe(string name)
-              {
-                  foreach (char c in Path.GetInvalidFileNameChars()) name = name.Replace(c, '_');
-                  return name;
+                  private async void ChangeSample(int index)
+                  {
+                      if (_currentSample != null)
+                      {
+                          _currentSample.button.interactable = true;
+                          await SceneManager.UnloadSceneAsync(_currentSample.buildIndex);
+                      }
+                      _currentSample = _scenes[index];
+                      _currentSample.button.interactable = false;
+                      await SceneManager.LoadSceneAsync(_scenes[index].buildIndex, LoadSceneMode.Additive);
+                  }
               }
           }
           CS
 
+          cat > "$PROJ/Assets/Editor/GridToolkitCIHelper.cs" <<'CS'
+          using System.Collections.Generic;
+          using System.IO;
+          using System.Linq;
+          using UnityEditor;
+          using UnityEditor.PackageManager.UI;
+          public static class GridToolkitCIHelper
+          {
+              public static void Launch()
+              {
+                  PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Brotli;
+                  PlayerSettings.WebGL.decompressionFallback = true;
+                  ImportTMPEssentials();
+              }
+              public static void ImportTMPEssentials()
+              {
+                  try
+                  {
+                      var pkg = UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages().FirstOrDefault(p => p.name == "com.unity.ugui");
+                      string upkg = Path.Combine(pkg.resolvedPath, "Package Resources", "TMP Essential Resources.unitypackage");
+                      System.Console.WriteLine($"[TMP] Import non-interactif du package : {upkg}");
+                      AssetDatabase.importPackageCompleted += ImportPackageCompleted;
+                      AssetDatabase.ImportPackage(upkg, false);
+                  }
+                  catch (System.Exception ex)
+                  {
+                      System.Console.WriteLine($"[TMP] Échec d'import : {ex}");
+                      return;
+                  }
+              }
+              private static void ImportPackageCompleted(string packageName)
+              {
+                  UnityEngine.Debug.Log("[TMP] Import Package Completed");
+                  AssetDatabase.importPackageCompleted -= ImportPackageCompleted;
+                  ImportGridToolkitSamples();
+              }
+              public static void ImportGridToolkitSamples()
+              {
+                  string packageName = "com.caskev.grid-toolkit";
+                  var info = UnityEditor.PackageManager.PackageInfo.FindForPackageName(packageName);
+                  System.Console.WriteLine("[GridToolkit CIHelper] Find samples for " + packageName);
+                  var samples = (Sample.FindByPackage(packageName, null) ?? Enumerable.Empty<Sample>()).ToList();
+                  if (samples.Count == 0)
+                  {
+                      System.Console.WriteLine("[GridToolkit CIHelper] No samples");
+                      EditorApplication.Exit(0);
+                      return;
+                  }
+                  List<EditorBuildSettingsScene> newScenes = new()
+                  {
+                      new EditorBuildSettingsScene("Assets/SamplesOverview.unity", true)
+                  };
+                  foreach (var s in samples)
+                  {
+                      System.Console.WriteLine("[GridToolkit CIHelper] Sample: " + s.displayName);
+                      if (!s.isImported)
+                      {
+                          try { s.Import(Sample.ImportOptions.None); } catch { s.Import(); }
+                          System.Console.WriteLine("[GridToolkit CIHelper] Imported: " + s.displayName);
+                      }
+                      else
+                      {
+                          System.Console.WriteLine("[GridToolkit CIHelper] Already imported: " + s.displayName);
+                      }
+                      var scenePath = Path.Combine(s.importPath, s.displayName + ".unity");
+                      if (File.Exists(scenePath))
+                      {
+                          newScenes.Add(new EditorBuildSettingsScene($"Assets/Samples/Grid Toolkit/{info.version}/{s.displayName}/{s.displayName}.unity", true));
+                      }
+                  }
+                  EditorBuildSettings.scenes = newScenes.ToArray();
+                  AssetDatabase.SaveAssets();
+                  AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport | ImportAssetOptions.ForceUpdate);
+                  System.Console.WriteLine("[GridToolkit CIHelper] Samples imported + refresh done");
+                  EditorApplication.Exit(0);
+              }
+          }
+          CS
 
+          cat > "$PROJ/Assets/Settings/Build Profiles/Web.asset" <<'YAML'
+          %YAML 1.1
+          %TAG !u! tag:unity3d.com,2011:
+          --- !u!114 &11400000
+          MonoBehaviour:
+            m_ObjectHideFlags: 0
+            m_CorrespondingSourceObject: {fileID: 0}
+            m_PrefabInstance: {fileID: 0}
+            m_PrefabAsset: {fileID: 0}
+            m_GameObject: {fileID: 0}
+            m_Enabled: 1
+            m_EditorHideFlags: 0
+            m_Script: {fileID: 15003, guid: 0000000000000000e000000000000000, type: 0}
+            m_Name: Web
+            m_EditorClassIdentifier: UnityEditor.dll::UnityEditor.Build.Profile.BuildProfile
+            m_AssetVersion: 1
+            m_BuildTarget: 20
+            m_Subtarget: 0
+            m_PlatformId: 84a3bb9e7420477f885e98145999eb20
+            m_PlatformBuildProfile:
+              rid: 536993227036426240
+            m_OverrideGlobalSceneList: 0
+            m_Scenes: []
+            m_ScriptingDefines: []
+            m_PlayerSettingsYaml:
+              m_Settings:
+              - line: '| PlayerSettings:'
+              - line: '|   webGLCompressionFormat: 2'
+              - line: '|   webGLDecompressionFallback: 1'
+          references:
+            version: 2
+            RefIds:
+            - rid: 536993227036426240
+              type: {class: WebGLPlatformSettings, ns: UnityEditor.WebGL, asm: UnityEditor.WebGL.Extensions}
+              data:
+                m_Development: 0
+                m_ConnectProfiler: 0
+                m_BuildWithDeepProfilingSupport: 0
+                m_AllowDebugging: 0
+                m_WaitForManagedDebugger: 0
+                m_ManagedDebuggerFixedPort: 0
+                m_ExplicitNullChecks: 0
+                m_ExplicitDivideByZeroChecks: 0
+                m_ExplicitArrayBoundsChecks: 0
+                m_CompressionType: -1
+                m_InstallInBuildFolder: 0
+                m_InsightsSettingsContainer:
+                  m_BuildProfileEngineDiagnosticsState: 2
+                m_CodeOptimization: 0
+                m_WebGLClientBrowserPath:
+                m_WebGLClientBrowserType: 0
+                m_WebGLTextureSubtarget: 0
+          YAML
 
-
-
-
-
-      # - name: Cache Library
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: TempProject/Library
-      #     key: Library-GridToolkit-WebGL-6000.2.8f1
-      #     restore-keys: |
-      #       Library-GridToolkit-WebGL-
-
-      - name: Build WebGL
-        uses: game-ci/unity-builder@v4
+      - name: Import samples (Unity headless)
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-        with:
-          projectPath: TempProject
-          targetPlatform: WebGL
-          unityVersion: 6000.2.8f1
-          buildMethod: BuildSamples.Run
-          versioning: None
-          customParameters: -stackTraceLogType Full
-      - name: Prepare samples artifact
         run: |
-          set -e
-          mkdir -p public-samples/samples
-          cp -r TempProject/build-webgl/* public-samples/samples/ || true
+          docker run --rm \
+            -e UNITY_LICENSE \
+            -v "$PROJ:/project" \
+            -w /project \
+            $UNITY_IMAGE \
+            bash -lc "/opt/unity/Editor/Unity -batchmode -nographics -projectPath /project -buildTarget WebGL -executeMethod GridToolkitCIHelper.Launch -logFile -quit"
 
-          if [ ! -f public-samples/samples/index.html ]; then
-            printf '%s\n' \
-              '<!doctype html>' \
-              '<meta charset="utf-8">' \
-              '<title>Samples</title>' \
-              '<h1>Samples</h1>' \
-              '<ul id="list"></ul>' \
-              '<script>' \
-              "fetch('./').then(r=>r.text()).then(t=>{" \
-              "  const rx=/href=\"([^\"]+)\\//g;let m,items=[];" \
-              "  while((m=rx.exec(t))!==null){const n=m[1];if(!n.startsWith('.')&&n!=='')items.push(n);}" \
-              "  const ul=document.getElementById('list');" \
-              "  if(items.length===0){ul.innerHTML='<li>No samples</li>';return;}" \
-              "  items.forEach(n=>{if(n==='index.html')return;const li=document.createElement('li');const a=document.createElement('a');a.href=n+'/index.html';a.textContent=n;li.appendChild(a);ul.appendChild(li);});" \
-              '});' \
-              '</script>' \
-            > public-samples/samples/index.html
-          fi
-      - name: Upload samples artifact
+      - name: Build WebGL (Unity headless)
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/build/WebGL"
+          docker run --rm \
+            -e UNITY_LICENSE \
+            -v "$PROJ:/project" \
+            -v "$GITHUB_WORKSPACE/build:/build" \
+            -w /project \
+            $UNITY_IMAGE \
+            bash -lc "/opt/unity/Editor/Unity -batchmode -nographics -projectPath /project -buildTarget WebGL -build '/build/WebGL' -activeBuildProfile 'Assets/Settings/Build Profiles/Web.asset' -stackTraceLogType Full -logFile -quit"
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: samples-site
-          path: public-samples
+          name: WebGL
+          path: build/WebGL/**
+          if-no-files-found: error
