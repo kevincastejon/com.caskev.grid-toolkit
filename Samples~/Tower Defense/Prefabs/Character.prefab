@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 5366689144014328822}
   - component: {fileID: 1315204416843313622}
   - component: {fileID: 3655896986446239818}
-  - component: {fileID: -7492515126892121160}
   m_Layer: 0
   m_Name: Character
   m_TagString: Untagged
@@ -103,15 +102,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a102cb3cd3b0754e9276cdc773b0c06, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &-7492515126892121160
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8909437266863581699}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4d5d2af327a762246bc3b5e5ceaf3544, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DebugToDelete
