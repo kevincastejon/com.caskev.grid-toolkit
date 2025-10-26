@@ -79,7 +79,7 @@ namespace GridToolkitWorkingProject.Samples.TacticalStrategy
         {
             _currentPath = new Tile[] { tile };
             _isAttacking = true;
-            _bullet = Instantiate(_bulletPrefab, ToFixedY(transform.position, 1f), Quaternion.identity);
+            _bullet = Instantiate(_bulletPrefab, ToFixedY(transform.position, 1f), Quaternion.identity, transform.parent);
         }
 
         private Vector3 ToFixedY(Vector3 vector, float yValue = 0f)

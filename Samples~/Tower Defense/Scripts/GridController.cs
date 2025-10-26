@@ -47,7 +47,7 @@ namespace GridToolkitWorkingProject.Samples.TowerDefense
                 Floor hitFloor = hit.collider.GetComponent<Floor>();
                 if (hitFloor.IsWalkable)
                 {
-                    Character ch = Instantiate(_charPrefab, new Vector3(hitFloor.transform.position.x, 1.5f, hitFloor.transform.position.z), Quaternion.identity);
+                    Character ch = Instantiate(_charPrefab, new Vector3(hitFloor.transform.position.x, 1.5f, hitFloor.transform.position.z), Quaternion.identity, transform.parent);
                     ch.Init(hitFloor, _map, _pathMap);
                 }
             }
