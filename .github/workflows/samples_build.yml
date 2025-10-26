@@ -597,13 +597,14 @@ jobs:
           echo "OUT=$OUT" >> $GITHUB_ENV
 
       - name: Unity pass 1 (import samples + scenes)
-        uses: game-ci/unity-editor@v4
+        uses: game-ci/unity-builder@v4
         with:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: WebGL
           customParameters: >
             -batchmode
             -nographics
+            -buildMethod: ''
             -projectPath "${{ env.PROJ }}"
             -buildTarget WebGL
             -executeMethod GridToolkitCIHelper.Launch
@@ -611,7 +612,7 @@ jobs:
             -logFile "${{ env.PROJ }}/Editor1.log"
 
       - name: Unity pass 2 (build via CLI)
-        uses: game-ci/unity-editor@v4
+        uses: game-ci/unity-builder@v4
         with:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: WebGL
