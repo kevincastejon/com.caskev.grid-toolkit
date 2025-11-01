@@ -1,0 +1,46 @@
+name: Build Samples (reusable)
+
+on:
+  workflow_call:
+
+jobs:
+  build-samples:
+    runs-on: ubuntu-latest
+    env:
+      UNITY_VERSION: 6000.2.8f1
+      PROJECT_NAME: GridToolkitSamplesOverview
+      PKG_GIT: https://github.com/kevincastejon/com.caskev.grid-toolkit.git
+      PKG_NAME: com.caskev.grid-toolkit
+      PKG_DISPLAYNAME: Grid Toolkit
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create blank unity project
+        run: |
+          TEMP_DIR="$RUNNER_TEMP/GridToolkitSamplesOverview"
+          mkdir -p "$TEMP_DIR/Assets/Editor"
+          mkdir -p "$TEMP_DIR/Packages"
+          mkdir -p "$TEMP_DIR/ProjectSettings"
+          echo "m_EditorVersion: $UNITY_VERSION" > "$TEMP_DIR/ProjectSettings/ProjectVersion.txt"
+          cat > "$TEMP_DIR/Packages/manifest.json" <<EOF
+          {
+            "dependencies": {
+              "com.unity.modules.ui": "1.0.0",
+              "com.unity.modules.uielements": "1.0.0",
+              "com.unity.ugui": "1.0.0",
+              "com.unity.2d.tilemap": "1.1.0",
+              "com.unity.2d.sprite": "1.0.0",
+              "com.unity.test-framework": "1.4.5",
+              "com.caskev.grid-toolkit": "$PKG_GIT"
+            }
+          }
+          EOF
+      - name: Import packages
+        uses: game-ci/unity-builder@v4
+        with:
+          unityVersion: ${{ env.UNITY_VERSION }}
+          projectPath: ${{ runner.temp }}/GridToolkitSamplesOverview
+          targetPlatform: WebGL
+          customParameters: "-stackTraceLogType Full"
