@@ -38,6 +38,7 @@ jobs:
             }
           }
           EOF
+
       - name: Create fake git repo for unity-builder
         run: |
           cd $RUNNER_TEMP/GridToolkitSamplesOverview
@@ -46,6 +47,117 @@ jobs:
           git config user.name "Kevin Castejon"
           git config user.url "https://www.kevincastejon.fr"
           git commit --allow-empty -m "initial commit"
+
+      - name: Create CI helper script
+        run: |
+          TEMP_DIR="$RUNNER_TEMP/GridToolkitSamplesOverview"
+          EDITOR_DIR="$TEMP_DIR/Assets/Editor"
+          mkdir -p "$EDITOR_DIR"
+          cat > "$EDITOR_DIR/GridToolkitCIHelper.cs" <<'EOF'
+          using System;
+          using System.Collections.Generic;
+          using System.IO;
+          using System.Linq;
+          using UnityEditor;
+          using UnityEditor.Build.Reporting;
+          using UnityEditor.PackageManager.UI;
+          namespace Caskev.GridToolkitCI
+          {
+              public static class GridToolkitCIHelper
+              {
+                  public static void DoNothing()
+                  {
+                      System.Console.WriteLine("[GridToolkitCIHelper] [Import] Importing temp project assets...");
+                  }
+                  public static void Build()
+                  {
+                      PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Brotli;
+                      PlayerSettings.WebGL.decompressionFallback = true;
+                      SetSamplesScenesIntoBuildSettings();
+                      System.Console.WriteLine("[GridToolkitCIHelper] [Build] *****************************************************");
+                      System.Console.WriteLine("[GridToolkitCIHelper] [Build] *********************** BUILD ***********************");
+                      System.Console.WriteLine("[GridToolkitCIHelper] [Build] *****************************************************");
+                      Dictionary<string, string> args = GetCommandLineArgs();
+                      System.Console.WriteLine("[GridToolkitCIHelper] [Build] Build path into command line argument is " + args["buildPath"]);
+
+                      BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions()
+                      {
+                          target = BuildTarget.WebGL,
+                          locationPathName = args["buildPath"],
+                          scenes = EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray(),
+                      };
+                      System.Console.WriteLine("[GridToolkitCIHelper] [Build] BuildSettings :");
+                      System.Console.WriteLine("[GridToolkitCIHelper] [Build]                  - target : " + buildPlayerOptions.target);
+                      System.Console.WriteLine("[GridToolkitCIHelper] [Build]                  - locationPathName : " + buildPlayerOptions.locationPathName);
+                      System.Console.WriteLine("[GridToolkitCIHelper] [Build]                  - scenes : " + string.Join(", ", buildPlayerOptions.scenes));
+
+                      BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
+                      if (report.summary.result == BuildResult.Succeeded)
+                      {
+                          System.Console.WriteLine("[GridToolkitCIHelper] Build has succeed");
+                      }
+                      else
+                      {
+                          System.Console.WriteLine("[GridToolkitCIHelper] Build has failed");
+                      }
+                  }
+                  private static Dictionary<string, string> GetCommandLineArgs()
+                  {
+                      string[] args = Environment.GetCommandLineArgs();
+                      var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+                      for (int i = 0; i < args.Length; i++)
+                      {
+                          string arg = args[i];
+                          if (arg.StartsWith("-"))
+                          {
+                              string key = arg.TrimStart('-');
+                              string value = string.Empty;
+                              if (i + 1 < args.Length && !args[i + 1].StartsWith("-"))
+                              {
+                                  value = args[i + 1];
+                                  i++;
+                              }
+
+                              dict[key] = value;
+                          }
+                      }
+
+                      return dict;
+                  }
+                  private static void SetSamplesScenesIntoBuildSettings()
+                  {
+                      string packageName = "com.caskev.grid-toolkit";
+                      UnityEditor.PackageManager.PackageInfo info = UnityEditor.PackageManager.PackageInfo.FindForPackageName(packageName);
+                      System.Console.WriteLine("[GridToolkitCIHelper] [SetSamplesScenesIntoBuildSettings] Finding samples for " + packageName + "...");
+                      var samples = (Sample.FindByPackage(packageName, null) ?? Enumerable.Empty<Sample>()).ToList();
+                      if (samples.Count == 0)
+                      {
+                          System.Console.WriteLine("[GridToolkitCIHelper] [SetSamplesScenesIntoBuildSettings] No samples found");
+                          return;
+                      }
+                      List<EditorBuildSettingsScene> newScenes = new()
+                      {
+                          new EditorBuildSettingsScene("Assets/SamplesOverview.unity", true)
+                      };
+                      System.Console.WriteLine("[GridToolkitCIHelper] [SetSamplesScenesIntoBuildSettings] SamplesOverview autogenerated scene has been set into builds settings");
+                      foreach (var s in samples)
+                      {
+                          if (File.Exists(Path.Combine(UnityEngine.Application.dataPath, "Samples", s.displayName, s.displayName + ".unity")))
+                          {
+                              newScenes.Add(new EditorBuildSettingsScene("Assets/Samples/" + s.displayName + "/" + s.displayName + ".unity", true));
+                              System.Console.WriteLine("[GridToolkitCIHelper] Sample: " + s.displayName + " scene has been set into builds settings");
+                          }
+                          else
+                          {
+                              System.Console.WriteLine("[GridToolkitCIHelper] Sample: " + s.displayName + " has no scene");
+                          }
+                      }
+                      EditorBuildSettings.scenes = newScenes.ToArray();
+                  }
+              }
+          }
+          EOF
 
       - name: Import packages
         uses: game-ci/unity-builder@v4
@@ -57,5 +169,6 @@ jobs:
           unityVersion: ${{ env.UNITY_VERSION }}
           projectPath: ${{ runner.temp }}/GridToolkitSamplesOverview
           targetPlatform: WebGL
-          buildMethod: ''
+          buildMethod: Caskev.GridToolkitCI.GridToolkitCIHelper.DoNothing
           customParameters: "-stackTraceLogType Full"
+
