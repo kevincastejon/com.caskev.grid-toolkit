@@ -13,18 +13,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Free disk space
-        uses: jlumbroso/free-disk-space@v1.3.1
-        with:
-          tool-cache: true
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: true
-          swap-storage: true
-
+        
       - name: Prepare temp Unity project
         shell: bash
         run: |
@@ -40,6 +29,7 @@ jobs:
           printf "m_EditorVersion: %s\n" "$UNITY_VERSION" > "$PROJ/ProjectSettings/ProjectVersion.txt"
 
           PKG_GIT="${PKG_GIT:-https://github.com/kevincastejon/com.caskev.grid-toolkit.git}"
+          PKG_NAME="${PKG_NAME:-com.caskev.grid-toolkit}"           
           shopt -s nullglob
           mapfile -t _sorted < <(ls -dt Packages/${PKG_NAME}@*/Samples~ 2>/dev/null)
           if (( ${#_sorted[@]} == 0 )); then
