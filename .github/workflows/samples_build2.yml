@@ -170,5 +170,6 @@ jobs:
           projectPath: ${{ runner.temp }}/GridToolkitSamplesOverview
           targetPlatform: WebGL
           buildMethod: Caskev.GridToolkitCI.GridToolkitCIHelper.DoNothing
+          allowDirtyBuild: true
           customParameters: "-stackTraceLogType Full"
 
