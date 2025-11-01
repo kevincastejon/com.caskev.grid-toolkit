@@ -20,12 +20,12 @@ jobs:
 
       - name: Create blank unity project
         run: |
-          TEMP_DIR="$RUNNER_TEMP/GridToolkitSamplesOverview"
-          mkdir -p "$TEMP_DIR/Assets/Editor"
-          mkdir -p "$TEMP_DIR/Packages"
-          mkdir -p "$TEMP_DIR/ProjectSettings"
-          echo "m_EditorVersion: $UNITY_VERSION" > "$TEMP_DIR/ProjectSettings/ProjectVersion.txt"
-          cat > "$TEMP_DIR/Packages/manifest.json" <<EOF
+          PROJECT_DIR="$GITHUB_WORKSPACE/$PROJECT_NAME"
+          mkdir -p "$PROJECT_DIR/Assets/Editor"
+          mkdir -p "$PROJECT_DIR/Packages"
+          mkdir -p "$PROJECT_DIR/ProjectSettings"
+          echo "m_EditorVersion: $UNITY_VERSION" > "$PROJECT_DIR/ProjectSettings/ProjectVersion.txt"
+          cat > "$PROJECT_DIR/Packages/manifest.json" <<EOF
           {
             "dependencies": {
               "com.unity.modules.ui": "1.0.0",
@@ -39,19 +39,10 @@ jobs:
           }
           EOF
 
-      - name: Create fake git repo for unity-builder
-        run: |
-          cd $RUNNER_TEMP/GridToolkitSamplesOverview
-          git init
-          git config user.email "kevincastejon@gmail.com"
-          git config user.name "Kevin Castejon"
-          git config user.url "https://www.kevincastejon.fr"
-          git commit --allow-empty -m "initial commit"
-
       - name: Create CI helper script
         run: |
-          TEMP_DIR="$RUNNER_TEMP/GridToolkitSamplesOverview"
-          EDITOR_DIR="$TEMP_DIR/Assets/Editor"
+          PROJECT_DIR="$GITHUB_WORKSPACE/$PROJECT_NAME"
+          EDITOR_DIR="$PROJECT_DIR/Assets/Editor"
           mkdir -p "$EDITOR_DIR"
           cat > "$EDITOR_DIR/GridToolkitCIHelper.cs" <<'EOF'
           using System;
@@ -167,9 +158,8 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           unityVersion: ${{ env.UNITY_VERSION }}
-          projectPath: ${{ runner.temp }}/GridToolkitSamplesOverview
+          projectPath: ${{ env.PROJECT_NAME }}
           targetPlatform: WebGL
           buildMethod: Caskev.GridToolkitCI.GridToolkitCIHelper.DoNothing
           allowDirtyBuild: true
           customParameters: "-stackTraceLogType Full"
-
