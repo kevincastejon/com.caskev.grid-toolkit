@@ -14,8 +14,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-            fetch-depth: 0          # indispensable : dépôt non-shallow
-            submodules: recursive   # si tu utilises des submodules
+            fetch-depth: 0          
+            submodules: recursive   
         
       - name: Prepare temp Unity project
         shell: bash
