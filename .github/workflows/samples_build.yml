@@ -40,16 +40,15 @@ jobs:
           printf "m_EditorVersion: %s\n" "$UNITY_VERSION" > "$PROJ/ProjectSettings/ProjectVersion.txt"
 
           PKG_GIT="${PKG_GIT:-https://github.com/kevincastejon/com.caskev.grid-toolkit.git}"
-          PKG_NAME="${PKG_NAME:-com.caskev.grid-toolkit}"           
-          PKG_TMP="$RUNNER_TEMP/pkg_sparse"
-          
-          git clone --depth=1 --filter=blob:none --sparse "$PKG_GIT" "$PKG_TMP"
-          git -C "$PKG_TMP" sparse-checkout set "Samples~"
-          
+          shopt -s nullglob
+          mapfile -t _sorted < <(ls -dt Packages/${PKG_NAME}@*/Samples~ 2>/dev/null)
+          if (( ${#_sorted[@]} == 0 )); then
+            echo "::error::Aucun Samples~ sous Packages/${PKG_NAME}@*/Samples~"
+            exit 1
+          fi
+          SRC="${_sorted[0]}"
           mkdir -p "$PROJ/Assets/Samples/$PKG_NAME"
-          rsync -a "$PKG_TMP/Samples~/"/ "$PROJ/Assets/Samples/$PKG_NAME/"
-          
-          rm -rf "$PKG_TMP"
+          rsync -a "$SRC/"/ "$PROJ/Assets/Samples/$PKG_NAME/"
 
           cat > "$PROJ/Packages/manifest.json" <<EOF
           {
