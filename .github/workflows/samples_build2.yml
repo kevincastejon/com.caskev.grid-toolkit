@@ -44,4 +44,5 @@ jobs:
           unityVersion: ${{ env.UNITY_VERSION }}
           projectPath: ${{ runner.temp }}/GridToolkitSamplesOverview
           targetPlatform: WebGL
+          allowDirtyBuild: true
           customParameters: "-stackTraceLogType Full"

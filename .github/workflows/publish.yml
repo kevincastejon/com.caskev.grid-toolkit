@@ -2,7 +2,7 @@ name: Publish Docs + Samples
 
 on:
   push:
-    branches: [ main ]
+    branches: [ qzdqzd ]
   workflow_dispatch:
 
 permissions:
