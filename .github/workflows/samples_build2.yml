@@ -38,6 +38,14 @@ jobs:
             }
           }
           EOF
+      - name: Create fake git repo for unity-builder
+        run: |
+          cd $RUNNER_TEMP/GridToolkitSamplesOverview
+          git init
+          git config user.email "kevincastejon@gmail.com"
+          git config user.name "Kevin Castejon"
+          git config user.url "https://www.kevincastejon.fr"
+          git commit --allow-empty -m "initial commit"
       - name: Import packages
         uses: game-ci/unity-builder@v4
         with:
