@@ -46,6 +46,7 @@ jobs:
           git config user.name "Kevin Castejon"
           git config user.url "https://www.kevincastejon.fr"
           git commit --allow-empty -m "initial commit"
+
       - name: Import packages
         uses: game-ci/unity-builder@v4
         env:
@@ -56,5 +57,5 @@ jobs:
           unityVersion: ${{ env.UNITY_VERSION }}
           projectPath: ${{ runner.temp }}/GridToolkitSamplesOverview
           targetPlatform: WebGL
-          allowDirtyBuild: true
+          buildMethod: ''
           customParameters: "-stackTraceLogType Full"
