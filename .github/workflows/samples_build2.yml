@@ -2,6 +2,7 @@ name: Build Samples (reusable)
 
 on:
   workflow_call:
+  workflow_dispatch:
 
 jobs:
   build-samples:
