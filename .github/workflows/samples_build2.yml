@@ -182,7 +182,12 @@ jobs:
           set -x
           PROJECT_DIR="$GITHUB_WORKSPACE/$PROJECT_NAME"
           test -f "$PROJECT_DIR/Packages/packages-lock.json"
-          UGUI_VERSION="$(grep -Po '"com\.unity\.ugui"\s*:\s*\{[^}]*"version"\s*:\s*"\K[^"]+' "$PROJECT_DIR/Packages/packages-lock.json")"
+          UGUI_VERSION="$(jq -r '.dependencies["com.unity.ugui"].version // empty' "$PROJECT_DIR/Packages/packages-lock.json")"
+          if [ -z "$UGUI_VERSION" ]; then
+            echo "com.unity.ugui not found in packages-lock.json"
+            cat "$PROJECT_DIR/Packages/packages-lock.json"
+            exit 1
+          fi
           PKG_FILE="$PROJECT_DIR/Library/PackageCache/com.unity.ugui@$UGUI_VERSION/Package Resources/TMP Essential Resources.unitypackage"
           ls -la "$(dirname "$PKG_FILE")" || true
           test -f "$PKG_FILE"
@@ -199,22 +204,28 @@ jobs:
           done < <(find "$WORKDIR" -mindepth 1 -maxdepth 1 -type d -print0)
           rm -rf "$WORKDIR"
 
-
       - name: Import samples
+        shell: bash
         run: |
-          set -euo pipefail
+          set -Eeuo pipefail
+          trap 'echo "ERROR on line $LINENO: $BASH_COMMAND"' ERR
+          export PS4='+ $BASH_SOURCE:$LINENO: '
+          set -x
           PROJECT_DIR="$GITHUB_WORKSPACE/$PROJECT_NAME"
-          PKG_KEY_ESCAPED="$(printf '%s' "$PKG_NAME" | sed 's/\./\\./g')"
-          PKG_VERSION="$(grep -Po "\"$PKG_KEY_ESCAPED\"\\s*:\\s*\\{[^}]*\"version\"\\s*:\\s*\"\\K[^\"]+" "$PROJECT_DIR/Packages/packages-lock.json")"
+          PKG_VERSION="$(jq -r ".dependencies[\"$PKG_NAME\"].version // empty" "$PROJECT_DIR/Packages/packages-lock.json")"
+          if [ -z "$PKG_VERSION" ]; then
+            echo "$PKG_NAME not found in packages-lock.json"
+            cat "$PROJECT_DIR/Packages/packages-lock.json"
+            exit 1
+          fi
           SRC_DIR="$PROJECT_DIR/Library/PackageCache/$PKG_NAME@$PKG_VERSION/Samples~"
           if [ ! -d "$SRC_DIR" ]; then
-            echo "Samples~ folder not found"
+            echo "Samples~ folder not found at $SRC_DIR"
             exit 1
           fi
           DEST_DIR="$PROJECT_DIR/Assets/Samples"
           mkdir -p "$DEST_DIR"
           cp -R "$SRC_DIR/." "$DEST_DIR/"
-
 
       - name: Generate SamplesOverview files
         run: |
