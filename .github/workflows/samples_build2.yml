@@ -161,6 +161,7 @@ jobs:
           projectPath: ${{ env.PROJECT_NAME }}
           targetPlatform: WebGL
           buildMethod: Caskev.GridToolkitCI.GridToolkitCIHelper.DoNothing
+          allowDirtyBuild: true
           customParameters: "-stackTraceLogType Full"
 
       - name: Import TMP
@@ -871,4 +872,5 @@ jobs:
           projectPath: ${{ env.PROJECT_NAME }}
           targetPlatform: WebGL
           buildMethod: Caskev.GridToolkitCI.GridToolkitCIHelper.Build
+          allowDirtyBuild: true
           customParameters: "-stackTraceLogType Full"
