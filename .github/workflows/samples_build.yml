@@ -93,6 +93,7 @@ jobs:
                           target = BuildTarget.WebGL,
                           locationPathName = outPath,
                           scenes = EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray(),
+                          options = BuildOptions.Development | BuildOptions.AllowDebugging
                       };
 
                       System.Console.WriteLine("[GridToolkitCIHelper] [Build] BuildSettings :");
