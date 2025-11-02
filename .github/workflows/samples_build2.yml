@@ -39,6 +39,15 @@ jobs:
           }
           EOF
 
+      - name: Cache Unity Library
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/${{ env.PROJECT_NAME }}/Library
+          key: Library-${{ runner.os }}-${{ env.UNITY_VERSION }}-${{ hashFiles(format('{0}/Packages/manifest.json', env.PROJECT_NAME), format('{0}/Packages/packages-lock.json', env.PROJECT_NAME)) }}
+          restore-keys: |
+            Library-${{ runner.os }}-${{ env.UNITY_VERSION }}-
+            Library-${{ runner.os }}-
+
       - name: Create CI helper script
         run: |
           PROJECT_DIR="$GITHUB_WORKSPACE/$PROJECT_NAME"
@@ -168,8 +177,9 @@ jobs:
         run: |
           set -euo pipefail
           PROJECT_DIR="$GITHUB_WORKSPACE/$PROJECT_NAME"
-          PKG_FILE="$(find "$PROJECT_DIR/Library/PackageCache" -type f -path "*/com.unity.ugui@*/Package Resources/TMP Essential Resources.unitypackage" -print -quit)"
-          if [ -z "${PKG_FILE:-}" ]; then
+          UGUI_VERSION="$(grep -Po '"com\.unity\.ugui"\s*:\s*\{[^}]*"version"\s*:\s*"\K[^"]+' "$PROJECT_DIR/Packages/packages-lock.json")"
+          PKG_FILE="$PROJECT_DIR/Library/PackageCache/com.unity.ugui@$UGUI_VERSION/Package Resources/TMP Essential Resources.unitypackage"
+          if [ ! -f "$PKG_FILE" ]; then
             echo "TMP Essential Resources.unitypackage not found"
             exit 1
           fi
@@ -181,8 +191,8 @@ jobs:
             META="$D/asset.meta"
             DEST="$PROJECT_DIR/$P"
             mkdir -p "$(dirname "$DEST")"
-            if [ -f "$ASSET" ]; then cp -f "$ASSET" "$DEST"; fi
-            if [ -f "$META" ]; then cp -f "$META" "$DEST.meta"; fi
+            [ -f "$ASSET" ] && cp -f "$ASSET" "$DEST"
+            [ -f "$META" ] && cp -f "$META" "$DEST.meta"
           done < <(find "$WORKDIR" -mindepth 1 -maxdepth 1 -type d -print0)
           rm -rf "$WORKDIR"
 
@@ -190,14 +200,17 @@ jobs:
         run: |
           set -euo pipefail
           PROJECT_DIR="$GITHUB_WORKSPACE/$PROJECT_NAME"
-          SRC_DIR="$(find "$PROJECT_DIR/Library/PackageCache" -type d -path "*/com.caskev.grid-toolkit@*/Samples~" -print -quit)"
-          if [ -z "${SRC_DIR:-}" ]; then
+          PKG_KEY_ESCAPED="$(printf '%s' "$PKG_NAME" | sed 's/\./\\./g')"
+          PKG_VERSION="$(grep -Po "\"$PKG_KEY_ESCAPED\"\\s*:\\s*\\{[^}]*\"version\"\\s*:\\s*\"\\K[^\"]+" "$PROJECT_DIR/Packages/packages-lock.json")"
+          SRC_DIR="$PROJECT_DIR/Library/PackageCache/$PKG_NAME@$PKG_VERSION/Samples~"
+          if [ ! -d "$SRC_DIR" ]; then
             echo "Samples~ folder not found"
             exit 1
           fi
           DEST_DIR="$PROJECT_DIR/Assets/Samples"
           mkdir -p "$DEST_DIR"
-          cp -R "$SRC_DIR/"* "$DEST_DIR/"
+          cp -R "$SRC_DIR/." "$DEST_DIR/"
+
 
       - name: Generate SamplesOverview files
         run: |
