@@ -173,7 +173,7 @@ jobs:
           allowDirtyBuild: true
           customParameters: "-stackTraceLogType Full"
 
-      - name: Import TMP (ugui only, robust)
+      - name: Import TMP
         shell: bash
         run: |
           set -Eeuo pipefail
@@ -216,24 +216,24 @@ jobs:
         shell: bash
         run: |
           set -Eeuo pipefail
-          trap 'echo "ERROR on line $LINENO: $BASH_COMMAND"' ERR
-          export PS4='+ $BASH_SOURCE:$LINENO: '
-          set -x
           PROJECT_DIR="$GITHUB_WORKSPACE/$PROJECT_NAME"
           PKG_VERSION="$(jq -r ".dependencies[\"$PKG_NAME\"].version // empty" "$PROJECT_DIR/Packages/packages-lock.json")"
           if [ -z "$PKG_VERSION" ]; then
             echo "$PKG_NAME not found in packages-lock.json"
-            cat "$PROJECT_DIR/Packages/packages-lock.json"
             exit 1
           fi
           SRC_DIR="$PROJECT_DIR/Library/PackageCache/$PKG_NAME@$PKG_VERSION/Samples~"
           if [ ! -d "$SRC_DIR" ]; then
-            echo "Samples~ folder not found at $SRC_DIR"
+            SRC_DIR="$(find "$PROJECT_DIR/Library/PackageCache" -type d -path "*/$PKG_NAME@*/Samples~" -printf '%T@ %p\n' | sort -nr | head -n1 | cut -d' ' -f2- || true)"
+          fi
+          if [ -z "${SRC_DIR:-}" ] || [ ! -d "$SRC_DIR" ]; then
+            echo "Samples~ folder not found under $PKG_NAME"
             exit 1
           fi
           DEST_DIR="$PROJECT_DIR/Assets/Samples"
           mkdir -p "$DEST_DIR"
           cp -R "$SRC_DIR/." "$DEST_DIR/"
+
 
       - name: Generate SamplesOverview files
         run: |
