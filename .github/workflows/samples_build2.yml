@@ -173,7 +173,7 @@ jobs:
           allowDirtyBuild: true
           customParameters: "-stackTraceLogType Full"
 
-      - name: Import TMP (debug)
+      - name: Import TMP (ugui only, robust)
         shell: bash
         run: |
           set -Eeuo pipefail
@@ -185,12 +185,19 @@ jobs:
           UGUI_VERSION="$(jq -r '.dependencies["com.unity.ugui"].version // empty' "$PROJECT_DIR/Packages/packages-lock.json")"
           if [ -z "$UGUI_VERSION" ]; then
             echo "com.unity.ugui not found in packages-lock.json"
-            cat "$PROJECT_DIR/Packages/packages-lock.json"
             exit 1
           fi
-          PKG_FILE="$PROJECT_DIR/Library/PackageCache/com.unity.ugui@$UGUI_VERSION/Package Resources/TMP Essential Resources.unitypackage"
-          ls -la "$(dirname "$PKG_FILE")" || true
-          test -f "$PKG_FILE"
+          BASE_DIR="$PROJECT_DIR/Library/PackageCache/com.unity.ugui@$UGUI_VERSION"
+          PKG_FILE="$BASE_DIR/Package Resources/TMP Essential Resources.unitypackage"
+          if [ ! -f "$PKG_FILE" ]; then
+            PKG_FILE="$(find "$PROJECT_DIR/Library/PackageCache" -type f -path "*/com.unity.ugui@*/Package Resources/TMP Essential Resources.unitypackage" -printf '%T@ %p\n' | sort -nr | head -n1 | cut -d' ' -f2- || true)"
+          fi
+          if [ -z "${PKG_FILE:-}" ] || [ ! -f "$PKG_FILE" ]; then
+            echo "TMP Essential Resources.unitypackage not found under com.unity.ugui"
+            ls -la "$PROJECT_DIR/Library/PackageCache" || true
+            find "$PROJECT_DIR/Library/PackageCache" -maxdepth 2 -type d -name "com.unity.ugui@*" -print || true
+            exit 1
+          fi
           WORKDIR="$(mktemp -d)"
           tar -xzvf "$PKG_FILE" -C "$WORKDIR"
           while IFS= read -r -d '' D; do
@@ -203,6 +210,7 @@ jobs:
             [ -f "$META" ] && cp -f "$META" "$DEST.meta"
           done < <(find "$WORKDIR" -mindepth 1 -maxdepth 1 -type d -print0)
           rm -rf "$WORKDIR"
+
 
       - name: Import samples
         shell: bash
