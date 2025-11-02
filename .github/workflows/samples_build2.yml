@@ -186,3 +186,16 @@ jobs:
           done < <(find "$WORKDIR" -mindepth 1 -maxdepth 1 -type d -print0)
           rm -rf "$WORKDIR"
 
+      - name: Import samples
+        run: |
+          set -euo pipefail
+          PROJECT_DIR="$GITHUB_WORKSPACE/$PROJECT_NAME"
+          SRC_DIR="$(find "$PROJECT_DIR/Library/PackageCache" -type d -path "*/com.caskev.grid-toolkit@*/Samples~" -print -quit)"
+          if [ -z "${SRC_DIR:-}" ]; then
+            echo "Samples~ folder not found"
+            exit 1
+          fi
+          DEST_DIR="$PROJECT_DIR/Assets/Samples"
+          mkdir -p "$DEST_DIR"
+          cp -R "$SRC_DIR/"* "$DEST_DIR/"
+
