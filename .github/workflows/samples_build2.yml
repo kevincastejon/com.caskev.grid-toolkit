@@ -21,7 +21,7 @@ jobs:
       - name: Create blank unity project
         run: |
           PROJECT_DIR="$GITHUB_WORKSPACE/$PROJECT_NAME"
-          echo "Project path: $PROJECT_DIR"
+          echo "Project path: $GITHUB_WORKSPACE"
           mkdir -p "$PROJECT_DIR/Assets/Editor"
           mkdir -p "$PROJECT_DIR/Packages"
           mkdir -p "$PROJECT_DIR/ProjectSettings"
