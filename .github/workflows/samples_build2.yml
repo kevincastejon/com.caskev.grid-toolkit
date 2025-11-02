@@ -163,3 +163,26 @@ jobs:
           buildMethod: Caskev.GridToolkitCI.GridToolkitCIHelper.DoNothing
           allowDirtyBuild: true
           customParameters: "-stackTraceLogType Full"
+
+      - name: Import TMP
+        run: |
+          set -euo pipefail
+          PROJECT_DIR="$GITHUB_WORKSPACE/$PROJECT_NAME"
+          PKG_FILE="$(find "$PROJECT_DIR/Library/PackageCache" -type f -path "*/com.unity.ugui@*/Package Resources/TMP Essential Resources.unitypackage" -print -quit)"
+          if [ -z "${PKG_FILE:-}" ]; then
+            echo "TMP Essential Resources.unitypackage not found"
+            exit 1
+          fi
+          WORKDIR="$(mktemp -d)"
+          tar -xzf "$PKG_FILE" -C "$WORKDIR"
+          while IFS= read -r -d '' D; do
+            P="$(cat "$D/pathname")"
+            ASSET="$D/asset"
+            META="$D/asset.meta"
+            DEST="$PROJECT_DIR/$P"
+            mkdir -p "$(dirname "$DEST")"
+            if [ -f "$ASSET" ]; then cp -f "$ASSET" "$DEST"; fi
+            if [ -f "$META" ]; then cp -f "$META" "$DEST.meta"; fi
+          done < <(find "$WORKDIR" -mindepth 1 -maxdepth 1 -type d -print0)
+          rm -rf "$WORKDIR"
+
