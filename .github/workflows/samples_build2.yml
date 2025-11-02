@@ -69,12 +69,12 @@ jobs:
                       System.Console.WriteLine("[GridToolkitCIHelper] [Build] *********************** BUILD ***********************");
                       System.Console.WriteLine("[GridToolkitCIHelper] [Build] *****************************************************");
                       Dictionary<string, string> args = GetCommandLineArgs();
-                      System.Console.WriteLine("[GridToolkitCIHelper] [Build] Build path into command line argument is " + args["buildsPath"]);
+                      System.Console.WriteLine("[GridToolkitCIHelper] [Build] Build path into command line argument is " + args["outputPath"]);
 
                       BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions()
                       {
                           target = BuildTarget.WebGL,
-                          locationPathName = args["buildsPath"],
+                          locationPathName = args["outputPath"],
                           scenes = EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray(),
                       };
                       System.Console.WriteLine("[GridToolkitCIHelper] [Build] BuildSettings :");
@@ -873,7 +873,7 @@ jobs:
           targetPlatform: WebGL
           buildMethod: Caskev.GridToolkitCI.GridToolkitCIHelper.Build
           allowDirtyBuild: true
-          customParameters: "-stackTraceLogType Full"
+          customParameters: "-stackTraceLogType Full -outputPath ${{ github.workspace }}/GridToolkitSamplesOverview/build/WebGL"
 
       - name: Prepare samples artifact
         uses: actions/upload-artifact@v4
