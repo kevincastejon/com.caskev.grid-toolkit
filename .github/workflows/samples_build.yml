@@ -249,7 +249,7 @@ jobs:
         run: |
           PROJECT_DIR="$GITHUB_WORKSPACE/$PROJECT_NAME"
           mkdir -p "$PROJECT_DIR/Assets"
-          cat > "$PROJECT_DIR/Assets/SamplesOverviewNavigation.cs" <<'EOF'
+          cat > "$PROJECT_DIR/Assets/SampleOverviewNavigation.cs" <<'EOF'
           using System;
           using System.Collections.Generic;
           using TMPro;
@@ -333,7 +333,7 @@ jobs:
           }
 
           EOF
-          cat > "$PROJECT_DIR/Assets/SamplesOverviewNavigation.cs.meta" <<'EOF'
+          cat > "$PROJECT_DIR/Assets/SampleOverviewNavigation.cs.meta" <<'EOF'
           fileFormatVersion: 2
           guid: f038202b74dcb72419a38d72c9e0c74a
           EOF
