@@ -173,18 +173,21 @@ jobs:
           allowDirtyBuild: true
           customParameters: "-stackTraceLogType Full"
 
-      - name: Import TMP
+      - name: Import TMP (debug)
+        shell: bash
         run: |
-          set -euo pipefail
+          set -Eeuo pipefail
+          trap 'echo "ERROR on line $LINENO: $BASH_COMMAND"' ERR
+          export PS4='+ $BASH_SOURCE:$LINENO: '
+          set -x
           PROJECT_DIR="$GITHUB_WORKSPACE/$PROJECT_NAME"
+          test -f "$PROJECT_DIR/Packages/packages-lock.json"
           UGUI_VERSION="$(grep -Po '"com\.unity\.ugui"\s*:\s*\{[^}]*"version"\s*:\s*"\K[^"]+' "$PROJECT_DIR/Packages/packages-lock.json")"
           PKG_FILE="$PROJECT_DIR/Library/PackageCache/com.unity.ugui@$UGUI_VERSION/Package Resources/TMP Essential Resources.unitypackage"
-          if [ ! -f "$PKG_FILE" ]; then
-            echo "TMP Essential Resources.unitypackage not found"
-            exit 1
-          fi
+          ls -la "$(dirname "$PKG_FILE")" || true
+          test -f "$PKG_FILE"
           WORKDIR="$(mktemp -d)"
-          tar -xzf "$PKG_FILE" -C "$WORKDIR"
+          tar -xzvf "$PKG_FILE" -C "$WORKDIR"
           while IFS= read -r -d '' D; do
             P="$(cat "$D/pathname")"
             ASSET="$D/asset"
@@ -195,6 +198,7 @@ jobs:
             [ -f "$META" ] && cp -f "$META" "$DEST.meta"
           done < <(find "$WORKDIR" -mindepth 1 -maxdepth 1 -type d -print0)
           rm -rf "$WORKDIR"
+
 
       - name: Import samples
         run: |
