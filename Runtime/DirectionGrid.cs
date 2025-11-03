@@ -4,214 +4,26 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+
 /// <summary>
 /// Utilitary API to proceed operations on abstract grids such as tile extraction, raycasting, and pathfinding.
 /// </summary>
 namespace Caskev.GridToolkit
 {
     /// <summary>
-    /// A DirectionGrid object holds direction data between a target tile and all the tiles that are accessible to this target, on the entire grid.  
+    /// A DirectionGrid object holds direction data between a target tile and all the tiles that are accessible to this target, on the entire grid.
     /// </summary>
     public class DirectionGrid
     {
         internal readonly TileDirection[] _directionGrid;
         private readonly int _target;
+
         internal DirectionGrid(TileDirection[] directionGrid, int target)
         {
             _directionGrid = directionGrid;
             _target = target;
         }
-        /// <summary>
-        /// Is the tile is accessible from the target.
-        /// </summary>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="tile">The tile to check</param>
-        /// <returns>A boolean value</returns>
-        public bool IsTileAccessible<T>(T[,] grid, T tile) where T : ITile
-        {
-            if (tile == null)
-            {
-                return false;
-            }
-            return _directionGrid[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)] != TileDirection.NONE;
-        }
-        /// <summary>
-        /// Returns the target tile.
-        /// </summary>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <returns></returns>
-        public T GetTargetTile<T>(T[,] grid) where T : ITile
-        {
-            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _target);
-            return GridUtils.GetTile(grid, targetCoords.x, targetCoords.y);
-        }
-        /// <summary>
-        /// Get the next tile on the path between a tile and the target.
-        /// </summary>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="tile">A tile</param>
-        /// <returns>A tile object</returns>
-        public T GetNextTile<T>(T[,] grid, T tile) where T : ITile
-        {
-            if (!IsTileAccessible(grid, tile))
-            {
-                throw new Exception("Do not call this method with an inaccessible tile");
-            }
-            return GetNextTileUnsafe(grid, tile);
-        }
-        /// <summary>
-        /// Get the next tile on the path between the target and a tile.
-        /// </summary>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="tile">The tile</param>
-        /// <returns>A Vector2Int direction</returns>
-        public TileDirection GetNextDirection<T>(T[,] grid, T tile) where T : ITile
-        {
-            if (!IsTileAccessible(grid, tile))
-            {
-                throw new Exception("Do not call this method with an inaccessible tile");
-            }
-            return _directionGrid[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)];
-        }
-        /// <summary>
-        /// Get all the tiles on the path from a tile to the target.
-        /// </summary>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="includeTarget">Include the target tile into the resulting array or not</param>
-        /// <returns>An array of tiles</returns>
-        public T[] GetPathToTarget<T>(T[,] grid, T startTile, bool includeStart = true, bool includeTarget = true) where T : ITile
-        {
-            if (!IsTileAccessible(grid, startTile))
-            {
-                throw new Exception("Do not call this method with an inaccessible tile");
-            }
 
-            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _target);
-            T target = GridUtils.GetTile(grid, targetCoords.x, targetCoords.y);
-
-            T tile = includeStart ? startTile : GetNextTileUnsafe(grid, startTile);
-            bool targetReached = GridUtils.TileEquals(tile, target);
-            if (!includeTarget && targetReached)
-            {
-                return new T[0];
-            }
-            List<T> tiles = new List<T>() { tile };
-            while (!targetReached)
-            {
-                tile = GetNextTileUnsafe(grid, tile);
-                targetReached = GridUtils.TileEquals(tile, target);
-                if (includeTarget || !targetReached)
-                {
-                    tiles.Add(tile);
-                }
-            }
-            return tiles.ToArray();
-        }
-        /// <summary>
-        /// Get all the tiles on the path from the target to a tile.
-        /// </summary>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="destinationTile">The destination tile</param>
-        /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
-        /// <param name="includeTarget">Include the target tile into the resulting array or not</param>
-        /// <returns>An array of tiles</returns>
-        public T[] GetPathFromTarget<T>(T[,] grid, T destinationTile, bool includeDestination = true, bool includeTarget = true) where T : ITile
-        {
-            T[] path = GetPathToTarget(grid, destinationTile, includeDestination, includeTarget);
-            T[] reversedPath = new T[path.Length];
-            for (int i = 0; i < path.Length; i++)
-            {
-                reversedPath[i] = path[path.Length - 1 - i];
-            }
-            return reversedPath;
-        }
-        /// <summary>
-        /// Returns the DirectionGrid serialized as a byte array.
-        /// </summary>
-        /// <returns>A byte array representing the serialized DirectionGrid</returns>
-        public byte[] ToByteArray()
-        {
-            int bytesCount = sizeof(int) + sizeof(int) + sizeof(byte) * _directionGrid.Length;
-            byte[] bytes = new byte[bytesCount];
-            int byteIndex = 0;
-            BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _target);
-            byteIndex += sizeof(int);
-            BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _directionGrid.Length);
-            byteIndex += sizeof(int);
-            for (int i = 0; i < _directionGrid.Length; i++)
-            {
-                bytes[byteIndex] = (byte)_directionGrid[i];
-                byteIndex++;
-            }
-            return bytes;
-        }
-        /// <summary>
-        /// Returns the DirectionGrid serialized as a byte array.
-        /// </summary>
-        /// <param name="progress">An optional IProgress object to get the serialization progression</param>
-        /// <param name="cancelToken">An optional CancellationToken object to cancel the serialization</param>
-        /// <returns>A byte array representing the serialized DirectionGrid</returns>
-        public Task<byte[]> ToByteArrayAsync(IProgress<float> progress = null, CancellationToken cancelToken = default)
-        {
-            Task<byte[]> task = Task.Run(() =>
-            {
-                int bytesCount = sizeof(int) + sizeof(int) + sizeof(byte) * _directionGrid.Length;
-                byte[] bytes = new byte[bytesCount];
-                int byteIndex = 0;
-                BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _target);
-                byteIndex += sizeof(int);
-                BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _directionGrid.Length);
-                byteIndex += sizeof(int);
-                for (int i = 0; i < _directionGrid.Length; i++)
-                {
-                    if (cancelToken.IsCancellationRequested)
-                    {
-                        return null;
-                    }
-                    progress.Report((float)i / _directionGrid.Length);
-                    bytes[byteIndex] = (byte)_directionGrid[i];
-                    byteIndex++;
-                }
-                return bytes;
-            });
-            return task;
-        }
-        /// <summary>
-        /// Returns the DirectionGrid serialized as a byte array.
-        /// </summary>
-        /// <param name="progress">An optional IProgress object to get the serialization progression</param>
-        /// <param name="cancelToken">An optional CancellationToken object to cancel the serialization</param>
-        /// <returns>A byte array representing the serialized DirectionGrid</returns>
-        public async Awaitable<byte[]> ToByteArrayAwaitable(IProgress<float> progress = null, CancellationToken cancelToken = default)
-        {
-            int bytesCount = sizeof(int) + sizeof(int) + sizeof(byte) * _directionGrid.Length;
-            byte[] bytes = new byte[bytesCount];
-            int byteIndex = 0;
-            BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _target);
-            byteIndex += sizeof(int);
-            BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _directionGrid.Length);
-            byteIndex += sizeof(int);
-            float frameBudgetMS = 6f;
-            float frameStart = Time.realtimeSinceStartup;
-            float elapsedMs = 0f;
-            for (int i = 0; i < _directionGrid.Length; i++)
-            {
-                if (cancelToken.IsCancellationRequested)
-                {
-                    return null;
-                }
-                progress.Report((float)i / _directionGrid.Length);
-                bytes[byteIndex] = (byte)_directionGrid[i];
-                byteIndex++;
-                if (((elapsedMs = (Time.realtimeSinceStartup - frameStart) * 1000f) < frameBudgetMS) == false)
-                {
-                    await Awaitable.NextFrameAsync();
-                }
-            }
-            return bytes;
-        }
         /// <summary>
         /// Returns a DirectionGrid from a byte array that has been serialized with the ToByteArray method.
         /// </summary>
@@ -237,6 +49,7 @@ namespace Caskev.GridToolkit
             }
             return new DirectionGrid(directionGrid, target);
         }
+
         /// <summary>
         /// Returns a DirectionGrid from a byte array that has been serialized with the ToByteArray method.
         /// </summary>
@@ -273,6 +86,7 @@ namespace Caskev.GridToolkit
             });
             return task;
         }
+
         /// <summary>
         /// Returns a DirectionGrid from a byte array that has been serialized with the ToByteArray method.
         /// </summary>
@@ -281,7 +95,7 @@ namespace Caskev.GridToolkit
         /// <param name="progress">An optional IProgress object to get the deserialization progression</param>
         /// <param name="cancelToken">An optional CancellationToken object to cancel the deserialization</param>
         /// <returns>The deserialized DirectionGrid</returns>
-        public async static Awaitable<DirectionGrid> FromByteArrayAwaitable<T>(T[,] grid, byte[] bytes, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : ITile
+        public static async Awaitable<DirectionGrid> FromByteArrayAwaitable<T>(T[,] grid, byte[] bytes, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : ITile
         {
             if (grid == null)
             {
@@ -312,6 +126,207 @@ namespace Caskev.GridToolkit
             }
             return new DirectionGrid(directionGrid, target);
         }
+
+        /// <summary>
+        /// Get the next tile on the path between the target and a tile.
+        /// </summary>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="tile">The tile</param>
+        /// <returns>A Vector2Int direction</returns>
+        public TileDirection GetNextDirection<T>(T[,] grid, T tile) where T : ITile
+        {
+            if (!IsTileAccessible(grid, tile))
+            {
+                throw new Exception("Do not call this method with an inaccessible tile");
+            }
+            return _directionGrid[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)];
+        }
+
+        /// <summary>
+        /// Get the next tile on the path between a tile and the target.
+        /// </summary>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="tile">A tile</param>
+        /// <returns>A tile object</returns>
+        public T GetNextTile<T>(T[,] grid, T tile) where T : ITile
+        {
+            if (!IsTileAccessible(grid, tile))
+            {
+                throw new Exception("Do not call this method with an inaccessible tile");
+            }
+            return GetNextTileUnsafe(grid, tile);
+        }
+
+        /// <summary>
+        /// Get all the tiles on the path from the target to a tile.
+        /// </summary>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="destinationTile">The destination tile</param>
+        /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
+        /// <param name="includeTarget">Include the target tile into the resulting array or not</param>
+        /// <returns>An array of tiles</returns>
+        public T[] GetPathFromTarget<T>(T[,] grid, T destinationTile, bool includeDestination = true, bool includeTarget = true) where T : ITile
+        {
+            T[] path = GetPathToTarget(grid, destinationTile, includeDestination, includeTarget);
+            T[] reversedPath = new T[path.Length];
+            for (int i = 0; i < path.Length; i++)
+            {
+                reversedPath[i] = path[path.Length - 1 - i];
+            }
+            return reversedPath;
+        }
+
+        /// <summary>
+        /// Get all the tiles on the path from a tile to the target.
+        /// </summary>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
+        /// <param name="includeTarget">Include the target tile into the resulting array or not</param>
+        /// <returns>An array of tiles</returns>
+        public T[] GetPathToTarget<T>(T[,] grid, T startTile, bool includeStart = true, bool includeTarget = true) where T : ITile
+        {
+            if (!IsTileAccessible(grid, startTile))
+            {
+                throw new Exception("Do not call this method with an inaccessible tile");
+            }
+
+            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _target);
+            T target = GridUtils.GetTile(grid, targetCoords.x, targetCoords.y);
+
+            T tile = includeStart ? startTile : GetNextTileUnsafe(grid, startTile);
+            bool targetReached = GridUtils.TileEquals(tile, target);
+            if (!includeTarget && targetReached)
+            {
+                return new T[0];
+            }
+            List<T> tiles = new List<T>() { tile };
+            while (!targetReached)
+            {
+                tile = GetNextTileUnsafe(grid, tile);
+                targetReached = GridUtils.TileEquals(tile, target);
+                if (includeTarget || !targetReached)
+                {
+                    tiles.Add(tile);
+                }
+            }
+            return tiles.ToArray();
+        }
+
+        /// <summary>
+        /// Returns the target tile.
+        /// </summary>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <returns></returns>
+        public T GetTargetTile<T>(T[,] grid) where T : ITile
+        {
+            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _target);
+            return GridUtils.GetTile(grid, targetCoords.x, targetCoords.y);
+        }
+
+        /// <summary>
+        /// Is the tile is accessible from the target.
+        /// </summary>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="tile">The tile to check</param>
+        /// <returns>A boolean value</returns>
+        public bool IsTileAccessible<T>(T[,] grid, T tile) where T : ITile
+        {
+            if (tile == null)
+            {
+                return false;
+            }
+            return _directionGrid[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)] != TileDirection.NONE;
+        }
+
+        /// <summary>
+        /// Returns the DirectionGrid serialized as a byte array.
+        /// </summary>
+        /// <returns>A byte array representing the serialized DirectionGrid</returns>
+        public byte[] ToByteArray()
+        {
+            int bytesCount = sizeof(int) + sizeof(int) + sizeof(byte) * _directionGrid.Length;
+            byte[] bytes = new byte[bytesCount];
+            int byteIndex = 0;
+            BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _target);
+            byteIndex += sizeof(int);
+            BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _directionGrid.Length);
+            byteIndex += sizeof(int);
+            for (int i = 0; i < _directionGrid.Length; i++)
+            {
+                bytes[byteIndex] = (byte)_directionGrid[i];
+                byteIndex++;
+            }
+            return bytes;
+        }
+
+        /// <summary>
+        /// Returns the DirectionGrid serialized as a byte array.
+        /// </summary>
+        /// <param name="progress">An optional IProgress object to get the serialization progression</param>
+        /// <param name="cancelToken">An optional CancellationToken object to cancel the serialization</param>
+        /// <returns>A byte array representing the serialized DirectionGrid</returns>
+        public Task<byte[]> ToByteArrayAsync(IProgress<float> progress = null, CancellationToken cancelToken = default)
+        {
+            Task<byte[]> task = Task.Run(() =>
+            {
+                int bytesCount = sizeof(int) + sizeof(int) + sizeof(byte) * _directionGrid.Length;
+                byte[] bytes = new byte[bytesCount];
+                int byteIndex = 0;
+                BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _target);
+                byteIndex += sizeof(int);
+                BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _directionGrid.Length);
+                byteIndex += sizeof(int);
+                for (int i = 0; i < _directionGrid.Length; i++)
+                {
+                    if (cancelToken.IsCancellationRequested)
+                    {
+                        return null;
+                    }
+                    progress.Report((float)i / _directionGrid.Length);
+                    bytes[byteIndex] = (byte)_directionGrid[i];
+                    byteIndex++;
+                }
+                return bytes;
+            });
+            return task;
+        }
+
+        /// <summary>
+        /// Returns the DirectionGrid serialized as a byte array.
+        /// </summary>
+        /// <param name="progress">An optional IProgress object to get the serialization progression</param>
+        /// <param name="cancelToken">An optional CancellationToken object to cancel the serialization</param>
+        /// <returns>A byte array representing the serialized DirectionGrid</returns>
+        public async Awaitable<byte[]> ToByteArrayAwaitable(IProgress<float> progress = null, CancellationToken cancelToken = default)
+        {
+            int bytesCount = sizeof(int) + sizeof(int) + sizeof(byte) * _directionGrid.Length;
+            byte[] bytes = new byte[bytesCount];
+            int byteIndex = 0;
+            BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _target);
+            byteIndex += sizeof(int);
+            BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(byteIndex), _directionGrid.Length);
+            byteIndex += sizeof(int);
+            float frameBudgetMS = 6f;
+            float frameStart = Time.realtimeSinceStartup;
+            float elapsedMs = 0f;
+            for (int i = 0; i < _directionGrid.Length; i++)
+            {
+                if (cancelToken.IsCancellationRequested)
+                {
+                    return null;
+                }
+                progress.Report((float)i / _directionGrid.Length);
+                bytes[byteIndex] = (byte)_directionGrid[i];
+                byteIndex++;
+                if (((elapsedMs = (Time.realtimeSinceStartup - frameStart) * 1000f) < frameBudgetMS) == false)
+                {
+                    await Awaitable.NextFrameAsync();
+                }
+            }
+            return bytes;
+        }
+
         /// <summary>
         /// Gets the next tile from the specified tile along the path to the target tile.
         /// </summary>

@@ -13,17 +13,9 @@ namespace Caskev.GridToolkit
     /// </summary>
     public class DijkstraField
     {
+        internal Dictionary<int, (TileDirection, float)> _accessibleTiles;
         private readonly int _target;
         private float _maxDistance;
-        internal Dictionary<int, (TileDirection, float)> _accessibleTiles;
-        /// <summary>
-        /// The maximum distance used to generate this DirectionField
-        /// </summary>
-        public float MaxDistance => _maxDistance;
-        /// <summary>
-        /// Gets the total number of accessible tiles.
-        /// </summary>
-        public int AccessibleTilesCount => _accessibleTiles.Count;
 
         internal DijkstraField(int target, float maxDistance, Dictionary<int, (TileDirection, float)> accessibleTiles)
         {
@@ -31,44 +23,78 @@ namespace Caskev.GridToolkit
             _maxDistance = maxDistance;
             _accessibleTiles = accessibleTiles;
         }
+
         /// <summary>
-        /// Is the tile is accessible from the target.
+        /// Gets the total number of accessible tiles.
         /// </summary>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="tile">The tile to check</param>
-        /// <returns>A boolean value</returns>
-        public bool IsTileAccessible<T>(T[,] grid, T tile) where T : ITile
+        public int AccessibleTilesCount => _accessibleTiles.Count;
+
+        /// <summary>
+        /// The maximum distance used to generate this DirectionField
+        /// </summary>
+        public float MaxDistance => _maxDistance;
+
+        /// <summary>
+        /// Use this method to iterate though the accessible tiles. <see cref="AccessibleTilesCount"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of the tile, which must implement the <see cref="ITile"/> interface.</typeparam>
+        /// <param name="grid">A two-dimensional array representing the grid of tiles.</param>
+        /// <param name="index">The zero-based index of the accessible tile in the accessible tiles list <see cref="AccessibleTilesCount"/>.</param>
+        /// <returns>The tile of type <typeparamref name="T"/> located at the specified index in the accessible tiles list.</returns>
+        public T GetAccessibleTile<T>(T[,] grid, int index) where T : ITile
         {
-            if (tile == null)
+            Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _accessibleTiles.ElementAt(index).Key);
+            return grid[coords.y, coords.x];
+        }
+
+        /// <summary>
+        /// Returns the tiles that accessible to the target.
+        /// </summary>
+        /// <param name="grid">A two-dimensional array representing the grid of tiles.</param>
+        /// <returns>The tiles that accessible to the target.</returns>
+        public T[] GetAccessibleTiles<T>(T[,] grid) where T : IWeightedTile
+        {
+            T[] accessibleTiles = new T[AccessibleTilesCount];
+            for (int i = 0; i < _accessibleTiles.Count; i++)
             {
-                return false;
+                accessibleTiles[i] = GetAccessibleTile(grid, i);
             }
-            return _accessibleTiles.ContainsKey(GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y));
+            return accessibleTiles;
         }
+
         /// <summary>
-        /// Returns the target tile.
+        /// Returns the tiles that accessible to the target.
         /// </summary>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <returns></returns>
-        public T GetTargetTile<T>(T[,] grid) where T : ITile
+        /// <param name="grid">A two-dimensional array representing the grid of tiles.</param>
+        /// <param name="accessibleTiles">An array of tiles in which the tiles will be stored.</param>
+        public void GetAccessibleTilesNoAlloc<T>(T[,] grid, T[] accessibleTiles) where T : IWeightedTile
         {
-            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _target);
-            return GridUtils.GetTile(grid, targetCoords.x, targetCoords.y);
+            for (int i = 0; i < accessibleTiles.Length; i++)
+            {
+                if (_accessibleTiles.Count <= i)
+                {
+                    return;
+                }
+                accessibleTiles[i] = GetAccessibleTile(grid, i);
+            }
         }
+
         /// <summary>
-        /// Get the next tile on the path between a tile and the target.
+        /// Get the distance from the specified tile to the target.
         /// </summary>
         /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="tile">A tile</param>
-        /// <returns>A tile object</returns>
-        public T GetNextTile<T>(T[,] grid, T tile) where T : ITile
+        /// <param name="tile">The tile from which to get the distance to the target tile</param>
+        /// <returns>The float distance from the specified tile to the target tile</returns>
+        public float GetDistanceToTarget<T>(T[,] grid, T tile) where T : IWeightedTile
         {
             if (!IsTileAccessible(grid, tile))
             {
                 throw new Exception("Do not call this method with an inaccessible tile");
             }
-            return GetNextTileUnsafe(grid, tile);
+            int tileFlatIndex = GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y);
+            return _accessibleTiles[tileFlatIndex].Item2;
         }
+
         /// <summary>
         /// Get the next tile on the path between the target and a tile.
         /// </summary>
@@ -83,6 +109,41 @@ namespace Caskev.GridToolkit
             }
             return _accessibleTiles[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y)].Item1;
         }
+
+        /// <summary>
+        /// Get the next tile on the path between a tile and the target.
+        /// </summary>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="tile">A tile</param>
+        /// <returns>A tile object</returns>
+        public T GetNextTile<T>(T[,] grid, T tile) where T : ITile
+        {
+            if (!IsTileAccessible(grid, tile))
+            {
+                throw new Exception("Do not call this method with an inaccessible tile");
+            }
+            return GetNextTileUnsafe(grid, tile);
+        }
+
+        /// <summary>
+        /// Get all the tiles on the path from the target to a tile.
+        /// </summary>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="destinationTile">The destination tile</param>
+        /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
+        /// <param name="includeTarget">Include the target tile into the resulting array or not</param>
+        /// <returns>An array of tiles</returns>
+        public T[] GetPathFromTarget<T>(T[,] grid, T destinationTile, bool includeDestination = true, bool includeTarget = true) where T : ITile
+        {
+            T[] path = GetPathToTarget(grid, destinationTile, includeDestination, includeTarget);
+            T[] reversedPath = new T[path.Length];
+            for (int i = 0; i < path.Length; i++)
+            {
+                reversedPath[i] = path[path.Length - 1 - i];
+            }
+            return reversedPath;
+        }
+
         /// <summary>
         /// Get all the tiles on the path from a tile to the target.
         /// </summary>
@@ -119,81 +180,33 @@ namespace Caskev.GridToolkit
             }
             return tiles.ToArray();
         }
+
         /// <summary>
-        /// Get all the tiles on the path from the target to a tile.
+        /// Returns the target tile.
         /// </summary>
         /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="destinationTile">The destination tile</param>
-        /// <param name="includeDestination">Include the destination tile into the resulting array or not. Default is true</param>
-        /// <param name="includeTarget">Include the target tile into the resulting array or not</param>
-        /// <returns>An array of tiles</returns>
-        public T[] GetPathFromTarget<T>(T[,] grid, T destinationTile, bool includeDestination = true, bool includeTarget = true) where T : ITile
+        /// <returns></returns>
+        public T GetTargetTile<T>(T[,] grid) where T : ITile
         {
-            T[] path = GetPathToTarget(grid, destinationTile, includeDestination, includeTarget);
-            T[] reversedPath = new T[path.Length];
-            for (int i = 0; i < path.Length; i++)
-            {
-                reversedPath[i] = path[path.Length - 1 - i];
-            }
-            return reversedPath;
+            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _target);
+            return GridUtils.GetTile(grid, targetCoords.x, targetCoords.y);
         }
+
         /// <summary>
-        /// Use this method to iterate though the accessible tiles. <see cref="AccessibleTilesCount"/>.
-        /// </summary>
-        /// <typeparam name="T">The type of the tile, which must implement the <see cref="ITile"/> interface.</typeparam>
-        /// <param name="grid">A two-dimensional array representing the grid of tiles.</param>
-        /// <param name="index">The zero-based index of the accessible tile in the accessible tiles list <see cref="AccessibleTilesCount"/>.</param>
-        /// <returns>The tile of type <typeparamref name="T"/> located at the specified index in the accessible tiles list.</returns>
-        public T GetAccessibleTile<T>(T[,] grid, int index) where T : ITile
-        {
-            Vector2Int coords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _accessibleTiles.ElementAt(index).Key);
-            return grid[coords.y, coords.x];
-        }
-        /// <summary>
-        /// Returns the tiles that accessible to the target.
-        /// </summary>
-        /// <param name="grid">A two-dimensional array representing the grid of tiles.</param>
-        /// <returns>The tiles that accessible to the target.</returns>
-        public T[] GetAccessibleTiles<T>(T[,] grid) where T : IWeightedTile
-        {
-            T[] accessibleTiles = new T[AccessibleTilesCount];
-            for (int i = 0; i < _accessibleTiles.Count; i++)
-            {
-                accessibleTiles[i] = GetAccessibleTile(grid, i);
-            }
-            return accessibleTiles;
-        }
-        /// <summary>
-        /// Returns the tiles that accessible to the target.
-        /// </summary>
-        /// <param name="grid">A two-dimensional array representing the grid of tiles.</param>
-        /// <param name="accessibleTiles">An array of tiles in which the tiles will be stored.</param>
-        public void GetAccessibleTilesNoAlloc<T>(T[,] grid, T[] accessibleTiles) where T : IWeightedTile
-        {
-            for (int i = 0; i < accessibleTiles.Length; i++)
-            {
-                if (_accessibleTiles.Count <= i)
-                {
-                    return;
-                }
-                accessibleTiles[i] = GetAccessibleTile(grid, i);
-            }
-        }
-        /// <summary>
-        /// Get the distance from the specified tile to the target.
+        /// Is the tile is accessible from the target.
         /// </summary>
         /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="tile">The tile from which to get the distance to the target tile</param>
-        /// <returns>The float distance from the specified tile to the target tile</returns>
-        public float GetDistanceToTarget<T>(T[,] grid, T tile) where T : IWeightedTile
+        /// <param name="tile">The tile to check</param>
+        /// <returns>A boolean value</returns>
+        public bool IsTileAccessible<T>(T[,] grid, T tile) where T : ITile
         {
-            if (!IsTileAccessible(grid, tile))
+            if (tile == null)
             {
-                throw new Exception("Do not call this method with an inaccessible tile");
+                return false;
             }
-            int tileFlatIndex = GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y);
-            return _accessibleTiles[tileFlatIndex].Item2;
+            return _accessibleTiles.ContainsKey(GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), tile.X, tile.Y));
         }
+
         /// <summary>
         /// Gets the next tile from the specified tile along the path to the target tile.
         /// </summary>

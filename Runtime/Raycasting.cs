@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+
 /// <summary>
 /// Utilitary API to proceed operations on abstract grids such as tile extraction, raycasting, and pathfinding.
 /// </summary>
@@ -11,6 +12,505 @@ namespace Caskev.GridToolkit
     /// </summary>
     public class Raycasting
     {
+        /// <summary>
+        /// Get all visible tiles from a start tile's cone of vision<br/>
+        /// Note that the order of the tiles into the returned array is not guaranteed.
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
+        /// <param name="destinationTile">The destination tile at the end of the cone</param>
+        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetConeOfVision<T>(T[,] grid, T startTile, float openingAngle, T destinationTile, bool includeStart = true) where T : ITile
+        {
+            openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
+            Vector2Int startPos = new Vector2Int(startTile.X, startTile.Y);
+            Vector2Int endPos = new Vector2Int(destinationTile.X, destinationTile.Y);
+            Vector2 direction = endPos - startPos;
+            HashSet<T> lines = new HashSet<T>();
+            bool isClear = true;
+            ConeCast(grid, startTile, Mathf.CeilToInt(direction.magnitude), openingAngle, direction, ref isClear, includeStart, ref lines);
+            return lines.ToArray();
+        }
+
+        /// <summary>
+        /// Get all visible tiles from a start tile's cone of vision<br/>
+        /// Note that the order of the tiles into the returned array is not guaranteed.
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="length">The length of the line</param>
+        /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
+        /// <param name="directionAngle">The angle of the line from the start tile</param>
+        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetConeOfVision<T>(T[,] grid, T startTile, int length, float openingAngle, float directionAngle, bool includeStart = true) where T : ITile
+        {
+            openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
+            float magnitude = new Vector2Int(grid.GetLength(0), grid.GetLength(1)).magnitude;
+            if (length > magnitude || Mathf.Approximately(length, 0f))
+            {
+                length = Mathf.CeilToInt(magnitude);
+            }
+            Vector2Int startPos = new Vector2Int(startTile.X, startTile.Y);
+            Vector2Int endPos = new Vector2Int(Mathf.RoundToInt(startTile.X + Mathf.Cos(directionAngle * Mathf.Deg2Rad) * length), Mathf.RoundToInt(startTile.Y + Mathf.Sin(directionAngle * Mathf.Deg2Rad) * length));
+            Vector2 direction = endPos - startPos;
+            HashSet<T> lines = new HashSet<T>();
+            bool isClear = true;
+            ConeCast(grid, startTile, length, openingAngle, direction, ref isClear, includeStart, ref lines);
+            return lines.ToArray();
+        }
+
+        /// <summary>
+        /// Get all visible tiles from a start tile's cone of vision<br/>
+        /// Note that the order of the tiles into the returned array is not guaranteed.
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="length">The length of the line</param>
+        /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
+        /// <param name="direction">The direction of the line from the start tile</param>
+        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetConeOfVision<T>(T[,] grid, T startTile, int length, float openingAngle, Vector2 direction, bool includeStart = true) where T : ITile
+        {
+            openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
+            float magnitude = new Vector2Int(grid.GetLength(0), grid.GetLength(1)).magnitude;
+            if (length > magnitude || Mathf.Approximately(length, 0f))
+            {
+                length = Mathf.CeilToInt(magnitude);
+            }
+            HashSet<T> lines = new HashSet<T>();
+            bool isClear = true;
+            ConeCast(grid, startTile, length, openingAngle, direction, ref isClear, includeStart, ref lines);
+            return lines.ToArray();
+        }
+
+        /// <summary>
+        /// Get all visible tiles from a start tile's cone of vision<br/>
+        /// Note that the order of the tiles into the returned array is not guaranteed.
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
+        /// <param name="endPosition">The destination virtual coordinates (do not need to be into grid range)</param>
+        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetConeOfVision<T>(T[,] grid, T startTile, float openingAngle, Vector2Int endPosition, bool includeStart = true) where T : ITile
+        {
+            openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
+            Vector2Int startPos = new Vector2Int(startTile.X, startTile.Y);
+            Vector2 direction = endPosition - startPos;
+            HashSet<T> lines = new HashSet<T>();
+            bool isClear = true;
+            ConeCast(grid, startTile, Mathf.FloorToInt(direction.magnitude), openingAngle, direction, ref isClear, includeStart, ref lines);
+            return lines.ToArray();
+        }
+
+        /// <summary>
+        /// Get all visible tiles from a start tile's cone of vision<br/>
+        /// Note that the order of the tiles into the returned array is not guaranteed.
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="isClear">Is the line of sight clear (no non-walkable tile encountered)</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
+        /// <param name="destinationTile">The destination tile at the end of the cone</param>
+        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetConeOfVision<T>(T[,] grid, out bool isClear, T startTile, float openingAngle, T destinationTile, bool includeStart = true) where T : ITile
+        {
+            openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
+            Vector2Int startPos = new Vector2Int(startTile.X, startTile.Y);
+            Vector2Int endPos = new Vector2Int(destinationTile.X, destinationTile.Y);
+            int radius = Mathf.CeilToInt(Vector2Int.Distance(startPos, endPos));
+            Vector2 direction = endPos - startPos;
+            HashSet<T> lines = new HashSet<T>();
+            isClear = true;
+            ConeCast(grid, startTile, Mathf.FloorToInt(direction.magnitude), openingAngle, direction, ref isClear, includeStart, ref lines);
+            return lines.ToArray();
+        }
+
+        /// <summary>
+        /// Get all visible tiles from a start tile's cone of vision<br/>
+        /// Note that the order of the tiles into the returned array is not guaranteed.
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="isClear">Is the line of sight clear (no non-walkable tile encountered)</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="length">The length of the line</param>
+        /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
+        /// <param name="directionAngle">The angle of the line from the start tile</param>
+        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetConeOfVision<T>(T[,] grid, out bool isClear, T startTile, int length, float openingAngle, float directionAngle, bool includeStart = true) where T : ITile
+        {
+            openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
+            float magnitude = new Vector2Int(grid.GetLength(0), grid.GetLength(1)).magnitude;
+            if (length > magnitude || Mathf.Approximately(length, 0f))
+            {
+                length = Mathf.CeilToInt(magnitude);
+            }
+            Vector2Int startPos = new Vector2Int(startTile.X, startTile.Y);
+            Vector2Int endPos = new Vector2Int(Mathf.RoundToInt(startTile.X + Mathf.Cos(directionAngle * Mathf.Deg2Rad) * length), Mathf.RoundToInt(startTile.Y + Mathf.Sin(directionAngle * Mathf.Deg2Rad) * length));
+            Vector2 direction = endPos - startPos;
+            HashSet<T> lines = new HashSet<T>();
+            isClear = true;
+            ConeCast(grid, startTile, length, openingAngle, direction, ref isClear, includeStart, ref lines);
+            return lines.ToArray();
+        }
+
+        /// <summary>
+        /// Get all visible tiles from a start tile's cone of vision<br/>
+        /// Note that the order of the tiles into the returned array is not guaranteed.
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="isClear">Is the line of sight clear (no non-walkable tile encountered)</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="length">The length of the line</param>
+        /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
+        /// <param name="direction">The direction of the line from the start tile</param>
+        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetConeOfVision<T>(T[,] grid, out bool isClear, T startTile, int length, float openingAngle, Vector2 direction, bool includeStart = true) where T : ITile
+        {
+            openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
+            float magnitude = new Vector2Int(grid.GetLength(0), grid.GetLength(1)).magnitude;
+            if (length > magnitude || Mathf.Approximately(length, 0f))
+            {
+                length = Mathf.CeilToInt(magnitude);
+            }
+            HashSet<T> lines = new HashSet<T>();
+            isClear = true;
+            ConeCast(grid, startTile, length, openingAngle, direction, ref isClear, includeStart, ref lines);
+            return lines.ToArray();
+        }
+
+        /// <summary>
+        /// Get all visible tiles from a start tile's cone of vision<br/>
+        /// Note that the order of the tiles into the returned array is not guaranteed.
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="isClear">Is the line of sight clear (no non-walkable tile encountered)</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
+        /// <param name="endPosition">The destination virtual coordinates (do not need to be into grid range)</param>
+        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetConeOfVision<T>(T[,] grid, out bool isClear, T startTile, float openingAngle, Vector2Int endPosition, bool includeStart = true) where T : ITile
+        {
+            openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
+            Vector2Int startPos = new Vector2Int(startTile.X, startTile.Y);
+            Vector2 direction = endPosition - startPos;
+            HashSet<T> lines = new HashSet<T>();
+            isClear = true;
+            ConeCast(grid, startTile, Mathf.CeilToInt(direction.magnitude), openingAngle, direction, ref isClear, includeStart, ref lines);
+            return lines.ToArray();
+        }
+
+        /// <summary>
+        /// Get all tiles on a line of sight from a start tile.<br/>
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="destinationTile">The destination tile</param>
+        /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
+        /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
+        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
+        /// <returns>A boolean value</returns>
+        public static T[] GetLineOfSight<T>(T[,] grid, T startTile, T destinationTile, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
+        {
+            Vector2Int endPos = new Vector2Int(destinationTile.X, destinationTile.Y);
+            return GetLineOfSight(grid, startTile, endPos, allowDiagonals, favorVertical, includeStart);
+        }
+
+        /// <summary>
+        /// Get all tiles on a line of sight from a start tile.<br/>
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="length">The length of the line</param>
+        /// <param name="directionAngle">The angle of the line from the start tile</param>
+        /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
+        /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
+        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetLineOfSight<T>(T[,] grid, T startTile, int length, float directionAngle, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
+        {
+            float magnitude = new Vector2Int(grid.GetLength(0), grid.GetLength(1)).magnitude;
+            if (length > magnitude || Mathf.Approximately(length, 0f))
+            {
+                length = Mathf.CeilToInt(magnitude);
+            }
+            Vector2Int endPos = new Vector2Int(Mathf.RoundToInt(startTile.X + Mathf.Cos(directionAngle * Mathf.Deg2Rad) * length), Mathf.RoundToInt(startTile.Y + Mathf.Sin(directionAngle * Mathf.Deg2Rad) * length));
+            return GetLineOfSight(grid, startTile, endPos, allowDiagonals, favorVertical, includeStart);
+        }
+
+        /// <summary>
+        /// Get all tiles on a line of sight from a start tile.<br/>
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="length">The length of the line</param>
+        /// <param name="direction">The direction of the line from the start tile</param>
+        /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
+        /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
+        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetLineOfSight<T>(T[,] grid, T startTile, int length, Vector2 direction, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
+        {
+            float magnitude = new Vector2Int(grid.GetLength(0), grid.GetLength(1)).magnitude;
+            if (length > magnitude || Mathf.Approximately(length, 0f))
+            {
+                length = Mathf.CeilToInt(magnitude);
+            }
+            Vector2Int endPos = Vector2Int.RoundToInt(new Vector2(startTile.X, startTile.Y) + (direction.normalized * length));
+            return GetLineOfSight(grid, startTile, endPos, allowDiagonals, favorVertical, includeStart);
+        }
+
+        /// <summary>
+        /// Get all tiles on a line of sight from a start tile.<br/>
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="endPosition">The destination virtual coordinates (do not need to be into grid range)</param>
+        /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
+        /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
+        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetLineOfSight<T>(T[,] grid, T startTile, Vector2Int endPosition, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
+        {
+            HashSet<T> hashSet = new HashSet<T>();
+            Raycast(grid, startTile, endPosition, allowDiagonals, favorVertical, includeStart, true, false, out bool isClear, ref hashSet);
+            return hashSet.ToArray();
+        }
+
+        /// <summary>
+        /// Get all tiles on a line of sight from a start tile.<br/>
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="isClear">Is the line of sight clear (no non-walkable tile encountered)</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="destinationTile">The destination tile</param>
+        /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
+        /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
+        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
+        /// <returns>A boolean value</returns>
+        public static T[] GetLineOfSight<T>(T[,] grid, out bool isClear, T startTile, T destinationTile, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
+        {
+            Vector2Int endPos = new Vector2Int(destinationTile.X, destinationTile.Y);
+            return GetLineOfSight(grid, out isClear, startTile, endPos, allowDiagonals, favorVertical, includeStart);
+        }
+
+        /// <summary>
+        /// Get all tiles on a line of sight from a start tile.<br/>
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="isClear">Is the line of sight clear (no non-walkable tile encountered)</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="length">The length of the line</param>
+        /// <param name="directionAngle">The angle of the line from the start tile</param>
+        /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
+        /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
+        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetLineOfSight<T>(T[,] grid, out bool isClear, T startTile, int length, float directionAngle, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
+        {
+            float magnitude = new Vector2Int(grid.GetLength(0), grid.GetLength(1)).magnitude;
+            if (length > magnitude || Mathf.Approximately(length, 0f))
+            {
+                length = Mathf.CeilToInt(magnitude);
+            }
+            Vector2Int endPos = new Vector2Int(Mathf.RoundToInt(startTile.X + Mathf.Cos(directionAngle * Mathf.Deg2Rad) * length), Mathf.RoundToInt(startTile.Y + Mathf.Sin(directionAngle * Mathf.Deg2Rad) * length));
+            return GetLineOfSight(grid, out isClear, startTile, endPos, allowDiagonals, favorVertical, includeStart);
+        }
+
+        /// <summary>
+        /// Get all tiles on a line of sight from a start tile.<br/>
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="isClear">Is the line of sight clear (no non-walkable tile encountered)</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="length">The length of the line</param>
+        /// <param name="direction">The direction of the line from the start tile</param>
+        /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
+        /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
+        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetLineOfSight<T>(T[,] grid, out bool isClear, T startTile, int length, Vector2 direction, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
+        {
+            float magnitude = new Vector2Int(grid.GetLength(0), grid.GetLength(1)).magnitude;
+            if (length > magnitude || Mathf.Approximately(length, 0f))
+            {
+                length = Mathf.CeilToInt(magnitude);
+            }
+            Vector2Int endPos = Vector2Int.RoundToInt(new Vector2(startTile.X, startTile.Y) + (direction.normalized * length));
+            return GetLineOfSight(grid, out isClear, startTile, endPos, allowDiagonals, favorVertical, includeStart);
+        }
+
+        /// <summary>
+        /// Get all tiles on a line of sight from a start tile.<br/>
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="isClear">Is the line of sight clear (no non-walkable tile encountered)</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="endPosition">The destination virtual coordinates (do not need to be into grid range)</param>
+        /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
+        /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
+        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetLineOfSight<T>(T[,] grid, out bool isClear, T startTile, Vector2Int endPosition, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
+        {
+            HashSet<T> hashSet = new HashSet<T>();
+            Raycast(grid, startTile, endPosition, allowDiagonals, favorVertical, includeStart, true, false, out isClear, ref hashSet);
+            return hashSet.ToArray();
+        }
+
+        /// <summary>
+        /// Is the line of sight clear between two tiles
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
+        /// <param name="destinationTile">The destination tile</param>
+        /// <returns>A boolean value</returns>
+        public static bool IsConeOfVisionClear<T>(T[,] grid, T startTile, float openingAngle, T destinationTile) where T : ITile
+        {
+            GetConeOfVision(grid, out bool clear, startTile, openingAngle, destinationTile, true);
+            return clear;
+        }
+
+        /// <summary>
+        /// Is the line of sight clear between two tiles
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="length">The length of the cone</param>
+        /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
+        /// <param name="directionAngle">The angle of the line from the start tile</param>
+        /// <returns>A boolean value</returns>
+        public static bool IsConeOfVisionClear<T>(T[,] grid, T startTile, int length, float openingAngle, float directionAngle) where T : ITile
+        {
+            GetConeOfVision(grid, out bool clear, startTile, length, openingAngle, directionAngle, true);
+            return clear;
+        }
+
+        /// <summary>
+        /// Is the line of sight clear between two tiles
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="length">The length of the cone</param>
+        /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
+        /// <param name="direction">The direction of the line from the start tile</param>
+        /// <returns>A boolean value</returns>
+        public static bool IsConeOfVisionClear<T>(T[,] grid, T startTile, int length, float openingAngle, Vector2 direction) where T : ITile
+        {
+            GetConeOfVision(grid, out bool clear, startTile, length, openingAngle, direction, true);
+            return clear;
+        }
+
+        /// <summary>
+        /// Is the line of sight clear between two tiles
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
+        /// <param name="endPosition">The destination virtual coordinates (do not need to be into grid range)</param>
+        /// <returns>A boolean value</returns>
+        public static bool IsConeOfVisionClear<T>(T[,] grid, T startTile, float openingAngle, Vector2Int endPosition) where T : ITile
+        {
+            GetConeOfVision(grid, out bool clear, startTile, openingAngle, endPosition, true);
+            return clear;
+        }
+
+        /// <summary>
+        /// Is the line of sight clear between two tiles
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="destinationTile">The destination tile</param>
+        /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
+        /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
+        /// <returns>A boolean value</returns>
+        public static bool IsLineOfSightClear<T>(T[,] grid, T startTile, T destinationTile, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
+        {
+            GetLineOfSight(grid, out bool isClear, startTile, destinationTile, allowDiagonals, favorVertical, false);
+            return isClear;
+        }
+
+        /// <summary>
+        /// Is the line of sight clear between two tiles
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="length">The length of the line</param>
+        /// <param name="directionAngle">The angle of the line from the start tile</param>
+        /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
+        /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
+        /// <returns>A boolean value</returns>
+        public static bool IsLineOfSightClear<T>(T[,] grid, T startTile, int length, float directionAngle, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
+        {
+            GetLineOfSight(grid, out bool isClear, startTile, length, directionAngle, allowDiagonals, favorVertical, false);
+            return isClear;
+        }
+
+        /// <summary>
+        /// Is the line of sight clear between two tiles
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="length">The length of the line</param>
+        /// <param name="direction">The direction of the line from the start tile</param>
+        /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
+        /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
+        /// <returns>A boolean value</returns>
+        public static bool IsLineOfSightClear<T>(T[,] grid, T startTile, int length, Vector2 direction, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
+        {
+            GetLineOfSight(grid, out bool isClear, startTile, length, direction, allowDiagonals, favorVertical, false);
+            return isClear;
+        }
+
+        /// <summary>
+        /// Is the line of sight clear between two tiles
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="grid">A two-dimensional array of tiles</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="endPosition">The destination virtual coordinates (do not need to be into grid range)</param>
+        /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
+        /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
+        /// <returns>A boolean value</returns>
+        public static bool IsLineOfSightClear<T>(T[,] grid, T startTile, Vector2Int endPosition, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
+        {
+            GetLineOfSight(grid, out bool isClear, startTile, endPosition, allowDiagonals, favorVertical, false);
+            return isClear;
+        }
+
         internal static bool IsTileOnALine<T>(T[,] grid, T startTile, T tile, Vector2Int endPosition, bool allowDiagonals, bool favorVertical, bool breakOnWalls) where T : ITile
         {
             if (GridUtils.TileEquals(startTile, tile))
@@ -75,6 +575,7 @@ namespace Caskev.GridToolkit
             }
             return false;
         }
+
         internal static void Raycast<T>(T[,] grid, T startTile, Vector2Int endPosition, bool allowDiagonals, bool favorVertical, bool includeStart, bool breakOnWalls, bool includeWalls, out bool isClear, ref HashSet<T> results) where T : ITile
         {
             Vector2Int p0 = new Vector2Int(startTile.X, startTile.Y);
@@ -140,6 +641,7 @@ namespace Caskev.GridToolkit
                 results.Add(GridUtils.GetTile(grid, p.x, p.y));
             }
         }
+
         private static void ConeCast<T>(T[,] grid, T center, int radius, float openingAngle, Vector2 direction, ref bool isClear, bool includeStart, ref HashSet<T> resultList) where T : ITile
         {
             bool lineClear = true;
@@ -176,6 +678,7 @@ namespace Caskev.GridToolkit
                 }
             }
         }
+
         private static void RaycastToMirrorPositions<T>(T[,] grid, T centerTile, int x, int y, float openingAngle, Vector2 direction, ref bool isClear, bool includeStart, ref HashSet<T> resultList) where T : ITile
         {
             bool lineClear = true;
@@ -251,485 +754,6 @@ namespace Caskev.GridToolkit
                     isClear = false;
                 }
             }
-        }
-
-        /// <summary>
-        /// Is the line of sight clear between two tiles
-        /// </summary>
-        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="destinationTile">The destination tile</param>
-        /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
-        /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
-        /// <returns>A boolean value</returns>
-        public static bool IsLineOfSightClear<T>(T[,] grid, T startTile, T destinationTile, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
-        {
-            GetLineOfSight(grid, out bool isClear, startTile, destinationTile, allowDiagonals, favorVertical, false);
-            return isClear;
-        }
-        /// <summary>
-        /// Is the line of sight clear between two tiles
-        /// </summary>
-        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="length">The length of the line</param>
-        /// <param name="directionAngle">The angle of the line from the start tile</param>
-        /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
-        /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
-        /// <returns>A boolean value</returns>
-        public static bool IsLineOfSightClear<T>(T[,] grid, T startTile, int length, float directionAngle, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
-        {
-            GetLineOfSight(grid, out bool isClear, startTile, length, directionAngle, allowDiagonals, favorVertical, false);
-            return isClear;
-        }
-        /// <summary>
-        /// Is the line of sight clear between two tiles
-        /// </summary>
-        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="length">The length of the line</param>
-        /// <param name="direction">The direction of the line from the start tile</param>
-        /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
-        /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
-        /// <returns>A boolean value</returns>
-        public static bool IsLineOfSightClear<T>(T[,] grid, T startTile, int length, Vector2 direction, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
-        {
-            GetLineOfSight(grid, out bool isClear, startTile, length, direction, allowDiagonals, favorVertical, false);
-            return isClear;
-        }
-        /// <summary>
-        /// Is the line of sight clear between two tiles
-        /// </summary>
-        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="endPosition">The destination virtual coordinates (do not need to be into grid range)</param>
-        /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
-        /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
-        /// <returns>A boolean value</returns>
-        public static bool IsLineOfSightClear<T>(T[,] grid, T startTile, Vector2Int endPosition, bool allowDiagonals = true, bool favorVertical = false) where T : ITile
-        {
-            GetLineOfSight(grid, out bool isClear, startTile, endPosition, allowDiagonals, favorVertical, false);
-            return isClear;
-        }
-
-        /// <summary>
-        /// Is the line of sight clear between two tiles
-        /// </summary>
-        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
-        /// <param name="destinationTile">The destination tile</param>
-        /// <returns>A boolean value</returns>
-        public static bool IsConeOfVisionClear<T>(T[,] grid, T startTile, float openingAngle, T destinationTile) where T : ITile
-        {
-            GetConeOfVision(grid, out bool clear, startTile, openingAngle, destinationTile, true);
-            return clear;
-        }
-        /// <summary>
-        /// Is the line of sight clear between two tiles
-        /// </summary>
-        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="length">The length of the cone</param>
-        /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
-        /// <param name="directionAngle">The angle of the line from the start tile</param>
-        /// <returns>A boolean value</returns>
-        public static bool IsConeOfVisionClear<T>(T[,] grid, T startTile, int length, float openingAngle, float directionAngle) where T : ITile
-        {
-            GetConeOfVision(grid, out bool clear, startTile, length, openingAngle, directionAngle, true);
-            return clear;
-        }
-        /// <summary>
-        /// Is the line of sight clear between two tiles
-        /// </summary>
-        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="length">The length of the cone</param>
-        /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
-        /// <param name="direction">The direction of the line from the start tile</param>
-        /// <returns>A boolean value</returns>
-        public static bool IsConeOfVisionClear<T>(T[,] grid, T startTile, int length, float openingAngle, Vector2 direction) where T : ITile
-        {
-            GetConeOfVision(grid, out bool clear, startTile, length, openingAngle, direction, true);
-            return clear;
-        }
-        /// <summary>
-        /// Is the line of sight clear between two tiles
-        /// </summary>
-        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
-        /// <param name="endPosition">The destination virtual coordinates (do not need to be into grid range)</param>
-        /// <returns>A boolean value</returns>
-        public static bool IsConeOfVisionClear<T>(T[,] grid, T startTile, float openingAngle, Vector2Int endPosition) where T : ITile
-        {
-            GetConeOfVision(grid, out bool clear, startTile, openingAngle, endPosition, true);
-            return clear;
-        }
-
-        /// <summary>
-        /// Get all tiles on a line of sight from a start tile.<br/>
-        /// </summary>
-        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="destinationTile">The destination tile</param>
-        /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
-        /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
-        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <returns>A boolean value</returns>
-        public static T[] GetLineOfSight<T>(T[,] grid, T startTile, T destinationTile, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
-        {
-            Vector2Int endPos = new Vector2Int(destinationTile.X, destinationTile.Y);
-            return GetLineOfSight(grid, startTile, endPos, allowDiagonals, favorVertical, includeStart);
-        }
-        /// <summary>
-        /// Get all tiles on a line of sight from a start tile.<br/>
-        /// </summary>
-        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="length">The length of the line</param>
-        /// <param name="directionAngle">The angle of the line from the start tile</param>
-        /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
-        /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
-        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <returns>An array of tiles</returns>
-        public static T[] GetLineOfSight<T>(T[,] grid, T startTile, int length, float directionAngle, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
-        {
-            float magnitude = new Vector2Int(grid.GetLength(0), grid.GetLength(1)).magnitude;
-            if (length > magnitude || Mathf.Approximately(length, 0f))
-            {
-                length = Mathf.CeilToInt(magnitude);
-            }
-            Vector2Int endPos = new Vector2Int(Mathf.RoundToInt(startTile.X + Mathf.Cos(directionAngle * Mathf.Deg2Rad) * length), Mathf.RoundToInt(startTile.Y + Mathf.Sin(directionAngle * Mathf.Deg2Rad) * length));
-            return GetLineOfSight(grid, startTile, endPos, allowDiagonals, favorVertical, includeStart);
-        }
-        /// <summary>
-        /// Get all tiles on a line of sight from a start tile.<br/>
-        /// </summary>
-        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="length">The length of the line</param>
-        /// <param name="direction">The direction of the line from the start tile</param>
-        /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
-        /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
-        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <returns>An array of tiles</returns>
-        public static T[] GetLineOfSight<T>(T[,] grid, T startTile, int length, Vector2 direction, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
-        {
-            float magnitude = new Vector2Int(grid.GetLength(0), grid.GetLength(1)).magnitude;
-            if (length > magnitude || Mathf.Approximately(length, 0f))
-            {
-                length = Mathf.CeilToInt(magnitude);
-            }
-            Vector2Int endPos = Vector2Int.RoundToInt(new Vector2(startTile.X, startTile.Y) + (direction.normalized * length));
-            return GetLineOfSight(grid, startTile, endPos, allowDiagonals, favorVertical, includeStart);
-        }
-        /// <summary>
-        /// Get all tiles on a line of sight from a start tile.<br/>
-        /// </summary>
-        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="endPosition">The destination virtual coordinates (do not need to be into grid range)</param>
-        /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
-        /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
-        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <returns>An array of tiles</returns>
-        public static T[] GetLineOfSight<T>(T[,] grid, T startTile, Vector2Int endPosition, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
-        {
-            HashSet<T> hashSet = new HashSet<T>();
-            Raycast(grid, startTile, endPosition, allowDiagonals, favorVertical, includeStart, true, false, out bool isClear, ref hashSet);
-            return hashSet.ToArray();
-        }
-        /// <summary>
-        /// Get all tiles on a line of sight from a start tile.<br/>
-        /// </summary>
-        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="isClear">Is the line of sight clear (no non-walkable tile encountered)</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="destinationTile">The destination tile</param>
-        /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
-        /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
-        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <returns>A boolean value</returns>
-        public static T[] GetLineOfSight<T>(T[,] grid, out bool isClear, T startTile, T destinationTile, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
-        {
-            Vector2Int endPos = new Vector2Int(destinationTile.X, destinationTile.Y);
-            return GetLineOfSight(grid, out isClear, startTile, endPos, allowDiagonals, favorVertical, includeStart);
-        }
-        /// <summary>
-        /// Get all tiles on a line of sight from a start tile.<br/>
-        /// </summary>
-        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="isClear">Is the line of sight clear (no non-walkable tile encountered)</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="length">The length of the line</param>
-        /// <param name="directionAngle">The angle of the line from the start tile</param>
-        /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
-        /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
-        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <returns>An array of tiles</returns>
-        public static T[] GetLineOfSight<T>(T[,] grid, out bool isClear, T startTile, int length, float directionAngle, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
-        {
-            float magnitude = new Vector2Int(grid.GetLength(0), grid.GetLength(1)).magnitude;
-            if (length > magnitude || Mathf.Approximately(length, 0f))
-            {
-                length = Mathf.CeilToInt(magnitude);
-            }
-            Vector2Int endPos = new Vector2Int(Mathf.RoundToInt(startTile.X + Mathf.Cos(directionAngle * Mathf.Deg2Rad) * length), Mathf.RoundToInt(startTile.Y + Mathf.Sin(directionAngle * Mathf.Deg2Rad) * length));
-            return GetLineOfSight(grid, out isClear, startTile, endPos, allowDiagonals, favorVertical, includeStart);
-        }
-        /// <summary>
-        /// Get all tiles on a line of sight from a start tile.<br/>
-        /// </summary>
-        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="isClear">Is the line of sight clear (no non-walkable tile encountered)</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="length">The length of the line</param>
-        /// <param name="direction">The direction of the line from the start tile</param>
-        /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
-        /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
-        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <returns>An array of tiles</returns>
-        public static T[] GetLineOfSight<T>(T[,] grid, out bool isClear, T startTile, int length, Vector2 direction, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
-        {
-            float magnitude = new Vector2Int(grid.GetLength(0), grid.GetLength(1)).magnitude;
-            if (length > magnitude || Mathf.Approximately(length, 0f))
-            {
-                length = Mathf.CeilToInt(magnitude);
-            }
-            Vector2Int endPos = Vector2Int.RoundToInt(new Vector2(startTile.X, startTile.Y) + (direction.normalized * length));
-            return GetLineOfSight(grid, out isClear, startTile, endPos, allowDiagonals, favorVertical, includeStart);
-        }
-        /// <summary>
-        /// Get all tiles on a line of sight from a start tile.<br/>
-        /// </summary>
-        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="isClear">Is the line of sight clear (no non-walkable tile encountered)</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="endPosition">The destination virtual coordinates (do not need to be into grid range)</param>
-        /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
-        /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
-        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <returns>An array of tiles</returns>
-        public static T[] GetLineOfSight<T>(T[,] grid, out bool isClear, T startTile, Vector2Int endPosition, bool allowDiagonals = false, bool favorVertical = false, bool includeStart = true) where T : ITile
-        {
-            HashSet<T> hashSet = new HashSet<T>();
-            Raycast(grid, startTile, endPosition, allowDiagonals, favorVertical, includeStart, true, false, out isClear, ref hashSet);
-            return hashSet.ToArray();
-        }
-
-        /// <summary>
-        /// Get all visible tiles from a start tile's cone of vision<br/>
-        /// Note that the order of the tiles into the returned array is not guaranteed.
-        /// </summary>
-        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
-        /// <param name="destinationTile">The destination tile at the end of the cone</param>
-        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <returns>An array of tiles</returns>
-        public static T[] GetConeOfVision<T>(T[,] grid, T startTile, float openingAngle, T destinationTile, bool includeStart = true) where T : ITile
-        {
-            openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
-            Vector2Int startPos = new Vector2Int(startTile.X, startTile.Y);
-            Vector2Int endPos = new Vector2Int(destinationTile.X, destinationTile.Y);
-            Vector2 direction = endPos - startPos;
-            HashSet<T> lines = new HashSet<T>();
-            bool isClear = true;
-            ConeCast(grid, startTile, Mathf.CeilToInt(direction.magnitude), openingAngle, direction, ref isClear, includeStart, ref lines);
-            return lines.ToArray();
-        }
-        /// <summary>
-        /// Get all visible tiles from a start tile's cone of vision<br/>
-        /// Note that the order of the tiles into the returned array is not guaranteed.
-        /// </summary>
-        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="length">The length of the line</param>
-        /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
-        /// <param name="directionAngle">The angle of the line from the start tile</param>
-        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <returns>An array of tiles</returns>
-        public static T[] GetConeOfVision<T>(T[,] grid, T startTile, int length, float openingAngle, float directionAngle, bool includeStart = true) where T : ITile
-        {
-            openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
-            float magnitude = new Vector2Int(grid.GetLength(0), grid.GetLength(1)).magnitude;
-            if (length > magnitude || Mathf.Approximately(length, 0f))
-            {
-                length = Mathf.CeilToInt(magnitude);
-            }
-            Vector2Int startPos = new Vector2Int(startTile.X, startTile.Y);
-            Vector2Int endPos = new Vector2Int(Mathf.RoundToInt(startTile.X + Mathf.Cos(directionAngle * Mathf.Deg2Rad) * length), Mathf.RoundToInt(startTile.Y + Mathf.Sin(directionAngle * Mathf.Deg2Rad) * length));
-            Vector2 direction = endPos - startPos;
-            HashSet<T> lines = new HashSet<T>();
-            bool isClear = true;
-            ConeCast(grid, startTile, length, openingAngle, direction, ref isClear, includeStart, ref lines);
-            return lines.ToArray();
-        }
-        /// <summary>
-        /// Get all visible tiles from a start tile's cone of vision<br/>
-        /// Note that the order of the tiles into the returned array is not guaranteed.
-        /// </summary>
-        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="length">The length of the line</param>
-        /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
-        /// <param name="direction">The direction of the line from the start tile</param>
-        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <returns>An array of tiles</returns>
-        public static T[] GetConeOfVision<T>(T[,] grid, T startTile, int length, float openingAngle, Vector2 direction, bool includeStart = true) where T : ITile
-        {
-            openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
-            float magnitude = new Vector2Int(grid.GetLength(0), grid.GetLength(1)).magnitude;
-            if (length > magnitude || Mathf.Approximately(length, 0f))
-            {
-                length = Mathf.CeilToInt(magnitude);
-            }
-            HashSet<T> lines = new HashSet<T>();
-            bool isClear = true;
-            ConeCast(grid, startTile, length, openingAngle, direction, ref isClear, includeStart, ref lines);
-            return lines.ToArray();
-        }
-        /// <summary>
-        /// Get all visible tiles from a start tile's cone of vision<br/>
-        /// Note that the order of the tiles into the returned array is not guaranteed.
-        /// </summary>
-        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
-        /// <param name="endPosition">The destination virtual coordinates (do not need to be into grid range)</param>
-        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <returns>An array of tiles</returns>
-        public static T[] GetConeOfVision<T>(T[,] grid, T startTile, float openingAngle, Vector2Int endPosition, bool includeStart = true) where T : ITile
-        {
-            openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
-            Vector2Int startPos = new Vector2Int(startTile.X, startTile.Y);
-            Vector2 direction = endPosition - startPos;
-            HashSet<T> lines = new HashSet<T>();
-            bool isClear = true;
-            ConeCast(grid, startTile, Mathf.FloorToInt(direction.magnitude), openingAngle, direction, ref isClear, includeStart, ref lines);
-            return lines.ToArray();
-        }
-        /// <summary>
-        /// Get all visible tiles from a start tile's cone of vision<br/>
-        /// Note that the order of the tiles into the returned array is not guaranteed.
-        /// </summary>
-        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="isClear">Is the line of sight clear (no non-walkable tile encountered)</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
-        /// <param name="destinationTile">The destination tile at the end of the cone</param>
-        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <returns>An array of tiles</returns>
-        public static T[] GetConeOfVision<T>(T[,] grid, out bool isClear, T startTile, float openingAngle, T destinationTile, bool includeStart = true) where T : ITile
-        {
-            openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
-            Vector2Int startPos = new Vector2Int(startTile.X, startTile.Y);
-            Vector2Int endPos = new Vector2Int(destinationTile.X, destinationTile.Y);
-            int radius = Mathf.CeilToInt(Vector2Int.Distance(startPos, endPos));
-            Vector2 direction = endPos - startPos;
-            HashSet<T> lines = new HashSet<T>();
-            isClear = true;
-            ConeCast(grid, startTile, Mathf.FloorToInt(direction.magnitude), openingAngle, direction, ref isClear, includeStart, ref lines);
-            return lines.ToArray();
-        }
-        /// <summary>
-        /// Get all visible tiles from a start tile's cone of vision<br/>
-        /// Note that the order of the tiles into the returned array is not guaranteed.
-        /// </summary>
-        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="isClear">Is the line of sight clear (no non-walkable tile encountered)</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="length">The length of the line</param>
-        /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
-        /// <param name="directionAngle">The angle of the line from the start tile</param>
-        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <returns>An array of tiles</returns>
-        public static T[] GetConeOfVision<T>(T[,] grid, out bool isClear, T startTile, int length, float openingAngle, float directionAngle, bool includeStart = true) where T : ITile
-        {
-            openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
-            float magnitude = new Vector2Int(grid.GetLength(0), grid.GetLength(1)).magnitude;
-            if (length > magnitude || Mathf.Approximately(length, 0f))
-            {
-                length = Mathf.CeilToInt(magnitude);
-            }
-            Vector2Int startPos = new Vector2Int(startTile.X, startTile.Y);
-            Vector2Int endPos = new Vector2Int(Mathf.RoundToInt(startTile.X + Mathf.Cos(directionAngle * Mathf.Deg2Rad) * length), Mathf.RoundToInt(startTile.Y + Mathf.Sin(directionAngle * Mathf.Deg2Rad) * length));
-            Vector2 direction = endPos - startPos;
-            HashSet<T> lines = new HashSet<T>();
-            isClear = true;
-            ConeCast(grid, startTile, length, openingAngle, direction, ref isClear, includeStart, ref lines);
-            return lines.ToArray();
-        }
-        /// <summary>
-        /// Get all visible tiles from a start tile's cone of vision<br/>
-        /// Note that the order of the tiles into the returned array is not guaranteed.
-        /// </summary>
-        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="isClear">Is the line of sight clear (no non-walkable tile encountered)</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="length">The length of the line</param>
-        /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
-        /// <param name="direction">The direction of the line from the start tile</param>
-        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <returns>An array of tiles</returns>
-        public static T[] GetConeOfVision<T>(T[,] grid, out bool isClear, T startTile, int length, float openingAngle, Vector2 direction, bool includeStart = true) where T : ITile
-        {
-            openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
-            float magnitude = new Vector2Int(grid.GetLength(0), grid.GetLength(1)).magnitude;
-            if (length > magnitude || Mathf.Approximately(length, 0f))
-            {
-                length = Mathf.CeilToInt(magnitude);
-            }
-            HashSet<T> lines = new HashSet<T>();
-            isClear = true;
-            ConeCast(grid, startTile, length, openingAngle, direction, ref isClear, includeStart, ref lines);
-            return lines.ToArray();
-        }
-        /// <summary>
-        /// Get all visible tiles from a start tile's cone of vision<br/>
-        /// Note that the order of the tiles into the returned array is not guaranteed.
-        /// </summary>
-        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="grid">A two-dimensional array of tiles</param>
-        /// <param name="isClear">Is the line of sight clear (no non-walkable tile encountered)</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
-        /// <param name="endPosition">The destination virtual coordinates (do not need to be into grid range)</param>
-        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <returns>An array of tiles</returns>
-        public static T[] GetConeOfVision<T>(T[,] grid, out bool isClear, T startTile, float openingAngle, Vector2Int endPosition, bool includeStart = true) where T : ITile
-        {
-            openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
-            Vector2Int startPos = new Vector2Int(startTile.X, startTile.Y);
-            Vector2 direction = endPosition - startPos;
-            HashSet<T> lines = new HashSet<T>();
-            isClear = true;
-            ConeCast(grid, startTile, Mathf.CeilToInt(direction.magnitude), openingAngle, direction, ref isClear, includeStart, ref lines);
-            return lines.ToArray();
         }
     }
 }

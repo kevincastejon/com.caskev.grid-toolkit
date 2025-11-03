@@ -15,6 +15,7 @@ namespace Caskev.GridToolkit
         {
             get;
         }
+
         /// <summary>
         /// The tile horizontal coordinate
         /// </summary>
@@ -22,6 +23,7 @@ namespace Caskev.GridToolkit
         {
             get;
         }
+
         /// <summary>
         /// The tile vertical coordinate
         /// </summary>

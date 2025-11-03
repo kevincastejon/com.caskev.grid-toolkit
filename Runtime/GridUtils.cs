@@ -1,4 +1,5 @@
 using UnityEngine;
+
 /// <summary>
 /// Utilitary API to proceed operations on abstract grids such as tile extraction, raycasting, and pathfinding.
 /// </summary>
@@ -9,45 +10,32 @@ namespace Caskev.GridToolkit
     /// </summary>
     public static class GridUtils
     {
-        internal static Vector2Int GetCoordinatesFromFlatIndex(Vector2Int gridDimensions, int flatIndex)
-        {
-            return new Vector2Int(flatIndex % gridDimensions.y, flatIndex / gridDimensions.y);
-        }
-        internal static int GetFlatIndexFromCoordinates(Vector2Int gridDimensions, int x, int y)
-        {
-            return y * gridDimensions.y + x;
-        }
         /// <summary>
-        /// Converts a TileDirection to a Vector2Int.
+        /// Check if specific coordinates are into the grid range
         /// </summary>
-        /// <param name="direction">The TileDirection enumeration case</param>
-        /// <returns>The corresponding Vector2Int</returns>
-        public static Vector2Int NextNodeDirectionToVector2Int(TileDirection direction)
+        /// <typeparam name="T">Any type</typeparam>
+        /// <param name="grid">A two-dimensional array</param>
+        /// <param name="x">Horizontal coordinate to check</param>
+        /// <param name="y">Vertical coordinate to check</param>
+        /// <returns>A boolean value</returns>
+        public static bool AreCoordsIntoGrid<T>(T[,] grid, int x, int y)
         {
-            switch (direction)
-            {
-                case TileDirection.LEFT:
-                    return Vector2Int.left;
-                case TileDirection.RIGHT:
-                    return Vector2Int.right;
-                case TileDirection.DOWN:
-                    return Vector2Int.down;
-                case TileDirection.UP:
-                    return Vector2Int.up;
-                case TileDirection.UP_LEFT:
-                    return new(-1, 1);
-                case TileDirection.UP_RIGHT:
-                    return new(1, 1);
-                case TileDirection.DOWN_LEFT:
-                    return new(-1, -1);
-                case TileDirection.DOWN_RIGHT:
-                    return new(1, -1);
-                case TileDirection.NONE:
-                case TileDirection.SELF:
-                default:
-                    return Vector2Int.zero;
-            }
+            return x >= 0 && x < GetHorizontalLength(grid) && y >= 0 && y < GetVerticalLength(grid);
         }
+
+        /// <summary>
+        /// Return clamped coordinates into the grid
+        /// </summary>
+        /// <typeparam name="T">Any type</typeparam>
+        /// <param name="grid">A two-dimensional array</param>
+        /// <param name="x">Horizontal coordinate to clamp</param>
+        /// <param name="y">Vertical coordinate to clamp</param>
+        /// <returns>A Vector2Int representing the clamped coordinates</returns>
+        public static Vector2Int ClampCoordsIntoGrid<T>(T[,] grid, int x, int y)
+        {
+            return new Vector2Int(Mathf.Clamp(x, 0, GetHorizontalLength(grid) - 1), Mathf.Clamp(y, 0, GetVerticalLength(grid) - 1));
+        }
+
         /// <summary>
         /// Gets the direction between two adjacent tiles.
         /// </summary>
@@ -71,6 +59,82 @@ namespace Caskev.GridToolkit
 
             return TileDirection.NONE;
         }
+
+        /// <summary>
+        /// Returns the horizontal length of a grid
+        /// </summary>
+        /// <typeparam name="T">Any type</typeparam>
+        /// <param name="grid">A two-dimensional array</param>
+        /// <returns>The horizontal length of a grid</returns>
+        public static int GetHorizontalLength<T>(T[,] grid)
+        {
+            return grid.GetLength(1);
+        }
+
+        /// <summary>
+        /// Returns a tile from the grid at specific coordinates
+        /// </summary>
+        /// <typeparam name="T">Any type</typeparam>
+        /// <param name="grid">A two-dimensional array</param>
+        /// <param name="x">Horizontal coordinate of the tile</param>
+        /// <param name="y">Vertical coordinate of the tile</param>
+        /// <returns>A tile</returns>
+        public static T GetTile<T>(T[,] grid, int x, int y)
+        {
+            return grid[y, x];
+        }
+
+        /// <summary>
+        /// Returns the vertical length of a grid
+        /// </summary>
+        /// <typeparam name="T">Any type</typeparam>
+        /// <param name="grid">A two-dimensional array</param>
+        /// <returns>The vertical length of a grid</returns>
+        public static int GetVerticalLength<T>(T[,] grid)
+        {
+            return grid.GetLength(0);
+        }
+
+        /// <summary>
+        /// Converts a TileDirection to a Vector2Int.
+        /// </summary>
+        /// <param name="direction">The TileDirection enumeration case</param>
+        /// <returns>The corresponding Vector2Int</returns>
+        public static Vector2Int NextNodeDirectionToVector2Int(TileDirection direction)
+        {
+            switch (direction)
+            {
+                case TileDirection.LEFT:
+                    return Vector2Int.left;
+
+                case TileDirection.RIGHT:
+                    return Vector2Int.right;
+
+                case TileDirection.DOWN:
+                    return Vector2Int.down;
+
+                case TileDirection.UP:
+                    return Vector2Int.up;
+
+                case TileDirection.UP_LEFT:
+                    return new(-1, 1);
+
+                case TileDirection.UP_RIGHT:
+                    return new(1, 1);
+
+                case TileDirection.DOWN_LEFT:
+                    return new(-1, -1);
+
+                case TileDirection.DOWN_RIGHT:
+                    return new(1, -1);
+
+                case TileDirection.NONE:
+                case TileDirection.SELF:
+                default:
+                    return Vector2Int.zero;
+            }
+        }
+
         /// <summary>
         /// Compare two tiles to check if they share the same coordinates values
         /// </summary>
@@ -82,61 +146,15 @@ namespace Caskev.GridToolkit
         {
             return tileA.X == tileB.X && tileA.Y == tileB.Y;
         }
-        /// <summary>
-        /// Return clamped coordinates into the grid
-        /// </summary>
-        /// <typeparam name="T">Any type</typeparam>
-        /// <param name="grid">A two-dimensional array</param>
-        /// <param name="x">Horizontal coordinate to clamp</param>
-        /// <param name="y">Vertical coordinate to clamp</param>
-        /// <returns>A Vector2Int representing the clamped coordinates</returns>
-        public static Vector2Int ClampCoordsIntoGrid<T>(T[,] grid, int x, int y)
+
+        internal static Vector2Int GetCoordinatesFromFlatIndex(Vector2Int gridDimensions, int flatIndex)
         {
-            return new Vector2Int(Mathf.Clamp(x, 0, GetHorizontalLength(grid) - 1), Mathf.Clamp(y, 0, GetVerticalLength(grid) - 1));
+            return new Vector2Int(flatIndex % gridDimensions.y, flatIndex / gridDimensions.y);
         }
-        /// <summary>
-        /// Check if specific coordinates are into the grid range
-        /// </summary>
-        /// <typeparam name="T">Any type</typeparam>
-        /// <param name="grid">A two-dimensional array</param>
-        /// <param name="x">Horizontal coordinate to check</param>
-        /// <param name="y">Vertical coordinate to check</param>
-        /// <returns>A boolean value</returns>
-        public static bool AreCoordsIntoGrid<T>(T[,] grid, int x, int y)
+
+        internal static int GetFlatIndexFromCoordinates(Vector2Int gridDimensions, int x, int y)
         {
-            return x >= 0 && x < GetHorizontalLength(grid) && y >= 0 && y < GetVerticalLength(grid);
-        }
-        /// <summary>
-        /// Returns a tile from the grid at specific coordinates
-        /// </summary>
-        /// <typeparam name="T">Any type</typeparam>
-        /// <param name="grid">A two-dimensional array</param>
-        /// <param name="x">Horizontal coordinate of the tile</param>
-        /// <param name="y">Vertical coordinate of the tile</param>
-        /// <returns>A tile</returns> 
-        public static T GetTile<T>(T[,] grid, int x, int y)
-        {
-            return grid[y, x];
-        }
-        /// <summary>
-        /// Returns the horizontal length of a grid
-        /// </summary>
-        /// <typeparam name="T">Any type</typeparam>
-        /// <param name="grid">A two-dimensional array</param>
-        /// <returns>The horizontal length of a grid</returns>
-        public static int GetHorizontalLength<T>(T[,] grid)
-        {
-            return grid.GetLength(1);
-        }
-        /// <summary>
-        /// Returns the vertical length of a grid
-        /// </summary>
-        /// <typeparam name="T">Any type</typeparam>
-        /// <param name="grid">A two-dimensional array</param>
-        /// <returns>The vertical length of a grid</returns>
-        public static int GetVerticalLength<T>(T[,] grid)
-        {
-            return grid.GetLength(0);
+            return y * gridDimensions.y + x;
         }
     }
 }

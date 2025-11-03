@@ -3,10 +3,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+
 namespace Caskev.GridToolkit
 {
     /// <summary>
-    /// A DirectionAtlas object holds DirectionGrid objects for each tile.  
+    /// A DirectionAtlas object holds DirectionGrid objects for each tile.
     /// </summary>
     public class DirectionAtlas
     {
@@ -18,196 +19,7 @@ namespace Caskev.GridToolkit
         }
 
         /// <summary>
-        /// Is there a path between two tiles.
-        /// </summary>
-        /// <param name="grid">The user grid</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="destinationTile">The destination tile</param>
-        /// <returns>A boolean value</returns>
-        public bool HasPath<T>(T[,] grid, T startTile, T destinationTile) where T : ITile
-        {
-            if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
-            {
-                return false;
-            }
-            DirectionGrid directionGrid = _directionAtlas[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), destinationTile.X, destinationTile.Y)];
-            return directionGrid.IsTileAccessible(grid, startTile);
-        }
-        /// <summary>
-        /// Get the next tile on the path between a start tile and a destination tile.
-        /// </summary>
-        /// <param name="grid">The user grid</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="destinationTile">The destination tile</param>
-        /// <returns>A tile object</returns>
-        public T GetNextTile<T>(T[,] grid, T startTile, T destinationTile) where T : ITile
-        {
-            if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
-            {
-                throw new Exception("Do not call this method with non-walkable (or null) tiles");
-            }
-            DirectionGrid directionGrid = _directionAtlas[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), destinationTile.X, destinationTile.Y)];
-            if (!directionGrid.IsTileAccessible(grid, startTile))
-            {
-                return default;
-            }
-            return directionGrid.GetNextTile(grid, startTile);
-        }
-        /// <summary>
-        /// Get the next tile on the path between a start tile and a destination tile.
-        /// </summary>
-        /// <param name="grid">The user grid</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="destinationTile">The destination tile</param>
-        /// <returns>A Vector2Int direction</returns>
-        public TileDirection GetNextDirection<T>(T[,] grid, T startTile, T destinationTile) where T : ITile
-        {
-            if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
-            {
-                throw new Exception("Do not call this method with non-walkable (or null) tiles");
-            }
-            DirectionGrid directionGrid = _directionAtlas[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), destinationTile.X, destinationTile.Y)];
-            return directionGrid.GetNextDirection(grid, startTile);
-        }
-        /// <summary>
-        /// Get all the tiles on the path from a start tile to a destination tile. If there is no path between the two tiles then an empty array will be returned.
-        /// </summary>
-        /// <param name="grid">The user grid</param>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="destinationTile">The destination tile</param>
-        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="includeDestination">Include the target tile into the resulting array or not</param>
-        /// <returns>An array of tiles</returns>
-        public T[] GetPath<T>(T[,] grid, T startTile, T destinationTile, bool includeStart = true, bool includeDestination = true) where T : ITile
-        {
-            if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
-            {
-                throw new Exception("Do not call this method with non-walkable (or null) tiles");
-            }
-            DirectionGrid directionGrid = _directionAtlas[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), destinationTile.X, destinationTile.Y)];
-            if (!directionGrid.IsTileAccessible(grid, startTile))
-            {
-                return new T[0];
-            }
-            return directionGrid.GetPathToTarget(grid, startTile, includeStart, includeDestination);
-        }
-        /// <summary>
-        /// Serializes a DirectionAtlas to a byte array. 
-        /// </summary>
-        /// <returns>The serialized DirectionAtlas.</returns>
-        public byte[] ToByteArray()
-        {
-            int bytesCount = _directionAtlas.Length * _directionAtlas.Count(x => x != null) + _directionAtlas.Length;
-            byte[] bytes = new byte[bytesCount];
-            int byteIndex = 0;
-            for (int i = 0; i < _directionAtlas.Length; i++)
-            {
-                if (_directionAtlas[i] == null)
-                {
-                    bytes[byteIndex] = 0;
-                    byteIndex++;
-                    continue;
-                }
-                else
-                {
-                    bytes[byteIndex] = 1;
-                    byteIndex++;
-                    for (int j = 0; j < _directionAtlas.Length; j++)
-                    {
-                        bytes[byteIndex] = (byte)_directionAtlas[i]._directionGrid[j];
-                        byteIndex++;
-                    }
-                }
-            }
-            return bytes;
-        }
-        /// <summary>
-        /// Asynchronously serializes a DirectionAtlas to a byte array. 
-        /// </summary>
-        /// <param name="progress">An optional IProgress object to get the deserialization progression</param>
-        /// <param name="cancelToken">An optional CancellationToken object to cancel the serialization</param>
-        /// <returns>The serialized DirectionAtlas.</returns>
-        public Task<byte[]> ToByteArrayAsync(IProgress<float> progress = null, CancellationToken cancelToken = default)
-        {
-            Task<byte[]> task = Task.Run(() =>
-            {
-                int bytesCount = _directionAtlas.Length * _directionAtlas.Count(x => x != null) + _directionAtlas.Length;
-                byte[] bytes = new byte[bytesCount];
-                int byteIndex = 0;
-                for (int i = 0; i < _directionAtlas.Length; i++)
-                {
-                    if (cancelToken.IsCancellationRequested)
-                    {
-                        return null;
-                    }
-                    progress.Report((float)i / _directionAtlas.Length);
-                    if (_directionAtlas[i] == null)
-                    {
-                        bytes[byteIndex] = 0;
-                        byteIndex++;
-                        continue;
-                    }
-                    else
-                    {
-                        bytes[byteIndex] = 1;
-                        byteIndex++;
-                        for (int j = 0; j < _directionAtlas.Length; j++)
-                        {
-                            bytes[byteIndex] = (byte)_directionAtlas[i]._directionGrid[j];
-                            byteIndex++;
-                        }
-                    }
-                }
-                return bytes;
-            });
-            return task;
-        }
-        /// <summary>
-        /// Asynchronously serializes a DirectionAtlas to a byte array. 
-        /// </summary>
-        /// <param name="progress">An optional IProgress object to get the deserialization progression</param>
-        /// <param name="cancelToken">An optional CancellationToken object to cancel the serialization</param>
-        /// <returns>The serialized DirectionAtlas.</returns>
-        public async Awaitable<byte[]> ToByteArrayAwaitable(IProgress<float> progress = null, CancellationToken cancelToken = default)
-        {
-            int bytesCount = _directionAtlas.Length * _directionAtlas.Count(x => x != null) + _directionAtlas.Length;
-            byte[] bytes = new byte[bytesCount];
-            int byteIndex = 0;
-            float frameBudgetMS = 6f;
-            float frameStart = Time.realtimeSinceStartup;
-            float elapsedMs = 0f;
-            for (int i = 0; i < _directionAtlas.Length; i++)
-            {
-                if (cancelToken.IsCancellationRequested)
-                {
-                    return null;
-                }
-                progress.Report((float)i / _directionAtlas.Length);
-                if (_directionAtlas[i] == null)
-                {
-                    bytes[byteIndex] = 0;
-                    byteIndex++;
-                    continue;
-                }
-                else
-                {
-                    bytes[byteIndex] = 1;
-                    byteIndex++;
-                    for (int j = 0; j < _directionAtlas.Length; j++)
-                    {
-                        bytes[byteIndex] = (byte)_directionAtlas[i]._directionGrid[j];
-                        byteIndex++;
-                    }
-                }
-                if (((elapsedMs = (Time.realtimeSinceStartup - frameStart) * 1000f) < frameBudgetMS) == false)
-                {
-                    await Awaitable.NextFrameAsync();
-                }
-            }
-            return bytes;
-        }
-        /// <summary>
-        /// Deserializes a DirectionAtlas from a byte array. 
+        /// Deserializes a DirectionAtlas from a byte array.
         /// </summary>
         /// <param name="grid">The user grid.</param>
         /// <param name="bytes">The serialized DirectionAtlas.</param>
@@ -242,8 +54,9 @@ namespace Caskev.GridToolkit
             }
             return new DirectionAtlas(directionAtlas);
         }
+
         /// <summary>
-        /// Asynchronously deserializes a DirectionAtlas from a byte array. 
+        /// Asynchronously deserializes a DirectionAtlas from a byte array.
         /// </summary>
         /// <param name="grid">The user grid.</param>
         /// <param name="bytes">The serialized DirectionAtlas.</param>
@@ -289,8 +102,9 @@ namespace Caskev.GridToolkit
             });
             return task;
         }
+
         /// <summary>
-        /// Asynchronously deserializes a DirectionAtlas from a byte array. 
+        /// Asynchronously deserializes a DirectionAtlas from a byte array.
         /// </summary>
         /// <param name="grid">The user grid.</param>
         /// <param name="bytes">The serialized DirectionAtlas.</param>
@@ -338,6 +152,202 @@ namespace Caskev.GridToolkit
                 }
             }
             return new DirectionAtlas(directionAtlas);
+        }
+
+        /// <summary>
+        /// Get the next tile on the path between a start tile and a destination tile.
+        /// </summary>
+        /// <param name="grid">The user grid</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="destinationTile">The destination tile</param>
+        /// <returns>A Vector2Int direction</returns>
+        public TileDirection GetNextDirection<T>(T[,] grid, T startTile, T destinationTile) where T : ITile
+        {
+            if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
+            {
+                throw new Exception("Do not call this method with non-walkable (or null) tiles");
+            }
+            DirectionGrid directionGrid = _directionAtlas[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), destinationTile.X, destinationTile.Y)];
+            return directionGrid.GetNextDirection(grid, startTile);
+        }
+
+        /// <summary>
+        /// Get the next tile on the path between a start tile and a destination tile.
+        /// </summary>
+        /// <param name="grid">The user grid</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="destinationTile">The destination tile</param>
+        /// <returns>A tile object</returns>
+        public T GetNextTile<T>(T[,] grid, T startTile, T destinationTile) where T : ITile
+        {
+            if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
+            {
+                throw new Exception("Do not call this method with non-walkable (or null) tiles");
+            }
+            DirectionGrid directionGrid = _directionAtlas[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), destinationTile.X, destinationTile.Y)];
+            if (!directionGrid.IsTileAccessible(grid, startTile))
+            {
+                return default;
+            }
+            return directionGrid.GetNextTile(grid, startTile);
+        }
+
+        /// <summary>
+        /// Get all the tiles on the path from a start tile to a destination tile. If there is no path between the two tiles then an empty array will be returned.
+        /// </summary>
+        /// <param name="grid">The user grid</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="destinationTile">The destination tile</param>
+        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
+        /// <param name="includeDestination">Include the target tile into the resulting array or not</param>
+        /// <returns>An array of tiles</returns>
+        public T[] GetPath<T>(T[,] grid, T startTile, T destinationTile, bool includeStart = true, bool includeDestination = true) where T : ITile
+        {
+            if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
+            {
+                throw new Exception("Do not call this method with non-walkable (or null) tiles");
+            }
+            DirectionGrid directionGrid = _directionAtlas[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), destinationTile.X, destinationTile.Y)];
+            if (!directionGrid.IsTileAccessible(grid, startTile))
+            {
+                return new T[0];
+            }
+            return directionGrid.GetPathToTarget(grid, startTile, includeStart, includeDestination);
+        }
+
+        /// <summary>
+        /// Is there a path between two tiles.
+        /// </summary>
+        /// <param name="grid">The user grid</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="destinationTile">The destination tile</param>
+        /// <returns>A boolean value</returns>
+        public bool HasPath<T>(T[,] grid, T startTile, T destinationTile) where T : ITile
+        {
+            if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
+            {
+                return false;
+            }
+            DirectionGrid directionGrid = _directionAtlas[GridUtils.GetFlatIndexFromCoordinates(new(grid.GetLength(0), grid.GetLength(1)), destinationTile.X, destinationTile.Y)];
+            return directionGrid.IsTileAccessible(grid, startTile);
+        }
+
+        /// <summary>
+        /// Serializes a DirectionAtlas to a byte array.
+        /// </summary>
+        /// <returns>The serialized DirectionAtlas.</returns>
+        public byte[] ToByteArray()
+        {
+            int bytesCount = _directionAtlas.Length * _directionAtlas.Count(x => x != null) + _directionAtlas.Length;
+            byte[] bytes = new byte[bytesCount];
+            int byteIndex = 0;
+            for (int i = 0; i < _directionAtlas.Length; i++)
+            {
+                if (_directionAtlas[i] == null)
+                {
+                    bytes[byteIndex] = 0;
+                    byteIndex++;
+                    continue;
+                }
+                else
+                {
+                    bytes[byteIndex] = 1;
+                    byteIndex++;
+                    for (int j = 0; j < _directionAtlas.Length; j++)
+                    {
+                        bytes[byteIndex] = (byte)_directionAtlas[i]._directionGrid[j];
+                        byteIndex++;
+                    }
+                }
+            }
+            return bytes;
+        }
+
+        /// <summary>
+        /// Asynchronously serializes a DirectionAtlas to a byte array.
+        /// </summary>
+        /// <param name="progress">An optional IProgress object to get the deserialization progression</param>
+        /// <param name="cancelToken">An optional CancellationToken object to cancel the serialization</param>
+        /// <returns>The serialized DirectionAtlas.</returns>
+        public Task<byte[]> ToByteArrayAsync(IProgress<float> progress = null, CancellationToken cancelToken = default)
+        {
+            Task<byte[]> task = Task.Run(() =>
+            {
+                int bytesCount = _directionAtlas.Length * _directionAtlas.Count(x => x != null) + _directionAtlas.Length;
+                byte[] bytes = new byte[bytesCount];
+                int byteIndex = 0;
+                for (int i = 0; i < _directionAtlas.Length; i++)
+                {
+                    if (cancelToken.IsCancellationRequested)
+                    {
+                        return null;
+                    }
+                    progress.Report((float)i / _directionAtlas.Length);
+                    if (_directionAtlas[i] == null)
+                    {
+                        bytes[byteIndex] = 0;
+                        byteIndex++;
+                        continue;
+                    }
+                    else
+                    {
+                        bytes[byteIndex] = 1;
+                        byteIndex++;
+                        for (int j = 0; j < _directionAtlas.Length; j++)
+                        {
+                            bytes[byteIndex] = (byte)_directionAtlas[i]._directionGrid[j];
+                            byteIndex++;
+                        }
+                    }
+                }
+                return bytes;
+            });
+            return task;
+        }
+
+        /// <summary>
+        /// Asynchronously serializes a DirectionAtlas to a byte array.
+        /// </summary>
+        /// <param name="progress">An optional IProgress object to get the deserialization progression</param>
+        /// <param name="cancelToken">An optional CancellationToken object to cancel the serialization</param>
+        /// <returns>The serialized DirectionAtlas.</returns>
+        public async Awaitable<byte[]> ToByteArrayAwaitable(IProgress<float> progress = null, CancellationToken cancelToken = default)
+        {
+            int bytesCount = _directionAtlas.Length * _directionAtlas.Count(x => x != null) + _directionAtlas.Length;
+            byte[] bytes = new byte[bytesCount];
+            int byteIndex = 0;
+            float frameBudgetMS = 6f;
+            float frameStart = Time.realtimeSinceStartup;
+            float elapsedMs = 0f;
+            for (int i = 0; i < _directionAtlas.Length; i++)
+            {
+                if (cancelToken.IsCancellationRequested)
+                {
+                    return null;
+                }
+                progress.Report((float)i / _directionAtlas.Length);
+                if (_directionAtlas[i] == null)
+                {
+                    bytes[byteIndex] = 0;
+                    byteIndex++;
+                    continue;
+                }
+                else
+                {
+                    bytes[byteIndex] = 1;
+                    byteIndex++;
+                    for (int j = 0; j < _directionAtlas.Length; j++)
+                    {
+                        bytes[byteIndex] = (byte)_directionAtlas[i]._directionGrid[j];
+                        byteIndex++;
+                    }
+                }
+                if (((elapsedMs = (Time.realtimeSinceStartup - frameStart) * 1000f) < frameBudgetMS) == false)
+                {
+                    await Awaitable.NextFrameAsync();
+                }
+            }
+            return bytes;
         }
     }
 }
