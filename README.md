@@ -202,7 +202,8 @@ Although it is the most commonly used diagonal movement cost value, you can deci
 
 #### Asynchronous
 
-Every pathfinding calculation method has an asynchronous variant, that returns a **Task**, with additional optional parameters to handle cancellation and be notified of progress.
+Every pathfinding calculation method has an asynchronous variant, that returns a **Task**, with additional optional parameters to handle cancellation and be notified of progress.  
+For environements that does not support **Tasks** (ie: **Unity WebGL**), there is also a asynchronous variants that returns an Awaitable, just know that due to time fractioning, calculation are much longer than usual.
 
 ---
 
