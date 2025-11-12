@@ -78,10 +78,6 @@ namespace Caskev.GridToolkit
         /// <returns>An array of tiles</returns>
         public T[] GetPathFromTarget<T>(T[,] grid, bool includeStart = true, bool includeTarget = true) where T : ITile
         {
-            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[0]);
-            Vector2Int startCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[^1]);
-            T target = GridUtils.GetTile(grid, targetCoords.x, targetCoords.y);
-            T start = GridUtils.GetTile(grid, startCoords.x, startCoords.y);
             int length = _path.Length;
             if (!includeStart) length--;
             if (!includeTarget) length--;
@@ -112,13 +108,6 @@ namespace Caskev.GridToolkit
         /// <param name="includeTarget">Include the target start into the resulting array or not</param>
         public void GetPathFromTargetNoAlloc<T>(T[,] grid, T[] path, bool includeStart = true, bool includeTarget = true) where T : ITile
         {
-            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[0]);
-            Vector2Int startCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[^1]);
-            T target = GridUtils.GetTile(grid, targetCoords.x, targetCoords.y);
-            T start = GridUtils.GetTile(grid, startCoords.x, startCoords.y);
-            int length = _path.Length;
-            if (!includeStart) length--;
-            if (!includeTarget) length--;
             int index = 0;
             for (int i = _path.Length - 1; i >= 0; i--)
             {
@@ -148,10 +137,6 @@ namespace Caskev.GridToolkit
         /// <returns>An array of tiles</returns>
         public T[] GetPathToTarget<T>(T[,] grid, bool includeStart = true, bool includeTarget = true) where T : ITile
         {
-            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[0]);
-            Vector2Int startCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[^1]);
-            T target = GridUtils.GetTile(grid, targetCoords.x, targetCoords.y);
-            T start = GridUtils.GetTile(grid, startCoords.x, startCoords.y);
             int length = _path.Length;
             if (!includeStart) length--;
             if (!includeTarget) length--;
@@ -182,13 +167,6 @@ namespace Caskev.GridToolkit
         /// <param name="includeTarget">Include the target start into the resulting array or not</param>
         public void GetPathToTargetNoAlloc<T>(T[,] grid, T[] path, bool includeStart = true, bool includeTarget = true) where T : ITile
         {
-            Vector2Int targetCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[0]);
-            Vector2Int startCoords = GridUtils.GetCoordinatesFromFlatIndex(new(grid.GetLength(0), grid.GetLength(1)), _path[^1]);
-            T target = GridUtils.GetTile(grid, targetCoords.x, targetCoords.y);
-            T start = GridUtils.GetTile(grid, startCoords.x, startCoords.y);
-            int length = _path.Length;
-            if (!includeStart) length--;
-            if (!includeTarget) length--;
             int index = 0;
             for (int i = 0; i < _path.Length; i++)
             {
