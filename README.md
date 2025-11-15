@@ -207,72 +207,271 @@ For environements that does not support **Tasks** (ie: **Unity WebGL**), there i
 
 ---
 
-#### Direction path
+#### DirectionPath
 
 A **DirectionPath** object holds direction data for all tiles on the path between two tiles.  
 
-To generate a DirectionPath, use the **GenerateDirectionPath** method that needs the *grid*, the *target* tile and the *start** tile from which to calculate the path, as parameters.
+To generate a **DirectionPath** object, use the **GenerateDirectionPath** method that needs the *grid*, the *target* tile and the *start* tile as parameters.
 
 ```cs
-YourCustomTileType[] directionPath = Pathfinding.GenerateDirectionPath(grid, targetTile, startTile);
+DirectionPath directionPath = Pathfinding.GenerateDirectionPath(grid, targetTile, startTile);
+```
+
+You can get the total number of tiles on the path.
+
+- **Length**
+```cs
+int pathLength = directionPath.Length;
+```
+
+You can know if a tile is on the path.
+
+- **IsOnPath**
+```cs
+bool isOnPath = directionPath.IsOnPath(grid, tile);
+```
+
+You can get the next tile on the path starting from a given tile that is on this path.
+
+- **GetNextTile**
+```cs
+YourCustomTileType nextTile = directionPath.GetNextTile(grid, tileOnPath);
+```
+
+You can get the next tile direction on the path starting from a given tile that is on this path.
+
+- **GetNextDirection**
+```cs
+TileDirection nextDirection = directionPath.GetNextDirection(grid, tileOnPath);
+```
+
+You can retrieve the first and last tile of the path.
+
+- **GetStartTile / GetTargetTile**
+```cs
+YourCustomTileType start = directionPath.GetStartTile(grid);
+YourCustomTileType target = directionPath.GetTargetTile(grid);
+```
+
+You can get all the tiles on the path from the start to the target.
+
+- **GetPathToTarget**
+```cs
+YourCustomTileType[] tiles = directionPath.GetPathToTarget(grid);
+```
+
+Or from the target to the start.
+
+- **GetPathFromTarget**
+```cs
+YourCustomTileType[] tiles = directionPath.GetPathFromTarget(grid);
 ```
 
 ---
 
-#### Disjktra path
+---
+
+#### DijkstraPath
 
 A **DijkstraPath** object holds both direction and distance data for all tiles on the path between two tiles.  
 
-To generate a DijkstraPath, use the **GenerateDisjktraPath** method that needs the *grid*, the *target* tile and the *start** tile from which to calculate the path, as parameters.
+To generate a **DijkstraPath** object, use the **GenerateDijkstraPath** method that needs the *grid*, the *target* tile and the *start* tile as parameters.
 
 ```cs
-YourCustomTileType[] dijkstraPath = Pathfinding.GenerateDisjktraPath(grid, targetTile, startTile);
+DijkstraPath dijkstraPath = Pathfinding.GenerateDijkstraPath(grid, targetTile, startTile);
 ```
+
+You can get the total number of tiles on the path.
+
+- **Length**
+```cs
+int pathLength = dijkstraPath.Length;
+```
+
+You can know if a tile is on the path.
+
+- **IsOnPath**
+```cs
+bool isOnPath = dijkstraPath.IsOnPath(grid, tile);
+```
+
+You can get the next tile on the path starting from a given tile that is on this path.
+
+- **GetNextTile**
+```cs
+YourCustomTileType nextTile = dijkstraPath.GetNextTile(grid, tileOnPath);
+```
+
+You can get the next tile direction on the path starting from a given tile that is on this path.
+
+- **GetNextDirection**
+```cs
+TileDirection nextDirection = dijkstraPath.GetNextDirection(grid, tileOnPath);
+```
+
+You can retrieve the first and last tile of the path.
+
+- **GetStartTile / GetTargetTile**
+```cs
+YourCustomTileType start = dijkstraPath.GetStartTile(grid);
+YourCustomTileType target = dijkstraPath.GetTargetTile(grid);
+```
+
+You can get the distance from any tile on the path to the target tile.
+
+- **GetDistanceToTarget**
+```cs
+float distanceToTarget = dijkstraPath.GetDistanceToTarget(grid, tileOnPath);
+```
+
+You can get all the tiles on the path from the start to the target.
+
+- **GetPathToTarget**
+```cs
+YourCustomTileType[] tiles = dijkstraPath.GetPathToTarget(grid);
+```
+
+Or from the target to the start.
+
+- **GetPathFromTarget**
+```cs
+YourCustomTileType[] tiles = dijkstraPath.GetPathFromTarget(grid);
+```
+
+---
 
 ---
 
 #### DirectionField
 
-A **DirectionField** object holds direction data between a target tile and all the tiles that are accessible to this target into a specified maximum distance range.  
+A **DirectionField** object holds direction data between a target tile and all the tiles that are accessible to this target within a specified maximum distance range.  
 
-To generate a **DirectionField** object, use the **GenerateDirectionField** method that needs the *grid* and the *target* tile from which to calculate the paths, as parameters.
+To generate a **DirectionField** object, use the **GenerateDirectionField** method that needs the *grid*, the *target* tile, and the *maxDistance* as parameters.
 
 ```cs
-DirectionField directionField = Pathfinding.GenerateDirectionField(grid, targetTile);
+DirectionField directionField = Pathfinding.GenerateDirectionField(grid, targetTile, maxDistance);
 ```
 
-You can access and iterate over all the accessible tiles.
+You can retrieve the tile that has been used as the target to generate this **DirectionField**.
 
-- **GetAccessibleTile**
+- **GetTargetTile**
 ```cs
-for (int i = 0; i < directionField.AccessibleTilesCount; i++)
-{
-	YourCustomTileType tile = directionField.GetAccessibleTile(grid, i);
-}
+YourCustomTileType targetTile = directionField.GetTargetTile(grid);
 ```
+
+You can get all the tiles that are accessible within the specified distance range.
+
+- **GetAccessibleTiles**
+```cs
+YourCustomTileType[] accessibleTiles = directionField.GetAccessibleTiles(grid);
+```
+
+You can know if a tile is accessible from the target tile within the specified distance range.
+
+- **IsTileAccessible**
+```cs
+bool isTileAccessible = directionField.IsTileAccessible(grid, tile);
+```
+
+You can get the next tile on the path between the target and a tile (only for accessible tiles).
+
+- **GetNextTile**
+```cs
+YourCustomTileType nextTile = directionField.GetNextTile(grid, tile);
+```
+
+You can get the next tile direction on the path between the target and a tile.
+
+- **GetNextDirection**
+```cs
+TileDirection nextDirection = directionField.GetNextDirection(grid, tile);
+```
+
+You can get all the tiles on the path from a tile to the target, limited to the precomputed distance range.
+
+- **GetPathToTarget**
+```cs
+YourCustomTileType[] tiles = directionField.GetPathToTarget(grid, startTile);
+```
+
+Or from the target to a tile.
+
+- **GetPathFromTarget**
+```cs
+YourCustomTileType[] tiles = directionField.GetPathFromTarget(grid, destinationTile);
+```
+
+---
 
 ---
 
 #### DijkstraField
 
-A **DijkstraField** object holds both direction and distance data between a target tile and all the tiles that are accessible to this target into a specified maximum distance range.
+A **DijkstraField** object holds both direction and distance data between a target tile and all the tiles that are accessible to this target within a specified maximum distance range.  
 
-To generate a **DijkstraField** object, use the **GenerateDijkstraField** method that needs the *grid* and the *target* tile from which to calculate the paths, as parameters.
+To generate a **DijkstraField** object, use the **GenerateDijkstraField** method with the *grid*, the *target* tile, and the *maxDistance* as parameters.
 
 ```cs
-DijkstraField dijkstraField = Pathfinding.GenerateDijkstraField(grid, targetTile);
+DijkstraField dijkstraField = Pathfinding.GenerateDijkstraField(grid, targetTile, maxDistance);
 ```
 
-You can access and iterate over all the accessible tiles and also get their distance to the target.
+You can retrieve the tile that has been used as the target to generate this **DijkstraField**.
 
-- **GetAccessibleTile**
+- **GetTargetTile**
 ```cs
-for (int i = 0; i < dijkstraField.AccessibleTilesCount; i++)
-{
-	YourCustomTileType tile = dijkstraField.GetAccessibleTile(grid, i);
-	float distance = dijkstraField.GetDistanceToTarget(grid, tile);
-}
+YourCustomTileType targetTile = dijkstraField.GetTargetTile(grid);
 ```
+
+You can get all the tiles that are accessible within the specified distance range.
+
+- **GetAccessibleTiles**
+```cs
+YourCustomTileType[] accessibleTiles = dijkstraField.GetAccessibleTiles(grid);
+```
+
+You can know if a tile is accessible from the target tile within the specified distance range.
+
+- **IsTileAccessible**
+```cs
+bool isTileAccessible = dijkstraField.IsTileAccessible(grid, tile);
+```
+
+You can get the distance from a tile to the target tile, limited to the precomputed distance range.
+
+- **GetDistanceToTarget**
+```cs
+float distance = dijkstraField.GetDistanceToTarget(grid, tile);
+```
+
+You can get the next tile on the path between the target and a tile.
+
+- **GetNextTile**
+```cs
+YourCustomTileType nextTile = dijkstraField.GetNextTile(grid, tile);
+```
+
+You can get the next tile direction on the path between the target and a tile.
+
+- **GetNextDirection**
+```cs
+TileDirection nextDirection = dijkstraField.GetNextDirection(grid, tile);
+```
+
+You can get all the tiles on the path from a tile to the target.
+
+- **GetPathToTarget**
+```cs
+YourCustomTileType[] tiles = dijkstraField.GetPathToTarget(grid, startTile);
+```
+
+Or from the target to a tile.
+
+- **GetPathFromTarget**
+```cs
+YourCustomTileType[] tiles = dijkstraField.GetPathFromTarget(grid, destinationTile);
+```
+
+---
 
 ---
 
@@ -288,9 +487,31 @@ DirectionGrid directionGrid = Pathfinding.GenerateDirectionGrid(grid, targetTile
 
 You can retrieve the tile that has been used as the target to generate this **DirectionGrid**.
 
-- **GetTarget**
+- **GetTargetTile**
 ```cs
-YourCustomTileType targetTile = directionGrid.GetTarget(grid);
+YourCustomTileType targetTile = directionGrid.GetTargetTile(grid);
+```
+
+You can know if a tile is accessible from the target tile. This is useful before calling the following **DirectionGrid** methods that only take an accessible tile as parameter.
+
+- **IsTileAccessible**
+```cs
+bool isTileAccessible = directionGrid.IsTileAccessible(grid, tile);
+```
+
+You can get the next tile on the path between the target and a tile.
+
+- **GetNextTile**
+```cs
+YourCustomTileType nextTile = directionGrid.GetNextTile(grid, tile);
+```
+
+You can get the next tile direction on the path between the target and a tile.  
+`TileDirection` is an enum representing the possible directions.
+
+- **GetNextDirection**
+```cs
+TileDirection nextDirection = directionGrid.GetNextDirection(grid, tile);
 ```
 
 You can get all the tiles on the path from a tile to the target.
@@ -307,35 +528,14 @@ Or you can get all the tiles on the path from the target to a tile.
 YourCustomTileType[] tiles = directionGrid.GetPathFromTarget(grid, destinationTile);
 ```
 
-You can know if a tile is accessible from the target tile. This is useful before calling the following **DirectionGrid** methods that only takes an accessible tile as parameter.
-
-- **IsTileAccessible**
-```cs
-bool isTileAccessible = directionGrid.IsTileAccessible(grid, tile);
-```
-
-You can get the next tile on the path between the target and a tile.
-
-- **GetNextTileFromTile**
-```cs
-YourCustomTileType nextTile = directionGrid.GetNextTileFromTile(grid, tile);
-```
-
-You can get the next tile direction on the path between the target and a tile (in 2D grid coordinates). NextTileDirection is an enum representing the eight possible directions.
-
-- **GetNextTileDirectionFromTile**
-```cs
-NextTileDirection nextTileDirection = directionGrid.GetNextTileDirectionFromTile(grid, tile);
-```
-
-You can serialize the generated **DirectionGrid** to a byte array. Usefull for path baking in edit time.
+You can serialize the generated **DirectionGrid** to a byte array. Useful for path baking at edit time.
 
 - **ToByteArray**
 ```cs
 byte[] serializedDirectionGrid = directionGrid.ToByteArray();
 ```
 
-You can deserialize a byte array to a **DirectionGrid**. Usefull for loading baked paths at runtime.
+You can deserialize a byte array to a **DirectionGrid**. Useful for loading baked paths at runtime.
 
 - **FromByteArray**
 ```cs
@@ -344,21 +544,196 @@ DirectionGrid directionGrid = DirectionGrid.FromByteArray(grid, serializedDirect
 
 ---
 
+---
+
 #### DijkstraGrid
 
-A **DijkstraGrid** object holds both direction and distance data between a target tile and all the tiles that are accessible to this target, on the entire grid.
+A **DijkstraGrid** object holds both direction and distance data between a target tile and all the tiles that are accessible to this target, on the entire grid.  
 
-To generate a **DijkstraGrid** object, use the **GenerateDijkstraGrid** method that needs the *grid* and the *target* tile from which to calculate the paths, as parameters.
+To generate a **DijkstraGrid** object, use the **GenerateDijkstraGrid** method that needs the *grid* and the *target* tile as parameters.
 
 ```cs
 DijkstraGrid dijkstraGrid = Pathfinding.GenerateDijkstraGrid(grid, targetTile);
 ```
 
-You can get the distance between the target and a tile.
+You can retrieve the tile that has been used as the target to generate this **DijkstraGrid**.
+
+- **GetTargetTile**
+```cs
+YourCustomTileType targetTile = dijkstraGrid.GetTargetTile(grid);
+```
+
+You can know if a tile is accessible from the target tile.
+
+- **IsTileAccessible**
+```cs
+bool isTileAccessible = dijkstraGrid.IsTileAccessible(grid, tile);
+```
+
+You can get the distance from a tile to the target tile.
 
 - **GetDistanceToTarget**
 ```cs
-float distance = dijsktraMap.GetDistanceToTarget(grid, tile);
+float distance = dijkstraGrid.GetDistanceToTarget(grid, tile);
 ```
 
+You can get the next tile on the path between the target and a tile.
 
+- **GetNextTile**
+```cs
+YourCustomTileType nextTile = dijkstraGrid.GetNextTile(grid, tile);
+```
+
+You can get the next tile direction on the path between the target and a tile.
+
+- **GetNextDirection**
+```cs
+TileDirection nextDirection = dijkstraGrid.GetNextDirection(grid, tile);
+```
+
+You can get all the tiles on the path from a tile to the target.
+
+- **GetPathToTarget**
+```cs
+YourCustomTileType[] tiles = dijkstraGrid.GetPathToTarget(grid, startTile);
+```
+
+Or you can get all the tiles on the path from the target to a tile.
+
+- **GetPathFromTarget**
+```cs
+YourCustomTileType[] tiles = dijkstraGrid.GetPathFromTarget(grid, destinationTile);
+```
+
+You can serialize the generated **DijkstraGrid** to a byte array.
+
+- **ToByteArray**
+```cs
+byte[] serializedDijkstraGrid = dijkstraGrid.ToByteArray();
+```
+
+You can deserialize a byte array to a **DijkstraGrid**.
+
+- **FromByteArray**
+```cs
+DijkstraGrid dijkstraGrid = DijkstraGrid.FromByteArray(grid, serializedDijkstraGrid);
+```
+
+---
+
+---
+
+#### DirectionAtlas
+
+A **DirectionAtlas** object holds **DirectionGrid** objects for each tile of the grid. It lets you query paths between any two tiles using precomputed directional data.  
+
+To generate a **DirectionAtlas** object, use the **GenerateDirectionAtlas** method that needs the *grid* as parameter.
+
+```cs
+DirectionAtlas directionAtlas = Pathfinding.GenerateDirectionAtlas(grid);
+```
+
+You can know if there is a path between two tiles.
+
+- **HasPath**
+```cs
+bool hasPath = directionAtlas.HasPath(grid, startTile, destinationTile);
+```
+
+You can get the next tile on the path between a start tile and a destination tile.
+
+- **GetNextTile**
+```cs
+YourCustomTileType nextTile = directionAtlas.GetNextTile(grid, startTile, destinationTile);
+```
+
+You can get the next tile direction on the path between a start tile and a destination tile.
+
+- **GetNextDirection**
+```cs
+TileDirection nextDirection = directionAtlas.GetNextDirection(grid, startTile, destinationTile);
+```
+
+You can get all the tiles on the path between two tiles.
+
+- **GetPath**
+```cs
+YourCustomTileType[] tiles = directionAtlas.GetPath(grid, startTile, destinationTile);
+```
+
+You can serialize the generated **DirectionAtlas** to a byte array.
+
+- **ToByteArray**
+```cs
+byte[] serializedDirectionAtlas = directionAtlas.ToByteArray();
+```
+
+You can deserialize a byte array to a **DirectionAtlas**.
+
+- **FromByteArray**
+```cs
+DirectionAtlas directionAtlas = DirectionAtlas.FromByteArray(grid, serializedDirectionAtlas);
+```
+
+---
+
+---
+
+#### DijkstraAtlas
+
+A **DijkstraAtlas** object holds **DijkstraGrid** objects for each tile of the grid. It lets you query both distance and direction between any two tiles using precomputed data.  
+
+To generate a **DijkstraAtlas** object, use the **GenerateDijkstraAtlas** method that needs the *grid* as parameter.
+
+```cs
+DijkstraAtlas dijkstraAtlas = Pathfinding.GenerateDijkstraAtlas(grid);
+```
+
+You can know if there is a path between two tiles.
+
+- **HasPath**
+```cs
+bool hasPath = dijkstraAtlas.HasPath(grid, startTile, destinationTile);
+```
+
+You can get the distance between two tiles.
+
+- **GetDistanceBetweenTiles**
+```cs
+float distance = dijkstraAtlas.GetDistanceBetweenTiles(grid, startTile, destinationTile);
+```
+
+You can get the next tile on the path between a start tile and a destination tile.
+
+- **GetNextTile**
+```cs
+YourCustomTileType nextTile = dijkstraAtlas.GetNextTile(grid, startTile, destinationTile);
+```
+
+You can get the next tile direction on the path between a start tile and a destination tile.
+
+- **GetNextDirection**
+```cs
+TileDirection nextDirection = dijkstraAtlas.GetNextDirection(grid, startTile, destinationTile);
+```
+
+You can get all the tiles on the path between two tiles.
+
+- **GetPath**
+```cs
+YourCustomTileType[] tiles = dijkstraAtlas.GetPath(grid, startTile, destinationTile);
+```
+
+You can serialize the generated **DijkstraAtlas** to a byte array.
+
+- **ToByteArray**
+```cs
+byte[] serializedDijkstraAtlas = dijkstraAtlas.ToByteArray();
+```
+
+You can deserialize a byte array to a **DijkstraAtlas**.
+
+- **FromByteArray**
+```cs
+DijkstraAtlas dijkstraAtlas = DijkstraAtlas.FromByteArray(grid, serializedDijkstraAtlas);
+```
