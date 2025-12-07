@@ -22,7 +22,7 @@ namespace GridToolkitWorkingProject.Samples.RealTimeShooter
         private DirectionAtlas _directionAtlas;
         private PlayerController _player;
         private Camera _camera;
-        private CancellationTokenSource _cts;
+        private CancellationTokenSource _cts = new();
         public Tile[,] Map { get => _map; }
         private void Awake()
         {
@@ -48,7 +48,6 @@ namespace GridToolkitWorkingProject.Samples.RealTimeShooter
 #else
             _directionAtlas = await DirectionAtlas.FromByteArrayAsync(_map, _directionAtlasAsset.bytes, progressIndicator, _cts.Token);
 #endif
-            _directionAtlas = await DirectionAtlas.FromByteArrayAsync(_map, _directionAtlasAsset.bytes, progressIndicator, _cts.Token);
             _progressLabel.transform.parent.gameObject.SetActive(false);
             _player.gameObject.SetActive(true);
             OnPlayerTileChange();
