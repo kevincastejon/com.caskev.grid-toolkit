@@ -42,6 +42,12 @@ namespace GridToolkitWorkingProject.Samples.RealTimeShooter
             });
             RegisterTiles();
             _progressLabel.transform.parent.gameObject.SetActive(true);
+#if UNITY_WEBGL
+            Debug.Log("Generating atlas with Awaitable for mono thread WEBGL");
+            _directionAtlas = await DirectionAtlas.FromByteArrayAwaitable(_map, _directionAtlasAsset.bytes, progressIndicator, _cts.Token);
+#else
+            _directionAtlas = await DirectionAtlas.FromByteArrayAsync(_map, _directionAtlasAsset.bytes, progressIndicator, _cts.Token);
+#endif
             _directionAtlas = await DirectionAtlas.FromByteArrayAsync(_map, _directionAtlasAsset.bytes, progressIndicator, _cts.Token);
             _progressLabel.transform.parent.gameObject.SetActive(false);
             _player.gameObject.SetActive(true);
