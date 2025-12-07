@@ -2,13 +2,8 @@ using Caskev.GridToolkit;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using TMPro;
-
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 using UnityEngine;
 using Random = UnityEngine.Random;
 namespace GridToolkitWorkingProject.Samples.RealTimeShooter
@@ -19,6 +14,7 @@ namespace GridToolkitWorkingProject.Samples.RealTimeShooter
         [SerializeField] private Mob _mobPrefab;
         [SerializeField] private float _spawnDelay;
         [SerializeField] private Transform _mobs;
+        [SerializeField] private TextAsset _directionAtlasAsset;
         private float _nextSpawnTime;
         private Tile[,] _map;
         private Tile[] _highlightedTiles = new Tile[0];
@@ -33,43 +29,21 @@ namespace GridToolkitWorkingProject.Samples.RealTimeShooter
             _player = FindAnyObjectByType<PlayerController>(FindObjectsInactive.Include);
             _camera = Camera.main;
         }
-        private void Start()
+        private async void Start()
         {
-            RegisterTiles();
-            if (!File.Exists(Application.persistentDataPath + "/Direction.atlas"))
+            if (_directionAtlasAsset == null)
             {
-                GenerateAtlas();
+                Debug.LogError("No DirectionAtlas found!");
+                return;
             }
-            else
-            {
-                Initialize();
-            }
-            
-        }
-        private async void Initialize()
-        {
-            byte[] savedAtlas = File.ReadAllBytes(Application.persistentDataPath + "/Direction.atlas");
-            Debug.Log("Deserializing Atlas...");
             System.Progress<float> progressIndicator = new System.Progress<float>((progress) =>
             {
-                _progressLabel.text = "Loading atlas...\n"+(progress*100).ToString("F0")+"%";
+                _progressLabel.text = "Deserializing atlas...\n" + (progress * 100).ToString("F0") + "%";
             });
-            _cts = new CancellationTokenSource();
-            _progressLabel.transform.parent.parent.gameObject.SetActive(true);
-            try
-            {
-#if UNITY_WEBGL
-                _directionAtlas = await DirectionAtlas.FromByteArrayAwaitable(_map, savedAtlas, progressIndicator, _cts.Token);
-#else
-                _directionAtlas = await DirectionAtlas.FromByteArrayAsync(_map, savedAtlas, progressIndicator, _cts.Token);
-#endif
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-            _progressLabel.transform.parent.parent.gameObject.SetActive(false);
-            Debug.Log("Atlas deserialized");
+            RegisterTiles();
+            _progressLabel.transform.parent.gameObject.SetActive(true);
+            _directionAtlas = await DirectionAtlas.FromByteArrayAsync(_map, _directionAtlasAsset.bytes, progressIndicator, _cts.Token);
+            _progressLabel.transform.parent.gameObject.SetActive(false);
             _player.gameObject.SetActive(true);
             OnPlayerTileChange();
         }
@@ -97,53 +71,6 @@ namespace GridToolkitWorkingProject.Samples.RealTimeShooter
             {
                 _map[tile.Y, tile.X] = tile;
             }
-        }
-        public async void GenerateAtlas()
-        {
-            System.Progress<float> progressIndicator = new System.Progress<float>((progress) =>
-            {
-                _progressLabel.text = "Generating atlas...\n" + (progress * 100).ToString("F0")+"%";
-            });
-            _cts = new CancellationTokenSource();
-            DirectionAtlas directionAtlas = null;
-            _progressLabel.transform.parent.parent.gameObject.SetActive(true);
-            try
-            {
-#if UNITY_WEBGL
-                directionAtlas = await Pathfinding.GenerateDirectionAtlasAwaitable(_map, DiagonalsPolicy.NONE, progressIndicator, _cts.Token);
-#else
-                directionAtlas = await Pathfinding.GenerateDirectionAtlasAsync(_map, DiagonalsPolicy.NONE, progressIndicator, _cts.Token);
-#endif
-            }
-            catch (Exception e)
-            {
-                Debug.LogException(e);
-                Debug.Log("Atlas generation was cancelled");
-                return;
-            }
-            Debug.Log("Writing asset...");
-            try
-            {
-                System.Progress<float> progressIndicator2 = new System.Progress<float>((progress) =>
-                {
-                    _progressLabel.text = "Saving atlas...\n" + (progress * 100).ToString("F0")+"%";
-                });
-#if UNITY_WEBGL
-                byte[] bytes = await directionAtlas.ToByteArrayAwaitable(progressIndicator2, _cts.Token);
-#else
-                byte[] bytes = await directionAtlas.ToByteArrayAsync(progressIndicator2, _cts.Token);
-#endif
-                File.WriteAllBytes(Application.persistentDataPath+"/Direction.atlas", bytes);
-                Debug.Log($"Serialized Atlas ({bytes.Length})");
-            }
-            catch (Exception e)
-            {
-                Debug.LogException(e);
-                return;
-            }
-            _progressLabel.transform.parent.parent.gameObject.SetActive(false);
-            Debug.Log("Atlas generation is done");
-            Initialize();
         }
         private void SpawnMob()
         {
@@ -235,21 +162,14 @@ namespace GridToolkitWorkingProject.Samples.RealTimeShooter
         {
             return _map[_player.CurrentPosition.y, _player.CurrentPosition.x];
         }
-        private void OnApplicationQuit()
-        {
-            CancelAtlasGeneration();
-        }
         public Vector2Int GetNextPositionToPlayer(Vector2Int currentPosition)
         {
             Tile nextTile = _directionAtlas.GetNextTile(_map, _map[currentPosition.y, currentPosition.x], GetPlayerTile());
             return new Vector2Int(nextTile.X, nextTile.Y);
         }
-        public void CancelAtlasGeneration()
+        private void OnApplicationQuit()
         {
-            if (_cts != null)
-            {
-                _cts.Cancel();
-            }
+            _cts?.Cancel();
         }
     }
 }

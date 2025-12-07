@@ -132,6 +132,7 @@ namespace Caskev.GridToolkit
                 progress?.Report((float)i / dijkstraGrid.Length);
                 if (((elapsedMs = (Time.realtimeSinceStartup - frameStart) * 1000f) < frameBudgetMS) == false)
                 {
+                    frameStart = Time.realtimeSinceStartup;
                     await Awaitable.NextFrameAsync();
                 }
             }
@@ -351,6 +352,7 @@ namespace Caskev.GridToolkit
                 neighbourgs.Clear();
                 if (((elapsedMs = (Time.realtimeSinceStartup - frameStart) * 1000f) < frameBudgetMS) == false)
                 {
+                    frameStart = Time.realtimeSinceStartup;
                     await Awaitable.NextFrameAsync();
                 }
             }
@@ -572,6 +574,7 @@ namespace Caskev.GridToolkit
                 neighbourgs.Clear();
                 if (((elapsedMs = (Time.realtimeSinceStartup - frameStart) * 1000f) < frameBudgetMS) == false)
                 {
+                    frameStart = Time.realtimeSinceStartup;
                     await Awaitable.NextFrameAsync();
                 }
             }
@@ -860,6 +863,7 @@ namespace Caskev.GridToolkit
                 neighbourgs.Clear();
                 if (((elapsedMs = (Time.realtimeSinceStartup - frameStart) * 1000f) < frameBudgetMS) == false)
                 {
+                    frameStart = Time.realtimeSinceStartup;
                     await Awaitable.NextFrameAsync();
                 }
             }
@@ -963,6 +967,7 @@ namespace Caskev.GridToolkit
                 progress?.Report((float)i / directionGrid.Length);
                 if (((elapsedMs = (Time.realtimeSinceStartup - frameStart) * 1000f) < frameBudgetMS) == false)
                 {
+                    frameStart = Time.realtimeSinceStartup;
                     await Awaitable.NextFrameAsync();
                 }
             }
@@ -1170,6 +1175,7 @@ namespace Caskev.GridToolkit
                 neighbourgs.Clear();
                 if (((elapsedMs = (Time.realtimeSinceStartup - frameStart) * 1000f) < frameBudgetMS) == false)
                 {
+                    frameStart = Time.realtimeSinceStartup;
                     await Awaitable.NextFrameAsync();
                 }
             }
@@ -1361,6 +1367,7 @@ namespace Caskev.GridToolkit
                 neighbourgs.Clear();
                 if (((elapsedMs = (Time.realtimeSinceStartup - frameStart) * 1000f) < frameBudgetMS) == false)
                 {
+                    frameStart = Time.realtimeSinceStartup;
                     await Awaitable.NextFrameAsync();
                 }
             }
@@ -1649,6 +1656,7 @@ namespace Caskev.GridToolkit
                 neighbourgs.Clear();
                 if (((elapsedMs = (Time.realtimeSinceStartup - frameStart) * 1000f) < frameBudgetMS) == false)
                 {
+                    frameStart = Time.realtimeSinceStartup;
                     await Awaitable.NextFrameAsync();
                 }
             }
