@@ -148,6 +148,7 @@ namespace Caskev.GridToolkit
                 }
                 if (((elapsedMs = (Time.realtimeSinceStartup - frameStart) * 1000f) < frameBudgetMS) == false)
                 {
+                    frameStart = Time.realtimeSinceStartup;
                     await Awaitable.NextFrameAsync();
                 }
             }
@@ -344,6 +345,7 @@ namespace Caskev.GridToolkit
                 }
                 if (((elapsedMs = (Time.realtimeSinceStartup - frameStart) * 1000f) < frameBudgetMS) == false)
                 {
+                    frameStart = Time.realtimeSinceStartup;
                     await Awaitable.NextFrameAsync();
                 }
             }

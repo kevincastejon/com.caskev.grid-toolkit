@@ -132,6 +132,7 @@ namespace Caskev.GridToolkit
                 byteIndex += sizeof(float);
                 if (((elapsedMs = (Time.realtimeSinceStartup - frameStart) * 1000f) < frameBudgetMS) == false)
                 {
+                    frameStart = Time.realtimeSinceStartup;
                     await Awaitable.NextFrameAsync();
                 }
             }
@@ -354,6 +355,7 @@ namespace Caskev.GridToolkit
                 byteIndex += sizeof(float);
                 if (((elapsedMs = (Time.realtimeSinceStartup - frameStart) * 1000f) < frameBudgetMS) == false)
                 {
+                    frameStart = Time.realtimeSinceStartup;
                     await Awaitable.NextFrameAsync();
                 }
             }
