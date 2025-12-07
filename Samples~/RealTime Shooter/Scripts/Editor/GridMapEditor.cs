@@ -1,5 +1,4 @@
 using Caskev.GridToolkit;
-using Codice.Client.BaseCommands;
 using GridToolkitWorkingProject.Samples.RealTimeShooter;
 using System;
 using System.Collections.Generic;
@@ -7,10 +6,7 @@ using System.IO;
 using System.Threading;
 using UnityEditor;
 using UnityEditor.PackageManager.UI;
-using UnityEditor.SceneManagement;
-using UnityEditor.SearchService;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 [CustomEditor(typeof(GridMap))]
 public class GridMapEditor : Editor
 {

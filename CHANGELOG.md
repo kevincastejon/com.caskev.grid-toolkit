@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.7.0] - 2025-12-07
+### Added
+- DirectionPath, DijkstraPath, DirectionAtlas and DijkstraAtlas features.
+- WEBGL support for all async methods (time fractionning).
+- RealTime Shooter sample (with serialized DirectionAtlas).
+
 ## [0.6.0] - 2025-10-06
 ### Added
 - GetAccessibleTiles methods for DirectionField and DijkstraField.
